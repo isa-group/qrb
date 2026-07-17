@@ -1,0 +1,58 @@
+{
+  "name": "web",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "eslint",
+    "generate:api-types": "bash scripts/generate-api-types.sh",
+    "deploy": "next build && wrangler pages deploy"
+  },
+  "dependencies": {
+    "@codemirror/language": "^6.10.0",
+    "@hookform/resolvers": "^5.4.0",
+    "@lezer/highlight": "^1.2.0",
+    "@next/env": "16.2.10",
+    "@tanstack/react-query": "^5.101.2",
+    "@uiw/react-codemirror": "^4.23.0",
+    "class-variance-authority": "^0.7.1",
+    "clsx": "^2.1.1",
+    "cmdk": "^1.1.1",
+    "d3-shape": "^3.2.0",
+    "lucide-react": "^1.23.0",
+    "next": "16.2.10",
+    "next-themes": "^0.4.6",
+    "openapi-fetch": "^0.17.0",
+    "radix-ui": "^1.6.1",
+    "react": "19.2.4",
+    "react-dom": "19.2.4",
+    "react-hook-form": "^7.81.0",
+    "shadcn": "^4.13.0",
+    "tailwind-merge": "^3.6.0",
+    "tw-animate-css": "^1.4.0",
+    "zod": "^4.4.3"
+  },
+  "devDependencies": {
+    "@tailwindcss/postcss": "^4",
+    "@types/d3-shape": "^3.1.8",
+    "@types/node": "^20",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "eslint": "^9",
+    "eslint-config-next": "16.2.10",
+    "openapi-typescript": "^7.13.0",
+    "tailwindcss": "^4",
+    "typescript": "^5",
+    "wrangler": "^4.107.0"
+  },
+  "ignoreScripts": [
+    "sharp",
+    "unrs-resolver"
+  ],
+  "trustedDependencies": [
+    "sharp",
+    "unrs-resolver"
+  ]
+}

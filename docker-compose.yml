@@ -1,0 +1,54 @@
+services:
+  api:
+    build:
+      context: .
+      dockerfile: docker/api.Dockerfile
+    ports:
+      - "8000:8000"
+    environment:
+      QISKIT_IBM_TOKEN: ${QISKIT_IBM_TOKEN:-}
+      QISKIT_IBM_INSTANCE: ${QISKIT_IBM_INSTANCE:-}
+      QISKIT_IBM_INSTANCES: ${QISKIT_IBM_INSTANCES:-}
+      QISKIT_IBM_CHANNEL: ${QISKIT_IBM_CHANNEL:-}
+      AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID:-}
+      AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY:-}
+      AWS_REGION: ${AWS_REGION:-us-east-1}
+      WEB_ORIGINS: http://152.228.139.18:3069
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+
+  cli:
+    build:
+      context: .
+      dockerfile: docker/cli.Dockerfile
+    environment:
+      QISKIT_IBM_TOKEN: ${QISKIT_IBM_TOKEN:-}
+      QISKIT_IBM_INSTANCE: ${QISKIT_IBM_INSTANCE:-}
+      QISKIT_IBM_INSTANCES: ${QISKIT_IBM_INSTANCES:-}
+      QISKIT_IBM_CHANNEL: ${QISKIT_IBM_CHANNEL:-}
+      AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID:-}
+      AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY:-}
+      AWS_REGION: ${AWS_REGION:-us-east-1}
+    working_dir: /workspace
+    volumes:
+      - .:/workspace
+    profiles:
+      - cli
+
+  web:
+    build:
+      context: .
+      dockerfile: docker/web.Dockerfile
+      args:
+        NEXT_PUBLIC_API_BASE_URL: http://100.89.28.119:8000
+        NEXT_PUBLIC_USE_MOCK_CATALOG: ${NEXT_PUBLIC_USE_MOCK_CATALOG:-true}
+        NEXT_PUBLIC_CATALOG_POLL_INTERVAL_MS: ${NEXT_PUBLIC_CATALOG_POLL_INTERVAL_MS:-600000}
+    ports:
+      - "3069:80"
+    depends_on:
+      api:
+        condition: service_started
+
+volumes:
+  postgres_data:

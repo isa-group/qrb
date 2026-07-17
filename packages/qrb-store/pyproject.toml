@@ -1,0 +1,17 @@
+[project]
+name = "qrb-store"
+version = "0.1.0"
+description = "Postgres persistence for QRB's historical data: binding decisions and catalog telemetry"
+requires-python = ">=3.14"
+dependencies = [
+  "sqlalchemy>=2.0",
+  "psycopg[binary]>=3.2",
+  "alembic>=1.13",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/qrb_store"]

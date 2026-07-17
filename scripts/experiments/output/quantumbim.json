@@ -1,0 +1,602 @@
+{
+  "metadata": {
+    "id": "f2ddc71f-8277-413e-933a-5824af96bb50",
+    "name": "qrb-experiment3",
+    "version": "0.1",
+    "created_at": "2026-07-16T11:52:51.953127Z"
+  },
+  "providers": [
+    {
+      "id": "braket",
+      "name": "Amazon Braket"
+    },
+    {
+      "id": "ibm",
+      "name": "IBM Quantum"
+    }
+  ],
+  "tasks": [
+    {
+      "id": "task",
+      "name": "Quantum circuit execution"
+    }
+  ],
+  "candidates": [
+    {
+      "id": "ibm.ibm_boston",
+      "task_id": "task",
+      "provider_id": "ibm",
+      "name": "ibm_boston",
+      "features": {
+        "expected_fidelity": 0.0014512800990164733,
+        "cost": 3.25783552,
+        "queue": 360.0,
+        "critical_depth": 0.32105263157894737,
+        "estimated_success_probability": 0.0014512800990164733,
+        "num_qubits": 156.0,
+        "operational": 1.0,
+        "depth_feasible": 1.0,
+        "calibration_age_hours": 113.786608095,
+        "expected_fidelity_normalized": 0.0029498998748606568,
+        "cost_normalized": 0.96904164310399,
+        "queue_normalized": 0.7863501483679525,
+        "critical_depth_normalized": 0.9839816933638443,
+        "estimated_success_probability_normalized": 0.0029498998748606568
+      }
+    },
+    {
+      "id": "ibm.ibm_fez",
+      "task_id": "task",
+      "provider_id": "ibm",
+      "name": "ibm_fez",
+      "features": {
+        "expected_fidelity": 0.0034721432854821726,
+        "cost": 3.2519372799999995,
+        "queue": 3.0,
+        "critical_depth": 0.32105263157894737,
+        "estimated_success_probability": 0.0034721432854821726,
+        "num_qubits": 156.0,
+        "operational": 1.0,
+        "depth_feasible": 1.0,
+        "calibration_age_hours": 113.22494755972222,
+        "expected_fidelity_normalized": 0.007057545301064498,
+        "cost_normalized": 0.969114027646874,
+        "queue_normalized": 0.9982195845697329,
+        "critical_depth_normalized": 0.9839816933638443,
+        "estimated_success_probability_normalized": 0.007057545301064498
+      }
+    },
+    {
+      "id": "ibm.ibm_pittsburgh",
+      "task_id": "task",
+      "provider_id": "ibm",
+      "name": "ibm_pittsburgh",
+      "features": {
+        "expected_fidelity": 0.09928209016188187,
+        "cost": 3.2678035456000005,
+        "queue": 1685.0,
+        "critical_depth": 0.32105263157894737,
+        "estimated_success_probability": 0.09928209016188187,
+        "num_qubits": 156.0,
+        "operational": 1.0,
+        "depth_feasible": 1.0,
+        "calibration_age_hours": 113.77856481555555,
+        "expected_fidelity_normalized": 0.20180268822187952,
+        "cost_normalized": 0.9689193132265158,
+        "queue_normalized": 0.0,
+        "critical_depth_normalized": 0.9839816933638443,
+        "estimated_success_probability_normalized": 0.20180268822187952
+      }
+    },
+    {
+      "id": "ibm.ibm_marrakesh",
+      "task_id": "task",
+      "provider_id": "ibm",
+      "name": "ibm_marrakesh",
+      "features": {
+        "expected_fidelity": 0.08800191730188456,
+        "cost": 3.2608239616,
+        "queue": 47.0,
+        "critical_depth": 0.32105263157894737,
+        "estimated_success_probability": 0.08800191730188456,
+        "num_qubits": 156.0,
+        "operational": 1.0,
+        "depth_feasible": 1.0,
+        "calibration_age_hours": 114.14218214750001,
+        "expected_fidelity_normalized": 0.17887439165758207,
+        "cost_normalized": 0.9690049682689287,
+        "queue_normalized": 0.972106824925816,
+        "critical_depth_normalized": 0.9839816933638443,
+        "estimated_success_probability_normalized": 0.17887439165758207
+      }
+    },
+    {
+      "id": "ibm.ibm_kingston",
+      "task_id": "task",
+      "provider_id": "ibm",
+      "name": "ibm_kingston",
+      "features": {
+        "expected_fidelity": 0.01844321645107568,
+        "cost": 3.2577634304000003,
+        "queue": 3.0,
+        "critical_depth": 0.32105263157894737,
+        "estimated_success_probability": 0.01844321645107568,
+        "num_qubits": 156.0,
+        "operational": 1.0,
+        "depth_feasible": 1.0,
+        "calibration_age_hours": 112.85857701666666,
+        "expected_fidelity_normalized": 0.037488036897857714,
+        "cost_normalized": 0.9690425278039585,
+        "queue_normalized": 0.9982195845697329,
+        "critical_depth_normalized": 0.9839816933638443,
+        "estimated_success_probability_normalized": 0.037488036897857714
+      }
+    },
+    {
+      "id": "ibm.ibm_aachen",
+      "task_id": "task",
+      "provider_id": "ibm",
+      "name": "ibm_aachen",
+      "features": {
+        "expected_fidelity": 0.027616743603257676,
+        "cost": 3.2569573376000003,
+        "queue": 0.0,
+        "critical_depth": 0.32105263157894737,
+        "estimated_success_probability": 0.027616743603257676,
+        "num_qubits": 156.0,
+        "operational": 1.0,
+        "depth_feasible": 1.0,
+        "calibration_age_hours": 112.8763610638889,
+        "expected_fidelity_normalized": 0.056134324831242616,
+        "cost_normalized": 0.9690524203581526,
+        "queue_normalized": 1.0,
+        "critical_depth_normalized": 0.9839816933638443,
+        "estimated_success_probability_normalized": 0.056134324831242616
+      }
+    },
+    {
+      "id": "braket.Forte_1",
+      "task_id": "task",
+      "provider_id": "braket",
+      "name": "Forte 1",
+      "features": {
+        "expected_fidelity": 0.491976053622846,
+        "cost": 82.22,
+        "queue": 0.0,
+        "critical_depth": 0.31,
+        "estimated_success_probability": 0.491976053622846,
+        "num_qubits": 36.0,
+        "operational": 1.0,
+        "depth_feasible": 1.0,
+        "calibration_age_hours": 155.8810847111111,
+        "expected_fidelity_normalized": 1.0,
+        "cost_normalized": 0.0,
+        "queue_normalized": 1.0,
+        "critical_depth_normalized": 1.0,
+        "estimated_success_probability_normalized": 1.0
+      }
+    },
+    {
+      "id": "braket.Forte_Enterprise_1",
+      "task_id": "task",
+      "provider_id": "braket",
+      "name": "Forte Enterprise 1",
+      "features": {
+        "expected_fidelity": 0.16381788172789877,
+        "cost": 82.22,
+        "queue": 1.0,
+        "critical_depth": 0.31,
+        "estimated_success_probability": 0.16381788172789877,
+        "num_qubits": 36.0,
+        "operational": 0.0,
+        "depth_feasible": 1.0,
+        "calibration_age_hours": 587.8810860458333,
+        "expected_fidelity_normalized": 0.3329793808490591,
+        "cost_normalized": 0.0,
+        "queue_normalized": 0.9994065281899109,
+        "critical_depth_normalized": 1.0,
+        "estimated_success_probability_normalized": 0.3329793808490591
+      }
+    },
+    {
+      "id": "braket.Cepheus-1-108Q",
+      "task_id": "task",
+      "provider_id": "braket",
+      "name": "Cepheus-1-108Q",
+      "features": {
+        "expected_fidelity": 8.730225292259768e-48,
+        "cost": 0.7352,
+        "queue": 0.0,
+        "critical_depth": 0.4006069802731411,
+        "estimated_success_probability": 8.730225292259768e-48,
+        "num_qubits": 107.0,
+        "operational": 1.0,
+        "depth_feasible": 1.0,
+        "calibration_age_hours": 112.84720124638888,
+        "expected_fidelity_normalized": 1.774522403676267e-47,
+        "cost_normalized": 1.0,
+        "queue_normalized": 1.0,
+        "critical_depth_normalized": 0.8686855358360274,
+        "estimated_success_probability_normalized": 1.774522403676267e-47
+      }
+    },
+    {
+      "id": "braket.Garnet",
+      "task_id": "task",
+      "provider_id": "braket",
+      "name": "Garnet",
+      "features": {
+        "expected_fidelity": 0.00906681285849575,
+        "cost": 1.9384000000000001,
+        "queue": 2.0,
+        "critical_depth": 0.4866412213740458,
+        "estimated_success_probability": 0.00906681285849575,
+        "num_qubits": 20.0,
+        "operational": 1.0,
+        "depth_feasible": 1.0,
+        "calibration_age_hours": 115.09178442694444,
+        "expected_fidelity_normalized": 0.018429378405166168,
+        "cost_normalized": 0.9852340559220861,
+        "queue_normalized": 0.998813056379822,
+        "critical_depth_normalized": 0.7439982298926873,
+        "estimated_success_probability_normalized": 0.018429378405166168
+      }
+    },
+    {
+      "id": "braket.Emerald",
+      "task_id": "task",
+      "provider_id": "braket",
+      "name": "Emerald",
+      "features": {
+        "expected_fidelity": 0.0028271141968217992,
+        "cost": 1.9384000000000001,
+        "queue": 4.0,
+        "critical_depth": 0.5041736227045075,
+        "estimated_success_probability": 0.0028271141968217992,
+        "num_qubits": 53.0,
+        "operational": 1.0,
+        "depth_feasible": 1.0,
+        "calibration_age_hours": 126.46337682055555,
+        "expected_fidelity_normalized": 0.005746446754884323,
+        "cost_normalized": 0.9852340559220861,
+        "queue_normalized": 0.997626112759644,
+        "critical_depth_normalized": 0.718588952602163,
+        "estimated_success_probability_normalized": 0.005746446754884323
+      }
+    },
+    {
+      "id": "braket.IBEX_Q1",
+      "task_id": "task",
+      "provider_id": "braket",
+      "name": "IBEX Q1",
+      "features": {
+        "expected_fidelity": 0.0,
+        "cost": 24.364,
+        "queue": 5.0,
+        "critical_depth": 1.0,
+        "estimated_success_probability": 0.0,
+        "num_qubits": 12.0,
+        "operational": 1.0,
+        "depth_feasible": 1.0,
+        "calibration_age_hours": 387.4660980138889,
+        "expected_fidelity_normalized": 0.0,
+        "cost_normalized": 0.7100219918316053,
+        "queue_normalized": 0.9970326409495549,
+        "critical_depth_normalized": 0.0,
+        "estimated_success_probability_normalized": 0.0
+      }
+    }
+  ],
+  "features": [
+    {
+      "id": "expected_fidelity",
+      "name": "Expected Fidelity",
+      "direction": "MAXIMIZE",
+      "unit": "probability",
+      "scale": "RATIO",
+      "valid_range": {
+        "min": 0.0,
+        "max": 1.0
+      }
+    },
+    {
+      "id": "cost",
+      "name": "Estimated Cost",
+      "direction": "MINIMIZE",
+      "unit": "usd",
+      "scale": "RATIO",
+      "valid_range": {
+        "min": 0.0,
+        "max": 1000.0
+      }
+    },
+    {
+      "id": "queue",
+      "name": "Queue Length",
+      "direction": "MINIMIZE",
+      "unit": "pending_jobs",
+      "scale": "RATIO",
+      "valid_range": {
+        "min": 0.0,
+        "max": 10000.0
+      }
+    },
+    {
+      "id": "critical_depth",
+      "name": "Critical Depth",
+      "direction": "MINIMIZE",
+      "unit": "ratio",
+      "scale": "RATIO",
+      "valid_range": {
+        "min": 0.0,
+        "max": 1.0
+      }
+    },
+    {
+      "id": "estimated_success_probability",
+      "name": "Estimated Success Probability",
+      "direction": "MAXIMIZE",
+      "unit": "probability",
+      "scale": "RATIO",
+      "valid_range": {
+        "min": 0.0,
+        "max": 1.0
+      }
+    },
+    {
+      "id": "num_qubits",
+      "name": "Number of Qubits",
+      "direction": "MAXIMIZE",
+      "unit": "count",
+      "scale": "RATIO",
+      "valid_range": {
+        "min": 0.0,
+        "max": 10000.0
+      }
+    },
+    {
+      "id": "operational",
+      "name": "Operational",
+      "direction": "MAXIMIZE",
+      "unit": "boolean",
+      "scale": "RATIO",
+      "valid_range": {
+        "min": 0.0,
+        "max": 1.0
+      }
+    },
+    {
+      "id": "depth_feasible",
+      "name": "Depth Feasible",
+      "direction": "MAXIMIZE",
+      "unit": "boolean",
+      "scale": "RATIO",
+      "valid_range": {
+        "min": 0.0,
+        "max": 1.0
+      }
+    },
+    {
+      "id": "calibration_age_hours",
+      "name": "Calibration Age",
+      "direction": "MINIMIZE",
+      "unit": "hours",
+      "scale": "RATIO",
+      "valid_range": {
+        "min": 0.0,
+        "max": 1000000.0
+      }
+    },
+    {
+      "id": "expected_fidelity_normalized",
+      "name": "Expected Fidelity (normalized)",
+      "direction": "MAXIMIZE",
+      "unit": "normalized_score",
+      "scale": "RATIO",
+      "valid_range": {
+        "min": 0.0,
+        "max": 1.0
+      }
+    },
+    {
+      "id": "cost_normalized",
+      "name": "Estimated Cost (normalized)",
+      "direction": "MAXIMIZE",
+      "unit": "normalized_score",
+      "scale": "RATIO",
+      "valid_range": {
+        "min": 0.0,
+        "max": 1.0
+      }
+    },
+    {
+      "id": "queue_normalized",
+      "name": "Queue Length (normalized)",
+      "direction": "MAXIMIZE",
+      "unit": "normalized_score",
+      "scale": "RATIO",
+      "valid_range": {
+        "min": 0.0,
+        "max": 1.0
+      }
+    },
+    {
+      "id": "critical_depth_normalized",
+      "name": "Critical Depth (normalized)",
+      "direction": "MAXIMIZE",
+      "unit": "normalized_score",
+      "scale": "RATIO",
+      "valid_range": {
+        "min": 0.0,
+        "max": 1.0
+      }
+    },
+    {
+      "id": "estimated_success_probability_normalized",
+      "name": "Estimated Success Probability (normalized)",
+      "direction": "MAXIMIZE",
+      "unit": "normalized_score",
+      "scale": "RATIO",
+      "valid_range": {
+        "min": 0.0,
+        "max": 1.0
+      }
+    }
+  ],
+  "composition": {
+    "type": "STRUCTURED",
+    "root": {
+      "id": "root",
+      "kind": "TASK",
+      "task_id": "task"
+    }
+  },
+  "aggregation_policies": {
+    "expected_fidelity": {
+      "neutral": 0.0,
+      "compose": {
+        "seq": {
+          "fn": "SUM"
+        }
+      }
+    },
+    "cost": {
+      "neutral": 0.0,
+      "compose": {
+        "seq": {
+          "fn": "SUM"
+        }
+      }
+    },
+    "queue": {
+      "neutral": 0.0,
+      "compose": {
+        "seq": {
+          "fn": "SUM"
+        }
+      }
+    },
+    "critical_depth": {
+      "neutral": 0.0,
+      "compose": {
+        "seq": {
+          "fn": "SUM"
+        }
+      }
+    },
+    "estimated_success_probability": {
+      "neutral": 0.0,
+      "compose": {
+        "seq": {
+          "fn": "SUM"
+        }
+      }
+    },
+    "num_qubits": {
+      "neutral": 0.0,
+      "compose": {
+        "seq": {
+          "fn": "SUM"
+        }
+      }
+    },
+    "operational": {
+      "neutral": 0.0,
+      "compose": {
+        "seq": {
+          "fn": "SUM"
+        }
+      }
+    },
+    "depth_feasible": {
+      "neutral": 0.0,
+      "compose": {
+        "seq": {
+          "fn": "SUM"
+        }
+      }
+    },
+    "calibration_age_hours": {
+      "neutral": 0.0,
+      "compose": {
+        "seq": {
+          "fn": "SUM"
+        }
+      }
+    },
+    "expected_fidelity_normalized": {
+      "neutral": 0.0,
+      "compose": {
+        "seq": {
+          "fn": "SUM"
+        }
+      }
+    },
+    "cost_normalized": {
+      "neutral": 0.0,
+      "compose": {
+        "seq": {
+          "fn": "SUM"
+        }
+      }
+    },
+    "queue_normalized": {
+      "neutral": 0.0,
+      "compose": {
+        "seq": {
+          "fn": "SUM"
+        }
+      }
+    },
+    "critical_depth_normalized": {
+      "neutral": 0.0,
+      "compose": {
+        "seq": {
+          "fn": "SUM"
+        }
+      }
+    },
+    "estimated_success_probability_normalized": {
+      "neutral": 0.0,
+      "compose": {
+        "seq": {
+          "fn": "SUM"
+        }
+      }
+    }
+  },
+  "constraints": [
+    {
+      "id": "feasibility_num_qubits",
+      "kind": "ATTRIBUTE_BOUND",
+      "scope": "GLOBAL",
+      "attribute_id": "num_qubits",
+      "op": ">=",
+      "value": 15.0,
+      "hard": true
+    },
+    {
+      "id": "user_constraint_0_operational",
+      "kind": "ATTRIBUTE_BOUND",
+      "scope": "GLOBAL",
+      "attribute_id": "operational",
+      "op": ">=",
+      "value": 1.0,
+      "hard": true
+    }
+  ],
+  "objective": {
+    "type": "MONO",
+    "targets": [
+      "cost_normalized",
+      "expected_fidelity_normalized",
+      "queue_normalized"
+    ],
+    "weights": {
+      "cost_normalized": 0.3,
+      "expected_fidelity_normalized": 0.5,
+      "queue_normalized": 0.2
+    },
+    "weights_sum_to_one": true
+  }
+}

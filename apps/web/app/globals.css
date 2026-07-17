@@ -1,0 +1,182 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
+
+/*
+ * Design tokens ported from .claude/DESINGN.md (QRB Design Reference v2).
+ * Dark is the default, unprefixed root theme; `.light` / `[data-theme="light"]`
+ * override the design-doc color tokens below for the secondary light theme.
+ * Every derived alias (shadcn's --color-background, --color-primary, etc.)
+ * points at those tokens via var(), so overriding the base token alone is
+ * enough — nothing needs to be redeclared per-theme twice.
+ *
+ * Naming notes:
+ * - The design doc calls the accent color "Current". Tailwind reserves
+ *   `current` as a hardcoded `currentColor` keyword (verified empirically: a
+ *   `--color-current` theme key is silently ignored for text-/bg-/border-
+ *   current utilities), and shadcn's own components already hard-code
+ *   `bg-primary`/`text-primary-foreground` for the exact same "brand action
+ *   color" role. So "Current" is registered as `--color-primary` — same
+ *   role shadcn already expects, no parallel token system.
+ * - shadcn's own generic `--accent` (a neutral hover/highlight surface used
+ *   internally by menu/command/dropdown components) is a different concept
+ *   from the brand violet, so it's kept distinct and mapped to the panel
+ *   surface rather than repurposed for violet.
+ */
+
+@custom-variant light (&:where(.light, .light *));
+
+@theme {
+  /* Fonts — aliased from the next/font variables set in app/layout.tsx */
+  --font-geist-sans: var(--next-font-geist-sans), "FK Grotesk", ui-sans-serif,
+    system-ui, sans-serif;
+  --font-inter: var(--next-font-inter), ui-sans-serif, system-ui, sans-serif;
+  --font-geist-mono: var(--next-font-geist-mono), "JetBrains Mono",
+    ui-monospace, monospace;
+  --font-sans: var(--font-inter);
+  --font-mono: var(--font-geist-mono);
+
+  /* Type scale (§5) */
+  --text-caption: 11px;
+  --text-caption--line-height: 1.45;
+  --text-mono-caption: 11px;
+  --text-mono-caption--line-height: 1.4;
+  --text-body: 14px;
+  --text-body--line-height: 1.5;
+  --text-body-lg: 16px;
+  --text-body-lg--line-height: 1.5;
+  --text-mono-body: 13px;
+  --text-mono-body--line-height: 1.4;
+  --text-subheading: 18px;
+  --text-subheading--line-height: 1.4;
+  --text-heading-sm: 20px;
+  --text-heading-sm--line-height: 1.3;
+  --text-heading: 24px;
+  --text-heading--line-height: 1.25;
+  --text-heading-lg: 32px;
+  --text-heading-lg--line-height: 1.15;
+  --text-display: 40px;
+  --text-display--line-height: 1.05;
+  --text-mono-display: 20px;
+  --text-mono-display--line-height: 1.2;
+
+  /* Radius (§6) — literal scale, overrides both Tailwind's and shadcn's default proportional scale */
+  --radius-xs: 4px;
+  --radius-sm: 6px;
+  --radius-md: 8px;
+  --radius-lg: 10px;
+  --radius-xl: 10px;
+  --radius-full: 9999px;
+
+  /* Elevation exceptions (§8) — everything else is border-first, no shadow */
+  --shadow-focus: 0 0 0 2px var(--color-void), 0 0 0 4px var(--color-primary);
+  --shadow-live-pulse: 0 0 12px rgba(139, 92, 246, 0.35);
+
+  /* Colors — dark values are the default (§4) */
+  --color-void: #09090b;
+  --color-panel: #111113;
+  --color-instrument: #18181b;
+  --color-deep-well: #202024;
+  --color-hairline: rgba(255, 255, 255, 0.08);
+  --color-hairline-bright: rgba(255, 255, 255, 0.14);
+  --color-ink-primary: #f4f4f5;
+  --color-ink-secondary: #a1a1aa;
+  --color-ink-tertiary: #71717a;
+  --color-ink-faint: #52525b;
+  --color-primary: #8b5cf6;
+  --color-primary-foreground: var(--color-void);
+  --color-primary-bright: #a78bfa;
+  --color-primary-dim: rgba(139, 92, 246, 0.14);
+  --color-eligible: #34d399;
+  --color-eligible-dim: rgba(52, 211, 153, 0.12);
+  --color-pending: #fbbf24;
+  --color-pending-dim: rgba(251, 191, 36, 0.12);
+  --color-violation: #f87171;
+  --color-violation-dim: rgba(248, 113, 113, 0.12);
+  --color-provider-ibm: #78a9ff;
+  --color-provider-aws: #fb923c;
+
+  /* shadcn semantic aliases — point at the design-doc tokens above so shadcn/ui
+     components (Button, Dialog, Command, Sidebar, ...) inherit the same theme
+     with no separate palette to keep in sync. */
+  --color-background: var(--color-void);
+  --color-foreground: var(--color-ink-primary);
+  --color-card: var(--color-instrument);
+  --color-card-foreground: var(--color-ink-primary);
+  --color-popover: var(--color-deep-well);
+  --color-popover-foreground: var(--color-ink-primary);
+  --color-secondary: var(--color-panel);
+  --color-secondary-foreground: var(--color-ink-primary);
+  --color-muted: var(--color-panel);
+  --color-muted-foreground: var(--color-ink-tertiary);
+  --color-accent: var(--color-panel);
+  --color-accent-foreground: var(--color-ink-primary);
+  --color-destructive: var(--color-violation);
+  --color-border: var(--color-hairline);
+  --color-input: var(--color-hairline-bright);
+  --color-ring: var(--color-primary);
+  --color-sidebar: var(--color-panel);
+  --color-sidebar-foreground: var(--color-ink-secondary);
+  --color-sidebar-primary: var(--color-primary);
+  --color-sidebar-primary-foreground: var(--color-void);
+  --color-sidebar-accent: var(--color-primary-dim);
+  --color-sidebar-accent-foreground: var(--color-primary);
+  --color-sidebar-border: var(--color-hairline);
+  --color-sidebar-ring: var(--color-primary);
+}
+
+:root {
+  /* Layout (§6) — referenced via arbitrary-value utilities, e.g. max-w-(--page-max-width) */
+  --page-max-width: 1240px;
+  --reading-max-width: 760px;
+  --section-gap: 48px;
+  --card-padding: 16px;
+  --element-gap: 8px;
+  --sidebar-width: 260px;
+}
+
+.light,
+[data-theme="light"] {
+  --color-void: #ffffff;
+  --color-panel: #f6f6f7;
+  --color-instrument: #ffffff;
+  --color-deep-well: #eeeef0;
+  --color-hairline: rgba(9, 9, 11, 0.1);
+  --color-hairline-bright: rgba(9, 9, 11, 0.18);
+  --color-ink-primary: #0a0a0b;
+  --color-ink-secondary: #52525b;
+  --color-ink-tertiary: #71717a;
+  --color-ink-faint: #a1a1aa;
+  --color-primary: #7c3aed;
+  --color-primary-foreground: #ffffff;
+  --color-primary-bright: #6d28d9;
+  --color-primary-dim: rgba(124, 58, 237, 0.1);
+  --color-eligible: #059669;
+  --color-eligible-dim: rgba(5, 150, 105, 0.1);
+  --color-pending: #d97706;
+  --color-pending-dim: rgba(217, 119, 6, 0.1);
+  --color-violation: #dc2626;
+  --color-violation-dim: rgba(220, 38, 38, 0.1);
+  --color-provider-ibm: #0f62fe;
+  --color-provider-aws: #ea580c;
+
+  --shadow-focus: 0 0 0 2px var(--color-void), 0 0 0 4px var(--color-primary);
+  --shadow-live-pulse: 0 0 12px rgba(124, 58, 237, 0.25);
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+  html {
+    @apply font-sans;
+  }
+}
+
+::selection {
+  background: var(--color-primary-dim);
+  color: var(--color-ink-primary);
+}

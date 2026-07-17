@@ -1,0 +1,31 @@
+{
+  "constraints": [
+    {
+      "id": "feasibility_num_qubits",
+      "kind": "ATTRIBUTE_BOUND",
+      "scope": "GLOBAL",
+      "attribute_id": "num_qubits",
+      "op": ">=",
+      "value": 15.0,
+      "hard": true
+    },
+    {
+      "id": "user_constraint_0_operational",
+      "kind": "ATTRIBUTE_BOUND",
+      "scope": "GLOBAL",
+      "attribute_id": "operational",
+      "op": ">=",
+      "value": 1.0,
+      "hard": true
+    }
+  ],
+  "objective": {
+    "type": "MONO",
+    "targets": ["expected_fidelity_normalized", "critical_depth"],
+    "weights": {
+      "expected_fidelity_normalized": 1.0,
+      "critical_depth": 0.0
+    },
+    "weights_sum_to_one": true
+  }
+}

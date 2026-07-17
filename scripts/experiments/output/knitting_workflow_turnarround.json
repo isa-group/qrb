@@ -1,0 +1,367 @@
+{
+  "metadata": {
+    "id": "fms_knitting_turnarround",
+    "name": "FMS Knitting Workflow - Fidelity under Budget Cap",
+    "version": "2.1.0",
+    "created_at": "2026-07-19T00:00:00Z",
+    "description": "Turn-arround profile of the motivating scenario (Section 3 of the paper): 30-qubit QAOA routing circuit wire-cut into two parallel 15-qubit sub-circuits (1024 shots each), selected over the illustrative catalog of Table 1."
+  },
+  "features": [
+    {
+      "id": "fidelity",
+      "name": "Expected Fidelity",
+      "direction": "MAXIMIZE",
+      "unit": "probability",
+      "scale": "RATIO",
+      "valid_range": { "min": 0, "max": 1 },
+      "description": "Expected execution fidelity of the sub-circuit on the offering."
+    },
+    {
+      "id": "cost",
+      "name": "Cost",
+      "direction": "MINIMIZE",
+      "unit": "EUR",
+      "scale": "RATIO",
+      "valid_range": { "min": 0, "max": 1000 },
+      "description": "Execution cost of the sub-circuit (1024 shots) on the offering."
+    },
+    {
+      "id": "queue",
+      "name": "Queue Length",
+      "direction": "MINIMIZE",
+      "unit": "pending_jobs",
+      "scale": "RATIO",
+      "valid_range": { "min": 0, "max": 10000 },
+      "description": "Pending jobs in the offering's queue at request time."
+    },
+    {
+      "id": "num_qubits",
+      "name": "Qubit Count",
+      "direction": "MAXIMIZE",
+      "unit": "count",
+      "scale": "RATIO",
+      "valid_range": { "min": 0, "max": 10000 },
+      "description": "Device capacity; anchors the local capacity constraint."
+    },
+    {
+      "id": "operational",
+      "name": "Operational",
+      "direction": "MAXIMIZE",
+      "unit": "boolean",
+      "scale": "RATIO",
+      "valid_range": { "min": 0, "max": 1 },
+      "description": "1 if the provider currently grants access to the resource (Table 1 status 'available'), 0 under maintenance or offline."
+    },
+    {
+      "id": "real_device",
+      "name": "Real Device",
+      "direction": "MAXIMIZE",
+      "unit": "boolean",
+      "scale": "RATIO",
+      "valid_range": { "min": 0, "max": 1 },
+      "description": "1 for physical QPUs, 0 for simulators; anchors the user's real-device requirement."
+    }
+  ],
+  "providers": [
+    { "id": "ibmq", "name": "IBM Quantum" },
+    { "id": "iqm", "name": "IQM Resonance" },
+    { "id": "aws", "name": "Amazon Braket" },
+    { "id": "azure", "name": "Microsoft Azure Quantum" }
+  ],
+  "tasks": [
+    {
+      "id": "t1",
+      "name": "Sub-circuit A",
+      "description": "First 15-qubit fragment of the wire-cut 30-qubit QAOA routing circuit, 1024 shots."
+    },
+    {
+      "id": "t2",
+      "name": "Sub-circuit B",
+      "description": "Second 15-qubit fragment of the wire-cut 30-qubit QAOA routing circuit, 1024 shots."
+    }
+  ],
+  "candidates": [
+    {
+      "id": "cand_t1_marrakesh",
+      "task_id": "t1",
+      "provider_id": "ibmq",
+      "name": "Marrakesh (IBMQ)",
+      "features": {
+        "fidelity": 0.71,
+        "cost": 3.2,
+        "queue": 47,
+        "num_qubits": 156,
+        "operational": 1,
+        "real_device": 1
+      }
+    },
+    {
+      "id": "cand_t1_fez",
+      "task_id": "t1",
+      "provider_id": "ibmq",
+      "name": "Fez (IBMQ)",
+      "features": {
+        "fidelity": 0,
+        "cost": 0,
+        "queue": 0,
+        "num_qubits": 156,
+        "operational": 0,
+        "real_device": 1
+      }
+    },
+    {
+      "id": "cand_t1_garnet_iqm",
+      "task_id": "t1",
+      "provider_id": "iqm",
+      "name": "Garnet (IQM Resonance)",
+      "features": {
+        "fidelity": 0.82,
+        "cost": 1.2,
+        "queue": 23,
+        "num_qubits": 20,
+        "operational": 1,
+        "real_device": 1
+      }
+    },
+    {
+      "id": "cand_t1_garnet_aws",
+      "task_id": "t1",
+      "provider_id": "aws",
+      "name": "Garnet (Amazon Braket)",
+      "features": {
+        "fidelity": 0.82,
+        "cost": 3.6,
+        "queue": 6,
+        "num_qubits": 20,
+        "operational": 1,
+        "real_device": 1
+      }
+    },
+    {
+      "id": "cand_t1_h2_azure",
+      "task_id": "t1",
+      "provider_id": "azure",
+      "name": "Quantinuum H2 (Azure)",
+      "features": {
+        "fidelity": 0.95,
+        "cost": 9.8,
+        "queue": 31,
+        "num_qubits": 32,
+        "operational": 1,
+        "real_device": 1
+      }
+    },
+    {
+      "id": "cand_t1_sv1_aws",
+      "task_id": "t1",
+      "provider_id": "aws",
+      "name": "SV1 (Amazon Braket)",
+      "features": {
+        "fidelity": 1.0,
+        "cost": 0.4,
+        "queue": 0,
+        "num_qubits": 34,
+        "operational": 1,
+        "real_device": 0
+      }
+    },
+    {
+      "id": "cand_t1_aria_azure",
+      "task_id": "t1",
+      "provider_id": "azure",
+      "name": "IonQ Aria (Azure)",
+      "features": {
+        "fidelity": 0,
+        "cost": 0,
+        "queue": 0,
+        "num_qubits": 25,
+        "operational": 0,
+        "real_device": 1
+      }
+    },
+    {
+      "id": "cand_t1_spark_iqm",
+      "task_id": "t1",
+      "provider_id": "iqm",
+      "name": "Spark (IQM Resonance)",
+      "features": {
+        "fidelity": 0,
+        "cost": 0,
+        "queue": 1,
+        "num_qubits": 5,
+        "operational": 1,
+        "real_device": 1
+      }
+    },
+
+    {
+      "id": "cand_t2_marrakesh",
+      "task_id": "t2",
+      "provider_id": "ibmq",
+      "name": "Marrakesh (IBMQ)",
+      "features": {
+        "fidelity": 0.71,
+        "cost": 3.2,
+        "queue": 47,
+        "num_qubits": 156,
+        "operational": 1,
+        "real_device": 1
+      }
+    },
+    {
+      "id": "cand_t2_fez",
+      "task_id": "t2",
+      "provider_id": "ibmq",
+      "name": "Fez (IBMQ)",
+      "features": {
+        "fidelity": 0,
+        "cost": 0,
+        "queue": 0,
+        "num_qubits": 156,
+        "operational": 0,
+        "real_device": 1
+      }
+    },
+    {
+      "id": "cand_t2_garnet_iqm",
+      "task_id": "t2",
+      "provider_id": "iqm",
+      "name": "Garnet (IQM Resonance)",
+      "features": {
+        "fidelity": 0.82,
+        "cost": 1.2,
+        "queue": 23,
+        "num_qubits": 20,
+        "operational": 1,
+        "real_device": 1
+      }
+    },
+    {
+      "id": "cand_t2_garnet_aws",
+      "task_id": "t2",
+      "provider_id": "aws",
+      "name": "Garnet (Amazon Braket)",
+      "features": {
+        "fidelity": 0.82,
+        "cost": 3.6,
+        "queue": 6,
+        "num_qubits": 20,
+        "operational": 1,
+        "real_device": 1
+      }
+    },
+    {
+      "id": "cand_t2_h2_azure",
+      "task_id": "t2",
+      "provider_id": "azure",
+      "name": "Quantinuum H2 (Azure)",
+      "features": {
+        "fidelity": 0.95,
+        "cost": 9.8,
+        "queue": 31,
+        "num_qubits": 32,
+        "operational": 1,
+        "real_device": 1
+      }
+    },
+    {
+      "id": "cand_t2_sv1_aws",
+      "task_id": "t2",
+      "provider_id": "aws",
+      "name": "SV1 (Amazon Braket)",
+      "features": {
+        "fidelity": 1.0,
+        "cost": 0.4,
+        "queue": 0,
+        "num_qubits": 34,
+        "operational": 1,
+        "real_device": 0
+      }
+    },
+    {
+      "id": "cand_t2_aria_azure",
+      "task_id": "t2",
+      "provider_id": "azure",
+      "name": "IonQ Aria (Azure)",
+      "features": {
+        "fidelity": 0,
+        "cost": 0,
+        "queue": 0,
+        "num_qubits": 25,
+        "operational": 0,
+        "real_device": 1
+      }
+    },
+    {
+      "id": "cand_t2_spark_iqm",
+      "task_id": "t2",
+      "provider_id": "iqm",
+      "name": "Spark (IQM Resonance)",
+      "features": {
+        "fidelity": 0,
+        "cost": 0,
+        "queue": 1,
+        "num_qubits": 5,
+        "operational": 1,
+        "real_device": 1
+      }
+    }
+  ],
+  "composition": {
+    "type": "STRUCTURED",
+    "root": {
+      "id": "root_and",
+      "kind": "AND",
+      "children": [
+        { "id": "node_t1", "kind": "TASK", "task_id": "t1" },
+        { "id": "node_t2", "kind": "TASK", "task_id": "t2" }
+      ]
+    }
+  },
+  "aggregation_policies": {
+    "fidelity": { "neutral": 1, "compose": { "and": { "fn": "PRODUCT" } } },
+    "cost": { "neutral": 0, "compose": { "and": { "fn": "SUM" } } },
+    "queue": { "neutral": 0, "compose": { "and": { "fn": "MAX" } } },
+    "operational": { "neutral": 0, "compose": { "and": { "fn": "PRODUCT" } } },
+    "num_qubits": { "neutral": 0, "compose": { "and": { "fn": "MIN" } } },
+    "real_device": { "neutral": 0, "compose": { "and": { "fn": "PRODUCT" } } }
+  },
+  "constraints": [
+    {
+      "id": "capacity",
+      "kind": "ATTRIBUTE_BOUND",
+      "scope": "GLOBAL",
+      "attribute_id": "num_qubits",
+      "op": ">=",
+      "value": 15.0,
+      "hard": true,
+      "description": "Capacity: each selected candidate must fit its 15-qubit sub-circuit. Excludes Spark."
+    },
+    {
+      "id": "availability",
+      "kind": "ATTRIBUTE_BOUND",
+      "scope": "GLOBAL",
+      "attribute_id": "operational",
+      "op": ">=",
+      "value": 1.0,
+      "hard": true,
+      "description": "Availability: the provider must currently grant access. Excludes Fez (maintenance) and IonQ Aria (offline)."
+    },
+    {
+      "id": "real_device",
+      "kind": "ATTRIBUTE_BOUND",
+      "scope": "GLOBAL",
+      "attribute_id": "real_device",
+      "op": ">=",
+      "value": 1.0,
+      "hard": true,
+      "description": "User requirement: execute on physical hardware. Excludes SV1."
+    }
+  ],
+  "objective": {
+    "type": "MONO",
+    "targets": ["cost"],
+    "weights": { "cost": 1.0 },
+    "weights_sum_to_one": true
+  }
+}

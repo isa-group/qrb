@@ -1,0 +1,121 @@
+catalog_size,provider_mix,device_ids,repetition,ingestion_ms,timestamp
+2,mixed,ibm_aachen;Cepheus-1-108Q,1,5618.935,2026-07-12T14:21:04.680724+00:00
+2,mixed,ibm_aachen;Cepheus-1-108Q,2,4892.538,2026-07-12T14:21:11.078389+00:00
+2,mixed,ibm_aachen;Cepheus-1-108Q,3,5170.022,2026-07-12T14:21:17.753524+00:00
+2,mixed,ibm_aachen;Cepheus-1-108Q,4,5750.211,2026-07-12T14:21:25.004932+00:00
+2,mixed,ibm_aachen;Cepheus-1-108Q,5,5852.086,2026-07-12T14:21:32.362134+00:00
+2,mixed,ibm_aachen;Cepheus-1-108Q,6,5173.468,2026-07-12T14:21:39.040736+00:00
+2,mixed,ibm_aachen;Cepheus-1-108Q,7,5674.772,2026-07-12T14:21:46.220626+00:00
+2,mixed,ibm_aachen;Cepheus-1-108Q,8,5019.047,2026-07-12T14:21:52.740953+00:00
+2,mixed,ibm_aachen;Cepheus-1-108Q,9,5816.264,2026-07-12T14:22:00.062325+00:00
+2,mixed,ibm_aachen;Cepheus-1-108Q,10,5195.181,2026-07-12T14:22:06.762599+00:00
+4,mixed,ibm_aachen;ibm_boston;Cepheus-1-108Q;Emerald,1,6238.017,2026-07-12T14:22:14.504989+00:00
+4,mixed,ibm_aachen;ibm_boston;Cepheus-1-108Q;Emerald,2,5624.968,2026-07-12T14:22:21.635079+00:00
+4,mixed,ibm_aachen;ibm_boston;Cepheus-1-108Q;Emerald,3,9570.116,2026-07-12T14:22:32.707904+00:00
+4,mixed,ibm_aachen;ibm_boston;Cepheus-1-108Q;Emerald,4,5835.268,2026-07-12T14:22:40.048287+00:00
+4,mixed,ibm_aachen;ibm_boston;Cepheus-1-108Q;Emerald,5,5156.314,2026-07-12T14:22:46.709735+00:00
+4,mixed,ibm_aachen;ibm_boston;Cepheus-1-108Q;Emerald,6,5304.965,2026-07-12T14:22:53.517218+00:00
+4,mixed,ibm_aachen;ibm_boston;Cepheus-1-108Q;Emerald,7,5938.457,2026-07-12T14:23:00.960804+00:00
+4,mixed,ibm_aachen;ibm_boston;Cepheus-1-108Q;Emerald,8,7314.772,2026-07-12T14:23:09.776479+00:00
+4,mixed,ibm_aachen;ibm_boston;Cepheus-1-108Q;Emerald,9,4910.296,2026-07-12T14:23:16.191894+00:00
+4,mixed,ibm_aachen;ibm_boston;Cepheus-1-108Q;Emerald,10,5325.129,2026-07-12T14:23:23.022149+00:00
+6,mixed,ibm_aachen;ibm_boston;ibm_fez;Cepheus-1-108Q;Emerald;Forte 1,1,5427.568,2026-07-12T14:23:29.954837+00:00
+6,mixed,ibm_aachen;ibm_boston;ibm_fez;Cepheus-1-108Q;Emerald;Forte 1,2,5848.887,2026-07-12T14:23:37.308833+00:00
+6,mixed,ibm_aachen;ibm_boston;ibm_fez;Cepheus-1-108Q;Emerald;Forte 1,3,5497.425,2026-07-12T14:23:44.310365+00:00
+6,mixed,ibm_aachen;ibm_boston;ibm_fez;Cepheus-1-108Q;Emerald;Forte 1,4,5669.843,2026-07-12T14:23:51.485337+00:00
+6,mixed,ibm_aachen;ibm_boston;ibm_fez;Cepheus-1-108Q;Emerald;Forte 1,5,6079.835,2026-07-12T14:23:59.068903+00:00
+6,mixed,ibm_aachen;ibm_boston;ibm_fez;Cepheus-1-108Q;Emerald;Forte 1,6,6070.097,2026-07-12T14:24:06.644102+00:00
+6,mixed,ibm_aachen;ibm_boston;ibm_fez;Cepheus-1-108Q;Emerald;Forte 1,7,5500.167,2026-07-12T14:24:13.649385+00:00
+6,mixed,ibm_aachen;ibm_boston;ibm_fez;Cepheus-1-108Q;Emerald;Forte 1,8,5801.066,2026-07-12T14:24:20.955570+00:00
+6,mixed,ibm_aachen;ibm_boston;ibm_fez;Cepheus-1-108Q;Emerald;Forte 1,9,5566.534,2026-07-12T14:24:28.027231+00:00
+6,mixed,ibm_aachen;ibm_boston;ibm_fez;Cepheus-1-108Q;Emerald;Forte 1,10,5973.777,2026-07-12T14:24:35.506133+00:00
+8,mixed,ibm_aachen;ibm_boston;ibm_fez;ibm_kingston;Cepheus-1-108Q;Emerald;Forte 1;Forte Enterprise 1,1,5823.707,2026-07-12T14:24:42.833096+00:00
+8,mixed,ibm_aachen;ibm_boston;ibm_fez;ibm_kingston;Cepheus-1-108Q;Emerald;Forte 1;Forte Enterprise 1,2,5905.238,2026-07-12T14:24:50.243430+00:00
+8,mixed,ibm_aachen;ibm_boston;ibm_fez;ibm_kingston;Cepheus-1-108Q;Emerald;Forte 1;Forte Enterprise 1,3,5129.105,2026-07-12T14:24:56.877666+00:00
+8,mixed,ibm_aachen;ibm_boston;ibm_fez;ibm_kingston;Cepheus-1-108Q;Emerald;Forte 1;Forte Enterprise 1,4,5609.405,2026-07-12T14:25:03.992202+00:00
+8,mixed,ibm_aachen;ibm_boston;ibm_fez;ibm_kingston;Cepheus-1-108Q;Emerald;Forte 1;Forte Enterprise 1,5,6315.354,2026-07-12T14:25:11.811799+00:00
+8,mixed,ibm_aachen;ibm_boston;ibm_fez;ibm_kingston;Cepheus-1-108Q;Emerald;Forte 1;Forte Enterprise 1,6,5066.659,2026-07-12T14:25:18.383587+00:00
+8,mixed,ibm_aachen;ibm_boston;ibm_fez;ibm_kingston;Cepheus-1-108Q;Emerald;Forte 1;Forte Enterprise 1,7,5469.188,2026-07-12T14:25:25.357911+00:00
+8,mixed,ibm_aachen;ibm_boston;ibm_fez;ibm_kingston;Cepheus-1-108Q;Emerald;Forte 1;Forte Enterprise 1,8,5686.839,2026-07-12T14:25:32.549838+00:00
+8,mixed,ibm_aachen;ibm_boston;ibm_fez;ibm_kingston;Cepheus-1-108Q;Emerald;Forte 1;Forte Enterprise 1,9,5905.744,2026-07-12T14:25:39.960687+00:00
+8,mixed,ibm_aachen;ibm_boston;ibm_fez;ibm_kingston;Cepheus-1-108Q;Emerald;Forte 1;Forte Enterprise 1,10,6160.037,2026-07-12T14:25:47.625812+00:00
+10,mixed,ibm_aachen;ibm_boston;ibm_fez;ibm_kingston;ibm_marrakesh;Cepheus-1-108Q;Emerald;Forte 1;Forte Enterprise 1;Garnet,1,5470.104,2026-07-12T14:25:54.601015+00:00
+10,mixed,ibm_aachen;ibm_boston;ibm_fez;ibm_kingston;ibm_marrakesh;Cepheus-1-108Q;Emerald;Forte 1;Forte Enterprise 1;Garnet,2,5625.391,2026-07-12T14:26:01.731534+00:00
+10,mixed,ibm_aachen;ibm_boston;ibm_fez;ibm_kingston;ibm_marrakesh;Cepheus-1-108Q;Emerald;Forte 1;Forte Enterprise 1;Garnet,3,6140.483,2026-07-12T14:26:09.377136+00:00
+10,mixed,ibm_aachen;ibm_boston;ibm_fez;ibm_kingston;ibm_marrakesh;Cepheus-1-108Q;Emerald;Forte 1;Forte Enterprise 1;Garnet,4,7189.855,2026-07-12T14:26:18.072107+00:00
+10,mixed,ibm_aachen;ibm_boston;ibm_fez;ibm_kingston;ibm_marrakesh;Cepheus-1-108Q;Emerald;Forte 1;Forte Enterprise 1;Garnet,5,5393.169,2026-07-12T14:26:24.970398+00:00
+10,mixed,ibm_aachen;ibm_boston;ibm_fez;ibm_kingston;ibm_marrakesh;Cepheus-1-108Q;Emerald;Forte 1;Forte Enterprise 1;Garnet,6,5145.652,2026-07-12T14:26:31.620304+00:00
+10,mixed,ibm_aachen;ibm_boston;ibm_fez;ibm_kingston;ibm_marrakesh;Cepheus-1-108Q;Emerald;Forte 1;Forte Enterprise 1;Garnet,7,7504.193,2026-07-12T14:26:40.627436+00:00
+10,mixed,ibm_aachen;ibm_boston;ibm_fez;ibm_kingston;ibm_marrakesh;Cepheus-1-108Q;Emerald;Forte 1;Forte Enterprise 1;Garnet,8,9635.646,2026-07-12T14:26:51.768169+00:00
+10,mixed,ibm_aachen;ibm_boston;ibm_fez;ibm_kingston;ibm_marrakesh;Cepheus-1-108Q;Emerald;Forte 1;Forte Enterprise 1;Garnet,9,5387.764,2026-07-12T14:26:58.661057+00:00
+10,mixed,ibm_aachen;ibm_boston;ibm_fez;ibm_kingston;ibm_marrakesh;Cepheus-1-108Q;Emerald;Forte 1;Forte Enterprise 1;Garnet,10,5753.205,2026-07-12T14:27:05.917973+00:00
+12,mixed,ibm_aachen;ibm_boston;ibm_fez;ibm_kingston;ibm_marrakesh;ibm_pittsburgh;Cepheus-1-108Q;Emerald;Forte 1;Forte Enterprise 1;Garnet;IBEX Q1,1,5035.951,2026-07-12T14:27:12.458887+00:00
+12,mixed,ibm_aachen;ibm_boston;ibm_fez;ibm_kingston;ibm_marrakesh;ibm_pittsburgh;Cepheus-1-108Q;Emerald;Forte 1;Forte Enterprise 1;Garnet;IBEX Q1,2,6199.475,2026-07-12T14:27:20.159058+00:00
+12,mixed,ibm_aachen;ibm_boston;ibm_fez;ibm_kingston;ibm_marrakesh;ibm_pittsburgh;Cepheus-1-108Q;Emerald;Forte 1;Forte Enterprise 1;Garnet;IBEX Q1,3,5537.059,2026-07-12T14:27:27.201226+00:00
+12,mixed,ibm_aachen;ibm_boston;ibm_fez;ibm_kingston;ibm_marrakesh;ibm_pittsburgh;Cepheus-1-108Q;Emerald;Forte 1;Forte Enterprise 1;Garnet;IBEX Q1,4,5445.22,2026-07-12T14:27:34.151569+00:00
+12,mixed,ibm_aachen;ibm_boston;ibm_fez;ibm_kingston;ibm_marrakesh;ibm_pittsburgh;Cepheus-1-108Q;Emerald;Forte 1;Forte Enterprise 1;Garnet;IBEX Q1,5,6034.56,2026-07-12T14:27:41.690100+00:00
+12,mixed,ibm_aachen;ibm_boston;ibm_fez;ibm_kingston;ibm_marrakesh;ibm_pittsburgh;Cepheus-1-108Q;Emerald;Forte 1;Forte Enterprise 1;Garnet;IBEX Q1,6,5529.004,2026-07-12T14:27:48.724247+00:00
+12,mixed,ibm_aachen;ibm_boston;ibm_fez;ibm_kingston;ibm_marrakesh;ibm_pittsburgh;Cepheus-1-108Q;Emerald;Forte 1;Forte Enterprise 1;Garnet;IBEX Q1,7,5869.325,2026-07-12T14:27:56.096361+00:00
+12,mixed,ibm_aachen;ibm_boston;ibm_fez;ibm_kingston;ibm_marrakesh;ibm_pittsburgh;Cepheus-1-108Q;Emerald;Forte 1;Forte Enterprise 1;Garnet;IBEX Q1,8,5553.035,2026-07-12T14:28:03.154518+00:00
+12,mixed,ibm_aachen;ibm_boston;ibm_fez;ibm_kingston;ibm_marrakesh;ibm_pittsburgh;Cepheus-1-108Q;Emerald;Forte 1;Forte Enterprise 1;Garnet;IBEX Q1,9,5653.106,2026-07-12T14:28:10.312733+00:00
+12,mixed,ibm_aachen;ibm_boston;ibm_fez;ibm_kingston;ibm_marrakesh;ibm_pittsburgh;Cepheus-1-108Q;Emerald;Forte 1;Forte Enterprise 1;Garnet;IBEX Q1,10,5390.689,2026-07-12T14:28:17.207533+00:00
+2,ibm,ibm_aachen;ibm_boston,1,1146.133,2026-07-12T14:28:19.858770+00:00
+2,ibm,ibm_aachen;ibm_boston,2,1017.794,2026-07-12T14:28:22.381612+00:00
+2,ibm,ibm_aachen;ibm_boston,3,940.079,2026-07-12T14:28:24.826776+00:00
+2,ibm,ibm_aachen;ibm_boston,4,841.427,2026-07-12T14:28:27.172469+00:00
+2,ibm,ibm_aachen;ibm_boston,5,954.62,2026-07-12T14:28:29.632171+00:00
+2,ibm,ibm_aachen;ibm_boston,6,1026.157,2026-07-12T14:28:32.163410+00:00
+2,ibm,ibm_aachen;ibm_boston,7,1008.597,2026-07-12T14:28:34.672409+00:00
+2,ibm,ibm_aachen;ibm_boston,8,939.717,2026-07-12T14:28:37.117203+00:00
+2,ibm,ibm_aachen;ibm_boston,9,869.78,2026-07-12T14:28:39.488819+00:00
+2,ibm,ibm_aachen;ibm_boston,10,884.149,2026-07-12T14:28:41.877841+00:00
+4,ibm,ibm_aachen;ibm_boston;ibm_fez;ibm_kingston,1,1176.416,2026-07-12T14:28:44.559353+00:00
+4,ibm,ibm_aachen;ibm_boston;ibm_fez;ibm_kingston,2,1087.244,2026-07-12T14:28:47.151674+00:00
+4,ibm,ibm_aachen;ibm_boston;ibm_fez;ibm_kingston,3,1058.109,2026-07-12T14:28:49.714850+00:00
+4,ibm,ibm_aachen;ibm_boston;ibm_fez;ibm_kingston,4,1130.318,2026-07-12T14:28:52.350237+00:00
+4,ibm,ibm_aachen;ibm_boston;ibm_fez;ibm_kingston,5,1078.487,2026-07-12T14:28:54.933652+00:00
+4,ibm,ibm_aachen;ibm_boston;ibm_fez;ibm_kingston,6,1283.278,2026-07-12T14:28:57.721775+00:00
+4,ibm,ibm_aachen;ibm_boston;ibm_fez;ibm_kingston,7,1185.181,2026-07-12T14:29:00.412025+00:00
+4,ibm,ibm_aachen;ibm_boston;ibm_fez;ibm_kingston,8,1076.231,2026-07-12T14:29:02.990438+00:00
+4,ibm,ibm_aachen;ibm_boston;ibm_fez;ibm_kingston,9,1150.628,2026-07-12T14:29:05.646151+00:00
+4,ibm,ibm_aachen;ibm_boston;ibm_fez;ibm_kingston,10,1096.919,2026-07-12T14:29:08.247932+00:00
+6,ibm,ibm_aachen;ibm_boston;ibm_fez;ibm_kingston;ibm_marrakesh;ibm_pittsburgh,1,1427.675,2026-07-12T14:29:11.180690+00:00
+6,ibm,ibm_aachen;ibm_boston;ibm_fez;ibm_kingston;ibm_marrakesh;ibm_pittsburgh,2,1332.977,2026-07-12T14:29:14.017981+00:00
+6,ibm,ibm_aachen;ibm_boston;ibm_fez;ibm_kingston;ibm_marrakesh;ibm_pittsburgh,3,1283.161,2026-07-12T14:29:16.805021+00:00
+6,ibm,ibm_aachen;ibm_boston;ibm_fez;ibm_kingston;ibm_marrakesh;ibm_pittsburgh,4,1392.558,2026-07-12T14:29:19.702655+00:00
+6,ibm,ibm_aachen;ibm_boston;ibm_fez;ibm_kingston;ibm_marrakesh;ibm_pittsburgh,5,1326.761,2026-07-12T14:29:22.534497+00:00
+6,ibm,ibm_aachen;ibm_boston;ibm_fez;ibm_kingston;ibm_marrakesh;ibm_pittsburgh,6,1345.764,2026-07-12T14:29:25.385342+00:00
+6,ibm,ibm_aachen;ibm_boston;ibm_fez;ibm_kingston;ibm_marrakesh;ibm_pittsburgh,7,1371.56,2026-07-12T14:29:28.260877+00:00
+6,ibm,ibm_aachen;ibm_boston;ibm_fez;ibm_kingston;ibm_marrakesh;ibm_pittsburgh,8,1270.171,2026-07-12T14:29:31.036141+00:00
+6,ibm,ibm_aachen;ibm_boston;ibm_fez;ibm_kingston;ibm_marrakesh;ibm_pittsburgh,9,1352.224,2026-07-12T14:29:33.893461+00:00
+6,ibm,ibm_aachen;ibm_boston;ibm_fez;ibm_kingston;ibm_marrakesh;ibm_pittsburgh,10,1272.122,2026-07-12T14:29:36.670670+00:00
+2,braket,Cepheus-1-108Q;Emerald,1,6388.719,2026-07-12T14:29:44.564479+00:00
+2,braket,Cepheus-1-108Q;Emerald,2,4995.374,2026-07-12T14:29:51.064935+00:00
+2,braket,Cepheus-1-108Q;Emerald,3,5814.901,2026-07-12T14:29:58.380109+00:00
+2,braket,Cepheus-1-108Q;Emerald,4,4907.253,2026-07-12T14:30:04.788446+00:00
+2,braket,Cepheus-1-108Q;Emerald,5,6198.722,2026-07-12T14:30:12.492832+00:00
+2,braket,Cepheus-1-108Q;Emerald,6,5699.278,2026-07-12T14:30:19.697635+00:00
+2,braket,Cepheus-1-108Q;Emerald,7,5521.107,2026-07-12T14:30:26.724124+00:00
+2,braket,Cepheus-1-108Q;Emerald,8,5054.94,2026-07-12T14:30:33.284341+00:00
+2,braket,Cepheus-1-108Q;Emerald,9,5731.136,2026-07-12T14:30:40.517714+00:00
+2,braket,Cepheus-1-108Q;Emerald,10,6213.707,2026-07-12T14:30:48.234490+00:00
+4,braket,Cepheus-1-108Q;Emerald;Forte 1;Forte Enterprise 1,1,6028.996,2026-07-12T14:30:55.768625+00:00
+4,braket,Cepheus-1-108Q;Emerald;Forte 1;Forte Enterprise 1,2,5262.362,2026-07-12T14:31:02.534955+00:00
+4,braket,Cepheus-1-108Q;Emerald;Forte 1;Forte Enterprise 1,3,5695.71,2026-07-12T14:31:09.735810+00:00
+4,braket,Cepheus-1-108Q;Emerald;Forte 1;Forte Enterprise 1,4,5788.537,2026-07-12T14:31:17.029384+00:00
+4,braket,Cepheus-1-108Q;Emerald;Forte 1;Forte Enterprise 1,5,6037.73,2026-07-12T14:31:24.572198+00:00
+4,braket,Cepheus-1-108Q;Emerald;Forte 1;Forte Enterprise 1,6,5686.474,2026-07-12T14:31:31.761519+00:00
+4,braket,Cepheus-1-108Q;Emerald;Forte 1;Forte Enterprise 1,7,5838.002,2026-07-12T14:31:39.103565+00:00
+4,braket,Cepheus-1-108Q;Emerald;Forte 1;Forte Enterprise 1,8,5017.25,2026-07-12T14:31:45.625933+00:00
+4,braket,Cepheus-1-108Q;Emerald;Forte 1;Forte Enterprise 1,9,6596.425,2026-07-12T14:31:53.726970+00:00
+4,braket,Cepheus-1-108Q;Emerald;Forte 1;Forte Enterprise 1,10,5412.062,2026-07-12T14:32:00.639326+00:00
+6,braket,Cepheus-1-108Q;Emerald;Forte 1;Forte Enterprise 1;Garnet;IBEX Q1,1,5674.122,2026-07-12T14:32:07.817972+00:00
+6,braket,Cepheus-1-108Q;Emerald;Forte 1;Forte Enterprise 1;Garnet;IBEX Q1,2,5559.377,2026-07-12T14:32:14.882473+00:00
+6,braket,Cepheus-1-108Q;Emerald;Forte 1;Forte Enterprise 1;Garnet;IBEX Q1,3,5836.603,2026-07-12T14:32:22.224187+00:00
+6,braket,Cepheus-1-108Q;Emerald;Forte 1;Forte Enterprise 1;Garnet;IBEX Q1,4,5047.281,2026-07-12T14:32:28.776587+00:00
+6,braket,Cepheus-1-108Q;Emerald;Forte 1;Forte Enterprise 1;Garnet;IBEX Q1,5,5272.619,2026-07-12T14:32:35.549780+00:00
+6,braket,Cepheus-1-108Q;Emerald;Forte 1;Forte Enterprise 1;Garnet;IBEX Q1,6,5695.448,2026-07-12T14:32:42.750342+00:00
+6,braket,Cepheus-1-108Q;Emerald;Forte 1;Forte Enterprise 1;Garnet;IBEX Q1,7,6047.524,2026-07-12T14:32:50.299522+00:00
+6,braket,Cepheus-1-108Q;Emerald;Forte 1;Forte Enterprise 1;Garnet;IBEX Q1,8,6412.788,2026-07-12T14:32:58.217434+00:00
+6,braket,Cepheus-1-108Q;Emerald;Forte 1;Forte Enterprise 1;Garnet;IBEX Q1,9,5284.695,2026-07-12T14:33:05.007241+00:00
+6,braket,Cepheus-1-108Q;Emerald;Forte 1;Forte Enterprise 1;Garnet;IBEX Q1,10,5796.55,2026-07-12T14:33:12.308902+00:00

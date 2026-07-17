@@ -1,0 +1,24 @@
+[project]
+name = "qrb"
+version = "0.1.0"
+description = "Quantum resource selection as QoS-Aware Service Composition — maps a circuit and declared preferences onto a BIM instance and solves it via OpenBinding"
+requires-python = ">=3.14"
+dependencies = [
+  "openbinding",
+  "qiskit>=1.3",
+  "qiskit-qasm3-import>=0.5",
+  "qiskit-ibm-runtime>=0.34",
+  "qiskit-braket-provider>=0.17",
+  "pydantic>=2.9",
+  "tomli-w>=1.0",
+]
+
+[tool.uv.sources]
+openbinding = { workspace = true }
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/qrb"]

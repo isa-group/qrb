@@ -1,0 +1,115 @@
+version: "3"
+
+vars:
+  SNAPSHOT_PATH: '{{.SNAPSHOT_PATH | default "catalog_snapshot.json"}}'
+
+tasks:
+  sync:
+    desc: Install all Python + JS dependencies
+    cmds:
+      - uv sync --all-packages
+      - bun install
+
+  lint:
+    desc: Lint Python sources
+    cmds:
+      - uv run ruff check packages apps
+
+  format:
+    desc: Format Python sources
+    cmds:
+      - uv run ruff format packages apps
+
+  test:
+    desc: Run the Python test suite
+    cmds:
+      - uv run pytest
+
+  cli:
+    desc: 'Run the QRB CLI, e.g. task cli -- select circuit.qasm --preset fastest'
+    cmds:
+      - uv run qrb {{.CLI_ARGS}}
+
+  api:dev:
+    desc: Run the API locally with autoreload
+    cmds:
+      - uv run uvicorn qrb_api.main:app --reload
+
+  web:dev:
+    desc: Run the frontend locally (http://localhost:3000)
+    cmds:
+      - bun run web:dev
+
+  web:build:
+    desc: Build the frontend as a static export (apps/web/out)
+    cmds:
+      - bun run web:build
+
+  web:lint:
+    desc: Lint the frontend
+    cmds:
+      - bun run --cwd apps/web lint
+
+  web:types:
+    desc: Regenerate apps/web's typed API client from apps/api's live OpenAPI schema (needs uv synced)
+    cmds:
+      - bun run --cwd apps/web generate:api-types
+
+  web:deploy:
+    desc: Build and deploy the frontend to Cloudflare Pages (needs `wrangler login` first)
+    cmds:
+      - bun run --cwd apps/web deploy
+
+  catalog:refresh:
+    desc: 'Fetch the live catalog and freeze it to a reproducible snapshot (needs credentials, see .env.example)'
+    cmds:
+      - uv run qrb catalog --refresh {{.SNAPSHOT_PATH}}
+
+  experiment:1:
+    desc: 'Run Experiment 1, catalog ingestion sweep (needs credentials), e.g. task experiment:1 -- --pilot'
+    cmds:
+      - uv run python scripts/experiments/experiment1_ingestion.py {{.CLI_ARGS}}
+
+  experiment:snapshot:
+    desc: Capture the frozen catalog snapshot shared by Experiments 2 and 3 (needs credentials)
+    cmds:
+      - uv run python scripts/experiments/capture_snapshot.py
+
+  experiment:2:
+    desc: 'Run Experiment 2, circuit-driven stages sweep (reads the frozen snapshot only), e.g. task experiment:2 -- --pilot'
+    cmds:
+      - uv run python scripts/experiments/experiment2_circuit_scaling.py {{.CLI_ARGS}}
+
+  experiment:3:
+    desc: 'Run Experiment 3, preference-dependent outcomes sweep (reads the frozen snapshot only), e.g. task experiment:3 -- --pilot'
+    cmds:
+      - uv run python scripts/experiments/experiment3_preferences.py {{.CLI_ARGS}}
+
+  experiment:plots:
+    desc: Regenerate all experiment figures from already-collected CSVs (no live calls)
+    dir: scripts/experiments/output
+    cmds:
+      - uv run python plots1.py
+      - uv run python plots2.py
+      - uv run python plots3.py
+
+  docker:build:
+    desc: Build the API and CLI Docker images
+    cmds:
+      - docker build -f docker/api.Dockerfile -t qrb-api .
+      - docker build -f docker/cli.Dockerfile -t qrb-cli .
+
+  docker:api:
+    desc: Run the API via docker compose (http://localhost:8000, docs at /scalar)
+    cmds:
+      - docker compose up --build api
+
+  docker:cli:
+    desc: 'Run the CLI via docker compose, e.g. task docker:cli -- select circuit.qasm --preset fastest'
+    cmds:
+      - docker compose run --rm cli {{.CLI_ARGS}}
+
+  docker:down:
+    desc: Stop and remove docker compose services
+    cmds:
+      - docker compose down
