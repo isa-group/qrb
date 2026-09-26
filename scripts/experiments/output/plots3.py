@@ -14,6 +14,7 @@ from pathlib import Path
 import matplotlib
 
 matplotlib.use("Agg")
+import matplotlib.patheffects as pe
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
@@ -41,6 +42,15 @@ MRK = {
     "ibm.ibm_pittsburgh": "D",
     "ibm.ibm_aachen": "v",
 }
+# Label anchor (cartesian x, y, ha) beside each winner's region
+REGION = {
+    "braket.Cepheus-1-108Q": (0.19, 0.47, "right"),
+    "braket.Forte_1": (0.81, 0.47, "left"),
+    "ibm.ibm_marrakesh": (0.40, 0.303, "center"),  # between two marker rows
+    "ibm.ibm_pittsburgh": (0.35, -0.07, "center"),
+    "ibm.ibm_aachen": (0.43, 0.875, "right"),
+}
+ONE_LINE = {"ibm.ibm_marrakesh", "ibm.ibm_aachen"}  # tight spots
 FALLBACK_COLORS = ["#937860", "#DA8BC3", "#8C8C8C", "#CCB974", "#64B5CD"]
 FALLBACK_MARKERS = ["P", "X", "*", "h", "p"]
 
@@ -51,8 +61,8 @@ def lncs_style() -> None:
     plt.rcParams["font.family"] = "serif"
     plt.rcParams["font.serif"] = ["Liberation Serif", "Times New Roman", "Times"]
     plt.rcParams["mathtext.fontset"] = "stix"
-    plt.rcParams["font.size"] = 10  # Tamaño aumentado para alta legibilidad
-    plt.rcParams["legend.fontsize"] = 9
+    plt.rcParams["font.size"] = 8
+    plt.rcParams["legend.fontsize"] = 7.5
 
 
 def tern(wc, wf, wq):
@@ -74,7 +84,7 @@ def main() -> None:
     outdir.mkdir(parents=True, exist_ok=True)
 
     lncs_style()
-    fig, ax = plt.subplots(figsize=(10.0 * CM, 9.5 * CM), dpi=300)
+    fig, ax = plt.subplots(figsize=(6.0 * CM, 5.0 * CM), dpi=300)
     fig.patch.set_facecolor("white")
 
     # Triangle frame + light 0.1 gridlines
@@ -104,7 +114,7 @@ def main() -> None:
         ax.scatter(
             xs,
             ys,
-            s=26,
+            s=11,
             marker=MRK[w],
             color=COL[w],
             edgecolor="black",
@@ -113,71 +123,37 @@ def main() -> None:
             zorder=3,
         )
 
-    # --- ANOTACIONES DE LOS VÉRTICES ---
-    ax.annotate(
-        "$w_{\\mathrm{cost}}=1$\n(1, 0, 0)",
-        xy=tern(1, 0, 0),
-        xytext=(-10, -12),
-        textcoords="offset points",
-        ha="right",
-        va="top",
-        fontsize=9.5,
-    )
-    ax.annotate(
-        "$w_{\\mathrm{fidelity}}=1$\n(0, 1, 0)",
-        xy=tern(0, 1, 0),
-        xytext=(10, -12),
-        textcoords="offset points",
-        ha="left",
-        va="top",
-        fontsize=9.5,
-    )
-    ax.annotate(
-        "$w_{\\mathrm{queue}}=1$\n(0, 0, 1)",
-        xy=tern(0, 0, 1),
-        xytext=(0, 8),
-        textcoords="offset points",
-        ha="center",
-        va="bottom",
-        fontsize=9.5,
-    )
+    # Corner labels
+    for weights, label, off, ha in [
+        ((1, 0, 0), "$w_{\\mathrm{cost}}=1$", (-3, -3), "right"),
+        ((0, 1, 0), "$w_{\\mathrm{fidelity}}=1$", (3, -3), "left"),
+    ]:
+        ax.annotate(label, xy=tern(*weights), xytext=off, textcoords="offset points",
+                    ha=ha, va="top", fontsize=7)
+    ax.annotate("$w_{\\mathrm{queue}}=1$", xy=tern(0, 0, 1), xytext=(0, 4),
+                textcoords="offset points", ha="center", va="bottom", fontsize=7)
 
-    # --- ANOTACIONES DE LOS PUNTOS MEDIOS PERIMETRALES ---
-    puntos_medios = [
-        ((0.5, 0.5, 0), "(0.5, 0.5, 0)", (0, -15), "center", "top"),
-        ((0, 0.5, 0.5), "(0, 0.5, 0.5)", (10, 4), "left", "center"),
-        ((0.5, 0, 0.5), "(0.5, 0, 0.5)", (-10, 4), "right", "center"),
-    ]
+    # Direct labels next to each winner's region instead of a legend
+    placed = []
+    for w in winners:
+        if w not in REGION:
+            continue
+        x, y, ha = REGION[w]
+        label = NICE[w] if w in ONE_LINE else NICE[w].replace(" (", "\n(")
+        ax.text(x, y, label, ha=ha, va="center", fontsize=6.5, color=COL[w],
+                fontweight="bold", linespacing=0.9, zorder=4,
+                path_effects=[pe.withStroke(linewidth=1.5, foreground="white")])
+        placed.append(w)
 
-    for weights, label, offset, ha, va in puntos_medios:
-        x, y = tern(*weights)
-        ax.plot(x, y, marker="x", color="black", markersize=4, alpha=0.5, zorder=2)
-        ax.annotate(
-            label,
-            xy=(x, y),
-            xytext=offset,
-            textcoords="offset points",
-            ha=ha,
-            va=va,
-            fontsize=8,
-            color="#222222",
-        )
-
-    # Límites ajustados sin el aire extra que requerían las etiquetas del centro
-    ax.set_xlim(-0.28, 1.28)
-    ax.set_ylim(-0.22, 1.12)
+    ax.set_xlim(-0.05, 1.05)
+    ax.set_ylim(-0.12, 0.93)
     ax.set_aspect("equal")
     ax.axis("off")
 
-    # Leyenda en el espacio horizontal derecho
-    ax.legend(
-        loc="upper left",
-        bbox_to_anchor=(0.78, 1.05),
-        frameon=False,
-        handletextpad=0.3,
-        borderaxespad=0,
-        fontsize=8.5,
-    )
+    # Winners without a hand-placed label (e.g. a new snapshot) fall back to a legend
+    rest = [h for h, w in zip(*ax.get_legend_handles_labels()) if w not in [NICE[p] for p in placed]]
+    if rest:
+        ax.legend(handles=rest, loc="upper left", bbox_to_anchor=(1.0, 1.0), frameon=False, fontsize=6.5)
 
     plt.tight_layout(pad=0.3)
     for ext in ("pdf", "png"):

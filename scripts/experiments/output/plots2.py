@@ -15,6 +15,7 @@ import matplotlib
 
 matplotlib.use("Agg")
 import matplotlib.gridspec as gridspec
+import matplotlib.transforms
 import matplotlib.pyplot as plt
 import pandas as pd
 
@@ -54,6 +55,12 @@ def clean_spines(ax, grid: bool = True) -> None:
         ax.set_axisbelow(True)
 
 
+def panel_label(fig, ax, text: str) -> None:
+    """Panel tag at the figure's left edge, level with the top of `ax`."""
+    trans = matplotlib.transforms.blended_transform_factory(fig.transFigure, ax.transAxes)
+    ax.text(0.0, 1.0, text, transform=trans, fontsize=9, fontweight="bold", va="center")
+
+
 def main() -> None:
     ap = argparse.ArgumentParser()
     ap.add_argument("--summary", default="experiment2_per_run_summary.csv")
@@ -67,9 +74,9 @@ def main() -> None:
     outdir.mkdir(parents=True, exist_ok=True)
 
     lncs_style()
-    fig = plt.figure(figsize=(12.2 * CM, 10.2 * CM), dpi=300)
+    fig = plt.figure(figsize=(12.2 * CM, 7.4 * CM), dpi=300)
     fig.patch.set_facecolor("white")
-    gs = gridspec.GridSpec(2, 3, height_ratios=[1.9, 1], hspace=0.40, wspace=0.10)
+    gs = gridspec.GridSpec(2, 3, height_ratios=[1.55, 1], hspace=0.55, wspace=0.16)
 
     # ---------------- panel (a): absolute scaling ----------------
     ax = fig.add_subplot(gs[0, :])
@@ -85,12 +92,12 @@ def main() -> None:
             lw=1.0,
             capsize=1.8,
             color=COL[fam],
-            label=f"Instance build — {LAB[fam]}",
+            label=LAB[fam],
             markeredgecolor="black",
             markeredgewidth=0.4,
         )
     r = s.groupby("qubits")["resolution_ms"].median() / 1e3
-    ax.plot(r.index, r.values, "k--", lw=1.1, label="OpenBinding resolution (all families)")
+    ax.plot(r.index, r.values, "k--", lw=1.1, label="OpenBinding resolution")
     for x, _ in THRESHOLDS:
         ax.axvline(x, color="gray", alpha=0.3, lw=0.6, ls=":")
     ax.set_xscale("log")
@@ -98,17 +105,36 @@ def main() -> None:
     ax.set_xticks(QUBIT_GRID)
     ax.set_xticklabels(QUBIT_GRID)
     ax.minorticks_off()
-    ax.set_xlabel("Circuit size (qubits, log scale)")
-    ax.set_ylabel("Instance build time (s, log scale)")
+    ax.set_xlabel("Circuit size (qubits, log scale)", labelpad=1)
+    ax.set_ylabel("Instance build (s, log)")
     clean_spines(ax)
-    ax.legend(loc="upper left", frameon=False)
+    # direct labels at the line ends instead of a legend
+    for fam in FAMS:
+        last = s[s.family == fam].groupby("qubits")["instance_build_ms"].median() / 1e3
+        ax.annotate(
+            LAB[fam],
+            xy=(last.index[-1], last.values[-1]),
+            xytext=(5, 0),
+            textcoords="offset points",
+            va="center",
+            fontsize=7.5,
+            color=COL[fam],
+        )
+    ax.annotate(
+        "OpenBinding resolution",
+        xy=(2.1, r.values[0]),
+        xytext=(0, 3),
+        textcoords="offset points",
+        va="bottom",
+        fontsize=7.5,
+    )
     sec = ax.secondary_xaxis("top")
     sec.set_xticks([x for x, _ in THRESHOLDS])
     sec.set_xticklabels([n for _, n in THRESHOLDS])
-    sec.set_xlabel("Feasible candidates after threshold", fontsize=7.5)
+    sec.set_xlabel("Feasible candidates", fontsize=7.5, labelpad=2)
     sec.tick_params(width=0.7, labelsize=7)
     sec.spines["top"].set_visible(False)
-    ax.text(0.985, 0.04, "(a)", transform=ax.transAxes, fontsize=9, fontweight="bold", ha="right")
+    panel_label(fig, ax, "(a)")
 
     # -------- panels (b): per-family composition ---------
     for i, fam in enumerate(FAMS):
@@ -178,29 +204,21 @@ def main() -> None:
         axb.minorticks_off()
         axb.set_ylim(0, 100)
         axb.set_xlim(2, 156)
-        axb.set_yticks([0, 25, 50, 75, 100])
-        axb.set_title(LAB[fam], fontsize=8, pad=2.5)
+        axb.set_yticks([0, 50, 100])
+        axb.set_title(LAB[fam], fontsize=8, pad=1.5)
         if i == 0:
-            axb.set_ylabel("Share of build (%)")
+            axb.set_ylabel("Share (%)")
         else:
             axb.set_yticklabels([])
         if i == 1:
-            axb.set_xlabel("Circuit size (qubits, log scale)")
+            axb.set_xlabel("Circuit size (qubits, log scale)", labelpad=1)
         for sp in ["top", "right"]:
             axb.spines[sp].set_visible(False)
         for sp in ["left", "bottom"]:
             axb.spines[sp].set_linewidth(0.7)
         axb.tick_params(width=0.7)
-        if i == 2:
-            axb.text(
-                0.95,
-                0.06,
-                "(b)",
-                transform=axb.transAxes,
-                fontsize=9,
-                fontweight="bold",
-                ha="right",
-            )
+        if i == 0:
+            panel_label(fig, axb, "(b)")
 
     for ext in ("pdf", "png"):
         fig.savefig(
