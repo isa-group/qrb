@@ -13,10 +13,7 @@ services:
       AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID:-}
       AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY:-}
       AWS_REGION: ${AWS_REGION:-us-east-1}
-      WEB_ORIGINS: http://152.228.139.18:3069
-    depends_on:
-      migrate:
-        condition: service_completed_successfully
+      WEB_ORIGINS: ${WEB_ORIGINS:-http://localhost:3069}
 
   cli:
     build:
@@ -41,7 +38,7 @@ services:
       context: .
       dockerfile: docker/web.Dockerfile
       args:
-        NEXT_PUBLIC_API_BASE_URL: http://100.89.28.119:8000
+        NEXT_PUBLIC_API_BASE_URL: ${NEXT_PUBLIC_API_BASE_URL:-http://localhost:8000}
         NEXT_PUBLIC_USE_MOCK_CATALOG: ${NEXT_PUBLIC_USE_MOCK_CATALOG:-true}
         NEXT_PUBLIC_CATALOG_POLL_INTERVAL_MS: ${NEXT_PUBLIC_CATALOG_POLL_INTERVAL_MS:-600000}
     ports:
@@ -50,5 +47,9 @@ services:
       api:
         condition: service_started
 
-volumes:
-  postgres_data:
+  artifact:
+    build:
+      context: .
+      dockerfile: docker/artifact.Dockerfile
+    profiles:
+      - artifact

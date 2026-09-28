@@ -1,0 +1,308 @@
+{
+  "metadata": {
+    "id": "fms_single_task_fidelity",
+    "name": "FMS Motivating Scenario - Fidelity-driven",
+    "version": "3.0.0",
+    "created_at": "2026-09-27T00:00:00Z",
+    "description": "Motivating scenario of the paper (Sections 3-4): one 15-qubit QAOA routing circuit, 1024 shots, bound over the illustrative catalog of Table 1. Fidelity-driven profile. Expected binding: Quantinuum H2 via Azure (95%, 9.80 EUR)."
+  },
+  "features": [
+    {
+      "id": "fidelity",
+      "name": "Expected Fidelity",
+      "direction": "MAXIMIZE",
+      "unit": "probability",
+      "scale": "RATIO",
+      "valid_range": {
+        "min": 0,
+        "max": 1
+      },
+      "description": "Expected execution fidelity of the sub-circuit on the offering."
+    },
+    {
+      "id": "cost",
+      "name": "Cost",
+      "direction": "MINIMIZE",
+      "unit": "EUR",
+      "scale": "RATIO",
+      "valid_range": {
+        "min": 0,
+        "max": 1000
+      },
+      "description": "Execution cost of the sub-circuit (1024 shots) on the offering."
+    },
+    {
+      "id": "queue",
+      "name": "Queue Length",
+      "direction": "MINIMIZE",
+      "unit": "pending_jobs",
+      "scale": "RATIO",
+      "valid_range": {
+        "min": 0,
+        "max": 10000
+      },
+      "description": "Pending jobs in the offering's queue at request time."
+    },
+    {
+      "id": "num_qubits",
+      "name": "Qubit Count",
+      "direction": "MAXIMIZE",
+      "unit": "count",
+      "scale": "RATIO",
+      "valid_range": {
+        "min": 0,
+        "max": 10000
+      },
+      "description": "Device capacity; anchors the local capacity constraint."
+    },
+    {
+      "id": "operational",
+      "name": "Operational",
+      "direction": "MAXIMIZE",
+      "unit": "boolean",
+      "scale": "RATIO",
+      "valid_range": {
+        "min": 0,
+        "max": 1
+      },
+      "description": "1 if the provider currently grants access to the resource (Table 1 status 'available'), 0 under maintenance or offline."
+    },
+    {
+      "id": "real_device",
+      "name": "Real Device",
+      "direction": "MAXIMIZE",
+      "unit": "boolean",
+      "scale": "RATIO",
+      "valid_range": {
+        "min": 0,
+        "max": 1
+      },
+      "description": "1 for physical QPUs, 0 for simulators; anchors the user's real-device requirement."
+    }
+  ],
+  "providers": [
+    {
+      "id": "ibmq",
+      "name": "IBM Quantum"
+    },
+    {
+      "id": "iqm",
+      "name": "IQM Resonance"
+    },
+    {
+      "id": "aws",
+      "name": "Amazon Braket"
+    },
+    {
+      "id": "azure",
+      "name": "Microsoft Azure Quantum"
+    }
+  ],
+  "tasks": [
+    {
+      "id": "t",
+      "name": "FMS routing task",
+      "description": "15-qubit QAOA routing circuit, 1024 shots."
+    }
+  ],
+  "candidates": [
+    {
+      "id": "cand_marrakesh",
+      "task_id": "t",
+      "provider_id": "ibmq",
+      "name": "Marrakesh (IBMQ)",
+      "features": {
+        "fidelity": 0.71,
+        "cost": 3.2,
+        "queue": 47,
+        "num_qubits": 156,
+        "operational": 1,
+        "real_device": 1
+      }
+    },
+    {
+      "id": "cand_fez",
+      "task_id": "t",
+      "provider_id": "ibmq",
+      "name": "Fez (IBMQ)",
+      "features": {
+        "fidelity": 0,
+        "cost": 0,
+        "queue": 0,
+        "num_qubits": 156,
+        "operational": 0,
+        "real_device": 1
+      }
+    },
+    {
+      "id": "cand_garnet_iqm",
+      "task_id": "t",
+      "provider_id": "iqm",
+      "name": "Garnet (IQM Resonance)",
+      "features": {
+        "fidelity": 0.82,
+        "cost": 1.2,
+        "queue": 23,
+        "num_qubits": 20,
+        "operational": 1,
+        "real_device": 1
+      }
+    },
+    {
+      "id": "cand_garnet_aws",
+      "task_id": "t",
+      "provider_id": "aws",
+      "name": "Garnet (Amazon Braket)",
+      "features": {
+        "fidelity": 0.82,
+        "cost": 3.6,
+        "queue": 6,
+        "num_qubits": 20,
+        "operational": 1,
+        "real_device": 1
+      }
+    },
+    {
+      "id": "cand_h2_azure",
+      "task_id": "t",
+      "provider_id": "azure",
+      "name": "Quantinuum H2 (Azure)",
+      "features": {
+        "fidelity": 0.95,
+        "cost": 9.8,
+        "queue": 31,
+        "num_qubits": 32,
+        "operational": 1,
+        "real_device": 1
+      }
+    },
+    {
+      "id": "cand_sv1_aws",
+      "task_id": "t",
+      "provider_id": "aws",
+      "name": "SV1 (Amazon Braket)",
+      "features": {
+        "fidelity": 1.0,
+        "cost": 0.4,
+        "queue": 0,
+        "num_qubits": 34,
+        "operational": 1,
+        "real_device": 0
+      }
+    },
+    {
+      "id": "cand_spark_iqm",
+      "task_id": "t",
+      "provider_id": "iqm",
+      "name": "Spark (IQM Resonance)",
+      "features": {
+        "fidelity": 0,
+        "cost": 0,
+        "queue": 1,
+        "num_qubits": 5,
+        "operational": 1,
+        "real_device": 1
+      }
+    }
+  ],
+  "composition": {
+    "type": "STRUCTURED",
+    "root": {
+      "id": "node_t",
+      "kind": "TASK",
+      "task_id": "t"
+    }
+  },
+  "aggregation_policies": {
+    "fidelity": {
+      "neutral": 1,
+      "compose": {
+        "and": {
+          "fn": "PRODUCT"
+        }
+      }
+    },
+    "cost": {
+      "neutral": 0,
+      "compose": {
+        "and": {
+          "fn": "SUM"
+        }
+      }
+    },
+    "queue": {
+      "neutral": 0,
+      "compose": {
+        "and": {
+          "fn": "MAX"
+        }
+      }
+    },
+    "operational": {
+      "neutral": 0,
+      "compose": {
+        "and": {
+          "fn": "PRODUCT"
+        }
+      }
+    },
+    "num_qubits": {
+      "neutral": 0,
+      "compose": {
+        "and": {
+          "fn": "MIN"
+        }
+      }
+    },
+    "real_device": {
+      "neutral": 0,
+      "compose": {
+        "and": {
+          "fn": "PRODUCT"
+        }
+      }
+    }
+  },
+  "constraints": [
+    {
+      "id": "capacity",
+      "kind": "ATTRIBUTE_BOUND",
+      "scope": "LOCAL",
+      "attribute_id": "num_qubits",
+      "op": ">=",
+      "value": 15.0,
+      "hard": true,
+      "description": "Capacity: the offering must fit the 15-qubit circuit. Excludes Spark."
+    },
+    {
+      "id": "availability",
+      "kind": "ATTRIBUTE_BOUND",
+      "scope": "LOCAL",
+      "attribute_id": "operational",
+      "op": ">=",
+      "value": 1.0,
+      "hard": true,
+      "description": "Availability: the provider must currently grant access. Excludes Fez (maintenance)."
+    },
+    {
+      "id": "real_device",
+      "kind": "ATTRIBUTE_BOUND",
+      "scope": "LOCAL",
+      "attribute_id": "real_device",
+      "op": ">=",
+      "value": 1.0,
+      "hard": true,
+      "description": "User requirement: execute on physical hardware. Excludes SV1."
+    }
+  ],
+  "objective": {
+    "type": "MONO",
+    "targets": [
+      "fidelity"
+    ],
+    "weights": {
+      "fidelity": 1.0
+    },
+    "weights_sum_to_one": true
+  }
+}

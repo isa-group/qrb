@@ -14,7 +14,7 @@ from pathlib import Path
 from dotenv import load_dotenv
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from common import SHARED_SNAPSHOT_PATH, ensure_output_dir  # noqa: E402
+from common import ensure_output_dir  # noqa: E402
 from qrb.catalog import fetch_catalog  # noqa: E402
 from qrb.snapshot import save_snapshot, snapshot_captured_at  # noqa: E402
 
@@ -22,16 +22,16 @@ load_dotenv()
 
 
 def main() -> None:
-    ensure_output_dir()
+    out_path = ensure_output_dir() / "shared_catalog_snapshot.json"
     print("Fetching live catalog (all providers, all devices)...")
     resources = fetch_catalog(live=True)
     print(f"Fetched {len(resources)} resources:")
     for r in sorted(resources, key=lambda r: (r.provider_id, r.resource_id)):
         print(f"  {r.provider_id}.{r.resource_id}\t{r.num_qubits}q\toperational={r.operational}")
 
-    save_snapshot(resources, SHARED_SNAPSHOT_PATH)
-    captured_at = snapshot_captured_at(SHARED_SNAPSHOT_PATH)
-    print(f"\nWrote frozen snapshot to {SHARED_SNAPSHOT_PATH}")
+    save_snapshot(resources, out_path)
+    captured_at = snapshot_captured_at(out_path)
+    print(f"\nWrote frozen snapshot to {out_path}")
     print(f"captured_at (UTC): {captured_at.isoformat()}")
 
 

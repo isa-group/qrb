@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import csv
+import os
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
@@ -12,8 +13,11 @@ from qrb.features import FEATURE_REGISTRY, OBJECTIVE_FEATURE_IDS, normalized_fea
 from qrb.providers.base import ResourceRecord
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
-OUTPUT_DIR = Path(__file__).resolve().parent / "output"
-SHARED_SNAPSHOT_PATH = OUTPUT_DIR / "shared_catalog_snapshot.json"
+PAPER_DATA_DIR = Path(__file__).resolve().parent / "output"
+"""Data reported in the paper (committed). Re-runs never overwrite it unless
+QRB_EXPERIMENTS_OUT points here explicitly."""
+OUTPUT_DIR = Path(os.environ.get("QRB_EXPERIMENTS_OUT", PAPER_DATA_DIR)).resolve()
+SHARED_SNAPSHOT_PATH = PAPER_DATA_DIR / "shared_catalog_snapshot.json"
 
 RAW_FEATURE_IDS: list[str] = [spec.id for spec in FEATURE_REGISTRY]
 NORMALIZED_FEATURE_IDS: list[str] = [normalized_feature_id(fid) for fid in OBJECTIVE_FEATURE_IDS]

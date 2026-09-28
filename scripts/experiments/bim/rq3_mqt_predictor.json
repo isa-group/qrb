@@ -22,10 +22,12 @@
   "objective": {
     "type": "MONO",
     "targets": [
-      "queue_normalized"
+      "expected_fidelity_normalized",
+      "critical_depth_normalized"
     ],
     "weights": {
-      "queue_normalized": 1.0
+      "expected_fidelity_normalized": 0.5,
+      "critical_depth_normalized": 0.5
     },
     "weights_sum_to_one": true
   }

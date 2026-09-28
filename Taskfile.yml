@@ -66,21 +66,29 @@ tasks:
       - uv run qrb catalog --refresh {{.SNAPSHOT_PATH}}
 
   experiment:1:
-    desc: 'Run Experiment 1, catalog ingestion sweep (needs credentials), e.g. task experiment:1 -- --pilot'
+    desc: 'Run Experiment 1, catalog ingestion sweep into scripts/experiments/rerun/ (needs credentials), e.g. task experiment:1 -- --pilot'
+    env:
+      QRB_EXPERIMENTS_OUT: '{{.QRB_EXPERIMENTS_OUT | default "scripts/experiments/rerun"}}'
     cmds:
       - uv run python scripts/experiments/experiment1_ingestion.py {{.CLI_ARGS}}
 
   experiment:snapshot:
-    desc: Capture the frozen catalog snapshot shared by Experiments 2 and 3 (needs credentials)
+    desc: Capture a fresh catalog snapshot into scripts/experiments/rerun/ (needs credentials; the paper's frozen snapshot is kept)
+    env:
+      QRB_EXPERIMENTS_OUT: '{{.QRB_EXPERIMENTS_OUT | default "scripts/experiments/rerun"}}'
     cmds:
       - uv run python scripts/experiments/capture_snapshot.py
 
   experiment:2:
+    env:
+      QRB_EXPERIMENTS_OUT: '{{.QRB_EXPERIMENTS_OUT | default "scripts/experiments/rerun"}}'
     desc: 'Run Experiment 2, circuit-driven stages sweep (reads the frozen snapshot only), e.g. task experiment:2 -- --pilot'
     cmds:
       - uv run python scripts/experiments/experiment2_circuit_scaling.py {{.CLI_ARGS}}
 
   experiment:3:
+    env:
+      QRB_EXPERIMENTS_OUT: '{{.QRB_EXPERIMENTS_OUT | default "scripts/experiments/rerun"}}'
     desc: 'Run Experiment 3, preference-dependent outcomes sweep (reads the frozen snapshot only), e.g. task experiment:3 -- --pilot'
     cmds:
       - uv run python scripts/experiments/experiment3_preferences.py {{.CLI_ARGS}}
@@ -92,6 +100,29 @@ tasks:
       - uv run python plots1.py
       - uv run python plots2.py
       - uv run python plots3.py
+
+  reproduce:
+    desc: Offline reproduction of the paper's results (no credentials, no network, ~1 min)
+    cmds:
+      - sh scripts/experiments/reproduce_offline.sh
+
+  reproduce:bim:
+    desc: Resolve the RQ1 BIM instances through the OpenBinding gateway, unchanged (needs network)
+    cmds:
+      - uv run python scripts/experiments/solve_bim_instances.py
+
+  reproduce:experiments:
+    desc: 'Re-run Experiments 2 and 3 against the frozen snapshot into scripts/experiments/rerun/ (needs network to OpenBinding), e.g. task reproduce:experiments -- --pilot'
+    env:
+      QRB_EXPERIMENTS_OUT: scripts/experiments/rerun
+    cmds:
+      - sh scripts/experiments/reproduce_experiments.sh {{.CLI_ARGS}}
+
+  docker:artifact:
+    desc: Build the artifact-evaluation image and run the offline reproduction in it
+    cmds:
+      - docker build -f docker/artifact.Dockerfile -t qrb-artifact .
+      - docker run --rm qrb-artifact
 
   docker:build:
     desc: Build the API and CLI Docker images

@@ -1,0 +1,36 @@
+cff-version: 1.2.0
+message: "If you use this artifact, please cite the paper below."
+title: "QRB: Quantum Resource Binder"
+type: software
+license: Apache-2.0
+repository-code: "https://github.com/isa-group/qrb"
+doi: 10.5281/zenodo.21442195
+authors:
+  - family-names: Romero-Flores
+    given-names: Adrián
+    affiliation: "SCORE Lab, I3US, Universidad de Sevilla"
+  - family-names: Márquez-Chamorro
+    given-names: Alfonso E.
+    affiliation: "SCORE Lab, I3US, Universidad de Sevilla"
+  - family-names: Parejo
+    given-names: José Antonio
+    affiliation: "SCORE Lab, I3US, Universidad de Sevilla"
+  - family-names: Ruiz-Cortés
+    given-names: Antonio
+    affiliation: "SCORE Lab, I3US, Universidad de Sevilla"
+preferred-citation:
+  type: conference-paper
+  title: "Quantum Resource Selection as a QoS-Aware Composition Problem"
+  authors:
+    - family-names: Romero-Flores
+      given-names: Adrián
+    - family-names: Márquez-Chamorro
+      given-names: Alfonso E.
+    - family-names: Parejo
+      given-names: José Antonio
+    - family-names: Ruiz-Cortés
+      given-names: Antonio
+  collection-title: "Service-Oriented Computing – ICSOC 2026"
+  publisher:
+    name: Springer
+  year: 2026

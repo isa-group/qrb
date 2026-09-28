@@ -20,6 +20,58 @@ submits jobs — selection only.
 The full domain vocabulary (Task, Provider, Resource, Candidate, Binding,
 Feature, Objective, Constraint, ...) is documented in [CONTEXT.md](CONTEXT.md).
 
+## Artifact evaluation (ICSOC 2026)
+
+This repository is the artifact of _Quantum Resource Selection as a QoS-Aware
+Composition Problem_ (ICSOC 2026). Every result in the paper can be checked
+**offline, in about a minute, with no credentials**:
+
+```bash
+task sync && task reproduce        # or: sh scripts/experiments/reproduce_offline.sh
+# or, with Docker only:
+docker build -f docker/artifact.Dockerfile -t qrb-artifact . && docker run --rm qrb-artifact
+```
+
+| Paper claim                                                                                                                  | Command                                                                                                                     | Expected output                                                                                                                                                           |
+| ---------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| RQ1: the motivating scenario (Sec. 3, Table 1) and its two-task variant are plain BIM instances (`scripts/experiments/bim/`) | `uv run python scripts/experiments/verify_bim_instances.py`                                                                 | `6/6 instances match the paper` (cost: IQM Garnet; queue: Braket Garnet; fidelity: Quantinuum H2)                                                                         |
+| RQ1: OpenBinding resolves those instances unchanged                                                                          | `task reproduce:bim` (network)                                                                                              | `OK` for all six instances                                                                                                                                                |
+| RQ2: the returned binding is the optimum in every run (Sec. 5.4-5.5)                                                         | `uv run python scripts/experiments/optimality_check.py`                                                                     | `Total: 105/105 matched`                                                                                                                                                  |
+| RQ2: latency breakdown and preference sensitivity (Fig. 2)                                                                   | `task experiment:plots`                                                                                                     | Figures in `scripts/experiments/output/`                                                                                                                                  |
+| RQ2: re-running Experiments 2 and 3 from the frozen snapshot                                                                 | `task reproduce:experiments -- --pilot` (network)                                                                           | New CSVs in `scripts/experiments/rerun/` (the paper's data in `output/` is left untouched); optimality checks all matched and `N/N re-run configurations match the paper` |
+| RQ3: encodings of NISQ Analyzer, Q-Orchestrator and MQT Predictor (Sec. 5.6)                                                 | `scripts/experiments/bim/rq3_*.json`; presets `nisq-analyzer`, `q-orchestrator`, `mqt-predictor` (`uv run qrb preset list`) | BIM constraints and objective per approach                                                                                                                                |
+| Catalog ingestion (Exp. 1) and a fresh snapshot                                                                              | `task experiment:1`, `task experiment:snapshot`                                                                             | Needs IBM Quantum / Amazon Braket credentials                                                                                                                             |
+
+With Docker, the same image re-executes Experiments 2 and 3 (drop `--pilot`
+for the full grid, about one hour); the mounted folder receives the new CSVs:
+
+```bash
+docker run --rm -v "$PWD/rerun:/app/scripts/experiments/rerun" qrb-artifact \
+  sh scripts/experiments/reproduce_experiments.sh --pilot
+```
+
+To plot a re-run, point the plotting scripts at `scripts/experiments/rerun/`
+(figures are written there, next to the new CSVs):
+
+```bash
+R=scripts/experiments/rerun; P=scripts/experiments/output
+uv run python $P/plots2.py --summary $R/experiment2_per_run_summary.csv \
+  --candidates $R/experiment2_per_candidate.csv --outdir $R   # Fig. 2
+uv run python $P/plots3.py --ternary $R/experiment3_ternary.csv --outdir $R
+```
+
+In Docker, run the same two commands inside the image with the same `-v` mount,
+using `python` instead of `uv run python`. Fig. 2 needs the full re-run: the
+`--pilot` grid covers only GHZ circuits at four sizes, which is enough to check
+feasible sets and bindings but not to draw the figure.
+
+External dependencies: steps marked _network_ call the public OpenBinding
+gateway (`https://openbinding.score.us.es/api`, override with
+`OPENBINDING_URL`); only live catalog ingestion needs provider credentials.
+Live runs see today's catalog, so their bindings and latencies differ from
+the paper's; the frozen snapshot (`output/shared_catalog_snapshot.json`,
+captured 2026-07-12) is what makes the reported numbers reproducible.
+
 ## Repository layout
 
 This is a `uv` + `bun` monorepo:
@@ -57,7 +109,7 @@ CONTEXT.md        QACO domain model and terminology reference
 ## Quick start
 
 ```bash
-git clone git@github.com:qrb-maker/qrb.git && cd qrb
+git clone https://github.com/isa-group/qrb.git && cd qrb
 cp .env.example .env        # optionally fill in IBM/Braket credentials
 task sync                   # uv sync --all-packages && bun install
 ```
@@ -113,7 +165,7 @@ before a full run.
 | Task                           | Measures                                                                                                                                     |
 | ------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------- |
 | `task experiment:1 -- --pilot` | Catalog ingestion time vs. catalog size and provider mix (needs live credentials)                                                            |
-| `task experiment:snapshot`     | Captures the single frozen catalog snapshot shared by Experiments 2 and 3 (needs live credentials)                                           |
+| `task experiment:snapshot`     | Captures a fresh catalog snapshot (needs live credentials); the paper's frozen snapshot stays in `output/`                                   |
 | `task experiment:2 -- --pilot` | Transpile / feature / instance-build / resolve time vs. circuit size (reads the frozen snapshot only)                                        |
 | `task experiment:3 -- --pilot` | Whether declared preferences change the resolved binding — a ternary sweep over cost/fidelity/queue weights (reads the frozen snapshot only) |
 | `task experiment:plots`        | Regenerates all figures from the already-collected CSVs, no live calls                                                                       |
@@ -126,8 +178,10 @@ independently recomputes the optimum from the recorded feature tables and
 cross-checks it against what OpenBinding actually returned, for every
 Experiment 2/3 configuration.
 
-Results, figures, and the frozen snapshot are written to
-`scripts/experiments/output/`.
+`scripts/experiments/output/` holds the data reported in the paper, including
+the frozen snapshot (captured 2026-07-11T19:13:19Z). Re-runs write to
+`scripts/experiments/rerun/` instead (override with `QRB_EXPERIMENTS_OUT`), so
+the paper's data is never overwritten.
 
 ## License
 
@@ -138,12 +192,16 @@ Apache License 2.0 — see [LICENSE](LICENSE).
 If you use this artifact, please cite:
 
 ```bibtex
-@inproceedings{TODO_citekey,
-  title     = {TODO: paper title},
-  author    = {TODO: author list},
-  booktitle = {TODO: booktitle},
+@inproceedings{romeroflores2026qrb,
+  title     = {Quantum Resource Selection as a {QoS}-Aware Composition Problem},
+  author    = {Romero-Flores, Adri{\'a}n and M{\'a}rquez-Chamorro, Alfonso E. and
+               Parejo, Jos{\'e} Antonio and Ruiz-Cort{\'e}s, Antonio},
+  booktitle = {Service-Oriented Computing -- 24th International Conference, ICSOC 2026},
+  series    = {Lecture Notes in Computer Science},
+  publisher = {Springer},
   year      = {2026},
 }
 ```
 
-A Zenodo DOI for this artifact will be added here once minted.
+Archived artifact: [10.5281/zenodo.21442195](https://doi.org/10.5281/zenodo.21442195)
+(concept DOI, always resolves to the latest version).

@@ -18,7 +18,9 @@ package = false
 
 [dependency-groups]
 dev = [
+  "matplotlib>=3.9",
   "mqt-bench==2.2.3",
+  "pandas>=2.2",
   "pytest>=8.0",
   "pytest-timeout>=2.4.0",
   "python-ternary>=1.0.8",
@@ -30,4 +32,4 @@ line-length = 100
 target-version = "py314"
 
 [tool.pytest.ini_options]
-testpaths = ["packages", "apps"]
+testpaths = ["packages", "apps", "scripts/experiments"]

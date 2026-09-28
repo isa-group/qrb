@@ -1,10 +1,10 @@
 {
   "metadata": {
-    "id": "fms_knitting_budget",
-    "name": "FMS Knitting Workflow - Fidelity under Budget Cap",
-    "version": "2.1.0",
-    "created_at": "2026-07-19T00:00:00Z",
-    "description": "Budget profile of the motivating scenario (Section 3 of the paper): 30-qubit QAOA routing circuit wire-cut into two parallel 15-qubit sub-circuits (1024 shots each), selected over the illustrative catalog of Table 1."
+    "id": "fms_knitting_fidelity_budget",
+    "name": "FMS Two-Task Variant - Fidelity under Global Budget Cap",
+    "version": "3.0.0",
+    "created_at": "2026-09-27T00:00:00Z",
+    "description": "Fidelity-under-budget profile of the motivating scenario (Section 3 of the paper): 30-qubit QAOA routing circuit wire-cut into two parallel 15-qubit sub-circuits (1024 shots each), selected over the illustrative catalog of Table 1."
   },
   "features": [
     {
@@ -13,7 +13,10 @@
       "direction": "MAXIMIZE",
       "unit": "probability",
       "scale": "RATIO",
-      "valid_range": { "min": 0, "max": 1 },
+      "valid_range": {
+        "min": 0,
+        "max": 1
+      },
       "description": "Expected execution fidelity of the sub-circuit on the offering."
     },
     {
@@ -22,7 +25,10 @@
       "direction": "MINIMIZE",
       "unit": "EUR",
       "scale": "RATIO",
-      "valid_range": { "min": 0, "max": 1000 },
+      "valid_range": {
+        "min": 0,
+        "max": 1000
+      },
       "description": "Execution cost of the sub-circuit (1024 shots) on the offering."
     },
     {
@@ -31,7 +37,10 @@
       "direction": "MINIMIZE",
       "unit": "pending_jobs",
       "scale": "RATIO",
-      "valid_range": { "min": 0, "max": 10000 },
+      "valid_range": {
+        "min": 0,
+        "max": 10000
+      },
       "description": "Pending jobs in the offering's queue at request time."
     },
     {
@@ -40,7 +49,10 @@
       "direction": "MAXIMIZE",
       "unit": "count",
       "scale": "RATIO",
-      "valid_range": { "min": 0, "max": 10000 },
+      "valid_range": {
+        "min": 0,
+        "max": 10000
+      },
       "description": "Device capacity; anchors the local capacity constraint."
     },
     {
@@ -49,7 +61,10 @@
       "direction": "MAXIMIZE",
       "unit": "boolean",
       "scale": "RATIO",
-      "valid_range": { "min": 0, "max": 1 },
+      "valid_range": {
+        "min": 0,
+        "max": 1
+      },
       "description": "1 if the provider currently grants access to the resource (Table 1 status 'available'), 0 under maintenance or offline."
     },
     {
@@ -58,15 +73,30 @@
       "direction": "MAXIMIZE",
       "unit": "boolean",
       "scale": "RATIO",
-      "valid_range": { "min": 0, "max": 1 },
+      "valid_range": {
+        "min": 0,
+        "max": 1
+      },
       "description": "1 for physical QPUs, 0 for simulators; anchors the user's real-device requirement."
     }
   ],
   "providers": [
-    { "id": "ibmq", "name": "IBM Quantum" },
-    { "id": "iqm", "name": "IQM Resonance" },
-    { "id": "aws", "name": "Amazon Braket" },
-    { "id": "azure", "name": "Microsoft Azure Quantum" }
+    {
+      "id": "ibmq",
+      "name": "IBM Quantum"
+    },
+    {
+      "id": "iqm",
+      "name": "IQM Resonance"
+    },
+    {
+      "id": "aws",
+      "name": "Amazon Braket"
+    },
+    {
+      "id": "azure",
+      "name": "Microsoft Azure Quantum"
+    }
   ],
   "tasks": [
     {
@@ -166,20 +196,6 @@
       }
     },
     {
-      "id": "cand_t1_aria_azure",
-      "task_id": "t1",
-      "provider_id": "azure",
-      "name": "IonQ Aria (Azure)",
-      "features": {
-        "fidelity": 0,
-        "cost": 0,
-        "queue": 0,
-        "num_qubits": 25,
-        "operational": 0,
-        "real_device": 1
-      }
-    },
-    {
       "id": "cand_t1_spark_iqm",
       "task_id": "t1",
       "provider_id": "iqm",
@@ -193,7 +209,6 @@
         "real_device": 1
       }
     },
-
     {
       "id": "cand_t2_marrakesh",
       "task_id": "t2",
@@ -279,20 +294,6 @@
       }
     },
     {
-      "id": "cand_t2_aria_azure",
-      "task_id": "t2",
-      "provider_id": "azure",
-      "name": "IonQ Aria (Azure)",
-      "features": {
-        "fidelity": 0,
-        "cost": 0,
-        "queue": 0,
-        "num_qubits": 25,
-        "operational": 0,
-        "real_device": 1
-      }
-    },
-    {
       "id": "cand_t2_spark_iqm",
       "task_id": "t2",
       "provider_id": "iqm",
@@ -313,18 +314,68 @@
       "id": "root_and",
       "kind": "AND",
       "children": [
-        { "id": "node_t1", "kind": "TASK", "task_id": "t1" },
-        { "id": "node_t2", "kind": "TASK", "task_id": "t2" }
+        {
+          "id": "node_t1",
+          "kind": "TASK",
+          "task_id": "t1"
+        },
+        {
+          "id": "node_t2",
+          "kind": "TASK",
+          "task_id": "t2"
+        }
       ]
     }
   },
   "aggregation_policies": {
-    "fidelity": { "neutral": 1, "compose": { "and": { "fn": "PRODUCT" } } },
-    "cost": { "neutral": 0, "compose": { "and": { "fn": "SUM" } } },
-    "queue": { "neutral": 0, "compose": { "and": { "fn": "MAX" } } },
-    "operational": { "neutral": 0, "compose": { "and": { "fn": "PRODUCT" } } },
-    "num_qubits": { "neutral": 0, "compose": { "and": { "fn": "MIN" } } },
-    "real_device": { "neutral": 0, "compose": { "and": { "fn": "PRODUCT" } } }
+    "fidelity": {
+      "neutral": 1,
+      "compose": {
+        "and": {
+          "fn": "PRODUCT"
+        }
+      }
+    },
+    "cost": {
+      "neutral": 0,
+      "compose": {
+        "and": {
+          "fn": "SUM"
+        }
+      }
+    },
+    "queue": {
+      "neutral": 0,
+      "compose": {
+        "and": {
+          "fn": "MAX"
+        }
+      }
+    },
+    "operational": {
+      "neutral": 0,
+      "compose": {
+        "and": {
+          "fn": "PRODUCT"
+        }
+      }
+    },
+    "num_qubits": {
+      "neutral": 0,
+      "compose": {
+        "and": {
+          "fn": "MIN"
+        }
+      }
+    },
+    "real_device": {
+      "neutral": 0,
+      "compose": {
+        "and": {
+          "fn": "PRODUCT"
+        }
+      }
+    }
   },
   "constraints": [
     {
@@ -345,7 +396,7 @@
       "op": ">=",
       "value": 1.0,
       "hard": true,
-      "description": "Availability: the provider must currently grant access. Excludes Fez (maintenance) and IonQ Aria (offline)."
+      "description": "Availability: the provider must currently grant access. Excludes Fez (maintenance)."
     },
     {
       "id": "real_device",
@@ -356,12 +407,24 @@
       "value": 1.0,
       "hard": true,
       "description": "User requirement: execute on physical hardware. Excludes SV1."
+    },
+    {
+      "id": "global_budget_cap",
+      "kind": "ATTRIBUTE_BOUND",
+      "scope": "GLOBAL",
+      "attribute_id": "cost",
+      "op": "<=",
+      "value": 12.0,
+      "hard": true,
+      "description": "Global budget cap over the aggregated (summed) cost of the whole selection."
     }
   ],
   "objective": {
     "type": "MONO",
-    "targets": ["cost"],
-    "weights": { "cost": 1.0 },
+    "targets": ["fidelity"],
+    "weights": {
+      "fidelity": 1.0
+    },
     "weights_sum_to_one": true
   }
 }

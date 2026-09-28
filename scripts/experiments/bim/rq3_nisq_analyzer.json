@@ -17,14 +17,28 @@
       "op": ">=",
       "value": 1.0,
       "hard": true
+    },
+    {
+      "id": "user_constraint_1_depth_feasible",
+      "kind": "ATTRIBUTE_BOUND",
+      "scope": "GLOBAL",
+      "attribute_id": "depth_feasible",
+      "op": ">=",
+      "value": 1.0,
+      "hard": true
     }
   ],
   "objective": {
     "type": "MONO",
-    "targets": ["expected_fidelity_normalized", "critical_depth"],
+    "targets": [
+      "expected_fidelity_normalized",
+      "cost_normalized",
+      "queue_normalized"
+    ],
     "weights": {
-      "expected_fidelity_normalized": 1.0,
-      "critical_depth": 0.0
+      "expected_fidelity_normalized": 0.34,
+      "cost_normalized": 0.33,
+      "queue_normalized": 0.33
     },
     "weights_sum_to_one": true
   }
