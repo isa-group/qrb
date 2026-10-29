@@ -3,13 +3,13 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "bun --watch src/index.ts",
+    "dev": "bun --env-file=../../.env --env-file=.env --watch src/index.ts",
     "start": "bun src/index.ts",
     "test": "bun test",
     "openapi": "bash scripts/openapi-snapshot.sh",
     "openapi:print": "bun scripts/print-openapi.ts",
-    "db:migrate": "bun src/db/migrate.ts up",
-    "db:migrate:down": "bun src/db/migrate.ts down",
+    "db:migrate": "bun --env-file=../../.env --env-file=.env src/db/migrate.ts up",
+    "db:migrate:down": "bun --env-file=../../.env --env-file=.env src/db/migrate.ts down",
     "db:auth:generate": "auth generate --config src/db/auth-schema.config.ts --yes"
   },
   "dependencies": {
