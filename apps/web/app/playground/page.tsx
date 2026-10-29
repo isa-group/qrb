@@ -1,11 +1,14 @@
 "use client";
 
+import { useQuery } from "@tanstack/react-query";
 import { useCallback, useMemo, useState } from "react";
 
 import { BindingResultPanel } from "@/components/binding-result-panel";
 import { CatalogCacheStatus } from "@/components/catalog-cache-status";
 import { ResourceCard } from "@/components/resource-card";
 import { TaskSpecificationPanel } from "@/components/task-specification-panel";
+import { useAuthUser } from "@/components/auth-session";
+import { fetchUsage, quotaFromUsage, type QuotaInfo } from "@/lib/api/quota";
 import { useCatalog } from "@/hooks/use-catalog";
 import { evaluateCandidate, type TaskSpec } from "@/lib/playground/eligibility";
 import { resolveBinding, type ResolveOutcome } from "@/lib/playground/api";
@@ -18,6 +21,20 @@ export default function PlaygroundPage() {
   const [outcome, setOutcome] = useState<ResolveOutcome | null>(null);
   const [resolving, setResolving] = useState(false);
   const [attempted, setAttempted] = useState(false);
+  const { user, isPending: authPending } = useAuthUser();
+  const signedIn = !!user;
+  // Latest quota seen in response headers; before the first resolve, fall
+  // back to /usage (401 for a brand-new visitor -> nothing shown).
+  const [headerQuota, setHeaderQuota] = useState<QuotaInfo | null>(null);
+  const usageQuery = useQuery({
+    queryKey: ["usage", user?.id ?? "anonymous"],
+    queryFn: fetchUsage,
+    enabled: !authPending,
+    retry: false,
+    refetchOnWindowFocus: false,
+  });
+  const quota =
+    headerQuota ?? (usageQuery.data ? quotaFromUsage(usageQuery.data) : null);
 
   const handleChange = useCallback((values: TaskSpecFormValues | null) => {
     setTask(values);
@@ -27,12 +44,13 @@ export default function PlaygroundPage() {
     setAttempted(true);
     setResolving(true);
     try {
-      const result = await resolveBinding(values);
+      const result = await resolveBinding(values, { signedIn });
       setOutcome(result);
+      if ("quota" in result && result.quota) setHeaderQuota(result.quota);
     } finally {
       setResolving(false);
     }
-  }, []);
+  }, [signedIn]);
 
   // Live tier: instant, client-side (Question 4/8) — feasibility from a
   // quick qubit-count scan of the QASM text, not the real transpiled result.
@@ -76,6 +94,9 @@ export default function PlaygroundPage() {
             onResolve={handleResolve}
             resolving={resolving}
             circuitError={circuitError}
+            signedIn={signedIn}
+            authPending={authPending}
+            quota={quota}
           />
         </div>
 

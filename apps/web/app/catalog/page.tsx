@@ -1,5 +1,7 @@
 "use client";
 
+import { ApiError } from "@/lib/api/errors";
+import { API_BASE_URL } from "@/lib/api/client";
 import { Search } from "lucide-react";
 import { useMemo, useState } from "react";
 
@@ -28,7 +30,7 @@ export default function CatalogPage() {
   const [activeProviders, setActiveProviders] = useState<string[]>([]);
   const [sort, setSort] = useState<Sort>("alphabetical");
 
-  const { data, queueHistory, isLoading, isError, timings, fetchLive, isFetchingLive } =
+  const { data, queueHistory, isLoading, isError, error, timings, fetchLive, isFetchingLive } =
     useCatalog(activeProviders.length ? activeProviders : undefined);
 
   const resources = useMemo(() => {
@@ -111,8 +113,9 @@ export default function CatalogPage() {
       >
         {isError && (
           <p className="col-span-full text-body text-violation">
-            Couldn&rsquo;t reach the catalog API. Is apps/api running at{" "}
-            {process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:8000"}?
+            {error instanceof ApiError && error.status
+              ? error.message
+              : `Couldn\u2019t reach the catalog API at ${API_BASE_URL}.`}
           </p>
         )}
         {!isError && !isLoading && resources.length === 0 && (

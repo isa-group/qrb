@@ -59,6 +59,35 @@ export function BindingResultPanel({
     );
   }
 
+  if (outcome.kind === "unauthorized" || outcome.kind === "forbidden") {
+    return (
+      <div className="rounded-lg border border-violation bg-violation-dim p-4">
+        <p className="text-subheading font-medium text-violation">
+          {outcome.kind === "unauthorized" ? "Sign-in required" : "Not allowed"}
+        </p>
+        <p className="mt-1 text-body text-violation">{outcome.message}</p>
+        {(outcome.kind === "unauthorized" || /sign[- ]?in/i.test(outcome.message)) && (
+          <p className="mt-2 text-body">
+            <Link href="/signin?next=/playground" className="font-medium text-violation underline">
+              Sign in
+            </Link>
+          </p>
+        )}
+      </div>
+    );
+  }
+
+  if (outcome.kind === "rate-limited") {
+    return (
+      <div className="rounded-lg border border-primary bg-instrument p-4">
+        <p className="text-subheading font-medium text-ink-primary">Quota reached</p>
+        <p className="mt-1 text-body text-ink-secondary">
+          {outcome.message.replace(/^Quota reached\.\s*/, "")}
+        </p>
+      </div>
+    );
+  }
+
   if (outcome.kind === "unavailable") {
     return (
       <div className="rounded-lg border border-violation bg-violation-dim p-4">

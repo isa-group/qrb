@@ -5,6 +5,7 @@ JSON instead of flags.
 
 from __future__ import annotations
 
+import hmac
 import logging
 import os
 import time
@@ -15,17 +16,17 @@ from pathlib import Path
 from typing import Optional
 
 from dotenv import load_dotenv
-from fastapi import FastAPI, HTTPException, Query
+from fastapi import FastAPI, Header, HTTPException, Query, Request
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import HTMLResponse
+from fastapi.responses import HTMLResponse, JSONResponse
 from openbinding import ConstraintOp, Instance, OpenBindingClient, SolveResponse
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from pydantic.dataclasses import dataclass
+from qiskit import qasm3
 from qrb import (
     ConstraintSpec,
     PhaseTimings,
     build_selection_instance,
-    load_qasm3,
     resolve_preferences,
     select_from_instance,
 )
@@ -62,17 +63,59 @@ async def lifespan(app: FastAPI):
 
 
 app = FastAPI(title="QRB API", lifespan=lifespan)
-_default_web_origins = "http://localhost:3000,http://localhost:3002"
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=[
-        origin.strip()
-        for origin in os.environ.get("WEB_ORIGINS", _default_web_origins).split(",")
-        if origin.strip()
-    ],
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
+
+# Gateway-to-API trust: the gateway (apps/gateway) is the only intended
+# caller. Every route except /health requires X-QRB-Gateway-Secret to equal
+# QRB_GATEWAY_SECRET. If QRB_GATEWAY_SECRET is unset the API fails closed
+# (every request but /health gets 401) unless QRB_ALLOW_UNAUTHENTICATED=1 is
+# set — a local-development opt-out that also turns on WEB_ORIGINS CORS so
+# apps/web can call the API directly. /scalar and /openapi.json stay behind
+# the secret; the gateway serves the public docs.
+GATEWAY_SECRET_HEADER = "X-QRB-Gateway-Secret"
+USER_ID_HEADER = "X-QRB-User-Id"
+_OPEN_PATHS = frozenset({"/health"})
+
+
+def _dev_opt_out() -> bool:
+    return os.environ.get("QRB_ALLOW_UNAUTHENTICATED") == "1"
+
+
+@app.middleware("http")
+async def require_gateway_secret(request: Request, call_next):
+    if request.url.path in _OPEN_PATHS:
+        return await call_next(request)
+    expected = os.environ.get("QRB_GATEWAY_SECRET", "")
+    if not expected:
+        if _dev_opt_out():
+            return await call_next(request)
+        logger.error(
+            "QRB_GATEWAY_SECRET is not set: rejecting %s %s "
+            "(set QRB_ALLOW_UNAUTHENTICATED=1 for local development only)",
+            request.method,
+            request.url.path,
+        )
+    else:
+        provided = request.headers.get(GATEWAY_SECRET_HEADER, "")
+        if hmac.compare_digest(provided.encode(), expected.encode()):
+            return await call_next(request)
+    return JSONResponse(status_code=401, content={"detail": "Missing or invalid gateway secret"})
+
+
+# Only the gateway calls the API in production, so no CORS there. With the
+# dev opt-out, browsers on WEB_ORIGINS may call it directly. Added after the
+# secret middleware so it wraps it (handles preflights first).
+if _dev_opt_out():
+    _default_web_origins = "http://localhost:3000,http://localhost:3002"
+    app.add_middleware(
+        CORSMiddleware,
+        allow_origins=[
+            origin.strip()
+            for origin in os.environ.get("WEB_ORIGINS", _default_web_origins).split(",")
+            if origin.strip()
+        ],
+        allow_methods=["*"],
+        allow_headers=["*"],
+    )
 
 
 @app.get("/scalar", include_in_schema=False)
@@ -99,7 +142,11 @@ class SelectRequest(BaseModel):
     preferences: PreferencesRequest = PreferencesRequest()
     shots: int = 1024
     live: bool = True
-    snapshot_path: Optional[str] = None
+    snapshot_path: Optional[str] = Field(
+        None,
+        description="Not accepted: any value is rejected with 422. `live: false` reads "
+        "the snapshot configured on the server (QRB_SNAPSHOT_PATH).",
+    )
     providers: Optional[list[str]] = None
     engine_id: Optional[str] = None
     force_refresh: bool = True
@@ -114,7 +161,11 @@ class InstanceRequest(BaseModel):
     preferences: PreferencesRequest = PreferencesRequest()
     shots: int = 1024
     live: bool = True
-    snapshot_path: Optional[str] = None
+    snapshot_path: Optional[str] = Field(
+        None,
+        description="Not accepted: any value is rejected with 422. `live: false` reads "
+        "the snapshot configured on the server (QRB_SNAPSHOT_PATH).",
+    )
     providers: Optional[list[str]] = None
     force_refresh: bool = True
 
@@ -206,7 +257,9 @@ def _resolve(preferences: PreferencesRequest):
 
 def _load_circuit(circuit_qasm: str):
     try:
-        return load_qasm3(circuit_qasm)
+        # Source text only: never load_qasm3, which would treat a string
+        # naming an existing file as a path and read it.
+        return qasm3.loads(circuit_qasm)
     except Exception as exc:
         # qiskit's QASM3 importer gives a useful message for semantic errors
         # (e.g. an undefined gate) but an empty one for raw syntax errors —
@@ -214,6 +267,16 @@ def _load_circuit(circuit_qasm: str):
         # shows a blank message.
         detail = str(exc) or f"Could not parse OpenQASM3 circuit ({type(exc).__name__})"
         raise HTTPException(status_code=422, detail=detail) from exc
+
+
+def _server_snapshot_path(requested: Optional[str]) -> Optional[Path]:
+    # Clients never choose which file is read: any snapshot_path is refused
+    # before touching the filesystem, with a message that is identical
+    # whether or not the file exists.
+    if requested is not None:
+        raise HTTPException(status_code=422, detail="snapshot_path is not accepted")
+    configured = os.environ.get("QRB_SNAPSHOT_PATH")
+    return Path(configured) if configured else None
 
 
 def _record_binding(instance: Instance, preferences, response: SolveResponse) -> None:
@@ -235,11 +298,16 @@ def health() -> dict[str, str]:
 
 
 @app.post("/select", response_model=SelectResponseEnvelope)
-def select_endpoint(request: SelectRequest) -> SelectResponseEnvelope:
+def select_endpoint(
+    request: SelectRequest,
+    user_id: Optional[str] = Header(None, alias=USER_ID_HEADER, include_in_schema=False),
+) -> SelectResponseEnvelope:
     request_start = time.perf_counter()
+    # Logged only; access decisions live in the gateway.
+    logger.info("select request user_id=%r", user_id)
     circuit = _load_circuit(request.circuit_qasm)
     preferences = _resolve(request.preferences)
-    snapshot_path = Path(request.snapshot_path) if request.snapshot_path else None
+    snapshot_path = _server_snapshot_path(request.snapshot_path)
     try:
         instance, timings = build_selection_instance(
             circuit,
@@ -265,7 +333,7 @@ def instance_endpoint(request: InstanceRequest) -> InstanceResponseEnvelope:
     request_start = time.perf_counter()
     circuit = _load_circuit(request.circuit_qasm)
     preferences = _resolve(request.preferences)
-    snapshot_path = Path(request.snapshot_path) if request.snapshot_path else None
+    snapshot_path = _server_snapshot_path(request.snapshot_path)
     try:
         instance, timings = build_selection_instance(
             circuit,

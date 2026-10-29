@@ -1,0 +1,2278 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "QRB API",
+    "version": "0.1.0"
+  },
+  "paths": {
+    "/health": {
+      "get": {
+        "summary": "Health",
+        "operationId": "health_health_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": {
+                    "type": "string"
+                  },
+                  "type": "object",
+                  "title": "Response Health Health Get"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/select": {
+      "post": {
+        "summary": "Select Endpoint",
+        "operationId": "select_endpoint_select_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SelectRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SelectResponseEnvelope"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/instance": {
+      "post": {
+        "summary": "Instance Endpoint",
+        "operationId": "instance_endpoint_instance_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/InstanceRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InstanceResponseEnvelope"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/catalog": {
+      "get": {
+        "summary": "Catalog Endpoint",
+        "operationId": "catalog_endpoint_catalog_get",
+        "parameters": [
+          {
+            "name": "live",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "boolean",
+              "default": true,
+              "title": "Live"
+            }
+          },
+          {
+            "name": "provider",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Provider"
+            }
+          },
+          {
+            "name": "force_refresh",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "boolean",
+              "description": "Skip the 90s catalog cache and fetch live, even if it's still warm.",
+              "default": false,
+              "title": "Force Refresh"
+            },
+            "description": "Skip the 90s catalog cache and fetch live, even if it's still warm."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CatalogResponseEnvelope"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/catalog/{candidate_id}": {
+      "get": {
+        "summary": "Catalog Detail Endpoint",
+        "operationId": "catalog_detail_endpoint_catalog__candidate_id__get",
+        "parameters": [
+          {
+            "name": "candidate_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Candidate Id"
+            }
+          },
+          {
+            "name": "live",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "boolean",
+              "default": true,
+              "title": "Live"
+            }
+          },
+          {
+            "name": "force_refresh",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "boolean",
+              "description": "Skip the 90s catalog cache and fetch live, even if it's still warm.",
+              "default": false,
+              "title": "Force Refresh"
+            },
+            "description": "Skip the 90s catalog cache and fetch live, even if it's still warm."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CatalogDetailResponseEnvelope"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/engines": {
+      "get": {
+        "summary": "Engines Endpoint",
+        "operationId": "engines_endpoint_engines_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EnginesResponseEnvelope"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/presets": {
+      "get": {
+        "summary": "Presets Endpoint",
+        "operationId": "presets_endpoint_presets_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PresetsResponseEnvelope"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "AggregationPolicy": {
+        "properties": {
+          "neutral": {
+            "type": "number",
+            "title": "Neutral"
+          },
+          "compose": {
+            "$ref": "#/components/schemas/Compose"
+          }
+        },
+        "type": "object",
+        "required": [
+          "neutral",
+          "compose"
+        ],
+        "title": "AggregationPolicy"
+      },
+      "AndNode": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 1,
+            "pattern": "^[A-Za-z0-9_.-]+$",
+            "title": "Id"
+          },
+          "kind": {
+            "type": "string",
+            "const": "AND",
+            "title": "Kind",
+            "default": "AND"
+          },
+          "children": {
+            "items": {
+              "oneOf": [
+                {
+                  "$ref": "#/components/schemas/TaskNode"
+                },
+                {
+                  "$ref": "#/components/schemas/SeqNode"
+                },
+                {
+                  "$ref": "#/components/schemas/AndNode"
+                },
+                {
+                  "$ref": "#/components/schemas/XorNode"
+                },
+                {
+                  "$ref": "#/components/schemas/LoopNode"
+                },
+                {
+                  "$ref": "#/components/schemas/ElementNode"
+                }
+              ],
+              "discriminator": {
+                "propertyName": "kind",
+                "mapping": {
+                  "AND": "#/components/schemas/AndNode",
+                  "ELEMENT": "#/components/schemas/ElementNode",
+                  "LOOP": "#/components/schemas/LoopNode",
+                  "SEQ": "#/components/schemas/SeqNode",
+                  "TASK": "#/components/schemas/TaskNode",
+                  "XOR": "#/components/schemas/XorNode"
+                }
+              }
+            },
+            "type": "array",
+            "minItems": 2,
+            "title": "Children"
+          },
+          "description": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Description"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "children"
+        ],
+        "title": "AndNode"
+      },
+      "AttributeBoundConstraint": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 1,
+            "pattern": "^[A-Za-z0-9_.-]+$",
+            "title": "Id"
+          },
+          "kind": {
+            "type": "string",
+            "const": "ATTRIBUTE_BOUND",
+            "title": "Kind",
+            "default": "ATTRIBUTE_BOUND"
+          },
+          "scope": {
+            "type": "string",
+            "enum": [
+              "GLOBAL",
+              "LOCAL"
+            ],
+            "title": "Scope"
+          },
+          "tasks": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string",
+                  "minLength": 1,
+                  "pattern": "^[A-Za-z0-9_.-]+$"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Tasks"
+          },
+          "candidates": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string",
+                  "minLength": 1,
+                  "pattern": "^[A-Za-z0-9_.-]+$"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Candidates"
+          },
+          "attribute_id": {
+            "type": "string",
+            "minLength": 1,
+            "pattern": "^[A-Za-z0-9_.-]+$",
+            "title": "Attribute Id"
+          },
+          "op": {
+            "$ref": "#/components/schemas/ConstraintOp"
+          },
+          "value": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "$ref": "#/components/schemas/NumericRange"
+              }
+            ],
+            "title": "Value"
+          },
+          "hard": {
+            "type": "boolean",
+            "title": "Hard",
+            "default": true
+          },
+          "description": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Description"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "scope",
+          "attribute_id",
+          "op",
+          "value"
+        ],
+        "title": "AttributeBoundConstraint"
+      },
+      "Candidate": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 1,
+            "pattern": "^[A-Za-z0-9_.-]+$",
+            "title": "Id"
+          },
+          "task_id": {
+            "type": "string",
+            "minLength": 1,
+            "pattern": "^[A-Za-z0-9_.-]+$",
+            "title": "Task Id"
+          },
+          "provider_id": {
+            "type": "string",
+            "minLength": 1,
+            "pattern": "^[A-Za-z0-9_.-]+$",
+            "title": "Provider Id"
+          },
+          "name": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Name"
+          },
+          "features": {
+            "additionalProperties": {
+              "type": "number"
+            },
+            "type": "object",
+            "minProperties": 1,
+            "title": "Features"
+          },
+          "description": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Description"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "task_id",
+          "provider_id",
+          "name",
+          "features"
+        ],
+        "title": "Candidate"
+      },
+      "CatalogDetailResponseEnvelope": {
+        "properties": {
+          "result": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Result"
+          },
+          "timings_ms": {
+            "$ref": "#/components/schemas/CatalogDetailTimingsResponse"
+          }
+        },
+        "type": "object",
+        "required": [
+          "result",
+          "timings_ms"
+        ],
+        "title": "CatalogDetailResponseEnvelope"
+      },
+      "CatalogDetailTimingsResponse": {
+        "properties": {
+          "catalog_ms": {
+            "type": "number",
+            "title": "Catalog Ms"
+          },
+          "catalog_cache_hit": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Catalog Cache Hit"
+          },
+          "catalog_fetched_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Catalog Fetched At"
+          },
+          "calibration_ms": {
+            "type": "number",
+            "title": "Calibration Ms"
+          },
+          "request_total_ms": {
+            "type": "number",
+            "title": "Request Total Ms"
+          }
+        },
+        "type": "object",
+        "required": [
+          "catalog_ms",
+          "catalog_cache_hit",
+          "catalog_fetched_at",
+          "calibration_ms",
+          "request_total_ms"
+        ],
+        "title": "CatalogDetailTimingsResponse"
+      },
+      "CatalogResponseEnvelope": {
+        "properties": {
+          "result": {
+            "items": {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            "type": "array",
+            "title": "Result"
+          },
+          "timings_ms": {
+            "$ref": "#/components/schemas/CatalogTimingsResponse"
+          }
+        },
+        "type": "object",
+        "required": [
+          "result",
+          "timings_ms"
+        ],
+        "title": "CatalogResponseEnvelope"
+      },
+      "CatalogTimingsResponse": {
+        "properties": {
+          "catalog_ms": {
+            "type": "number",
+            "title": "Catalog Ms"
+          },
+          "catalog_cache_hit": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Catalog Cache Hit"
+          },
+          "catalog_fetched_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Catalog Fetched At"
+          },
+          "request_total_ms": {
+            "type": "number",
+            "title": "Request Total Ms"
+          }
+        },
+        "type": "object",
+        "required": [
+          "catalog_ms",
+          "catalog_cache_hit",
+          "catalog_fetched_at",
+          "request_total_ms"
+        ],
+        "title": "CatalogTimingsResponse"
+      },
+      "Compose": {
+        "properties": {
+          "seq": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ComposeFn"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "and": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ComposeFn"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "xor": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ComposeFn"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "loop": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ComposeFn"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "type": "object",
+        "title": "Compose"
+      },
+      "ComposeFn": {
+        "properties": {
+          "fn": {
+            "$ref": "#/components/schemas/ComposeFnName"
+          }
+        },
+        "type": "object",
+        "required": [
+          "fn"
+        ],
+        "title": "ComposeFn"
+      },
+      "ComposeFnName": {
+        "type": "string",
+        "enum": [
+          "SUM",
+          "PRODUCT",
+          "MAX",
+          "MIN",
+          "SCALED_SUM",
+          "SCALED_PRODUCT",
+          "SCALED_MIN",
+          "SCALED_MAX",
+          "MEAN"
+        ],
+        "title": "ComposeFnName"
+      },
+      "ConstraintItem": {
+        "properties": {
+          "feature": {
+            "type": "string",
+            "title": "Feature"
+          },
+          "op": {
+            "$ref": "#/components/schemas/ConstraintOp"
+          },
+          "value": {
+            "type": "number",
+            "title": "Value"
+          }
+        },
+        "type": "object",
+        "required": [
+          "feature",
+          "op",
+          "value"
+        ],
+        "title": "ConstraintItem"
+      },
+      "ConstraintOp": {
+        "type": "string",
+        "enum": [
+          "<=",
+          ">=",
+          "==",
+          "<",
+          ">",
+          "IN_RANGE"
+        ],
+        "title": "ConstraintOp"
+      },
+      "DependencyConstraint": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 1,
+            "pattern": "^[A-Za-z0-9_.-]+$",
+            "title": "Id"
+          },
+          "kind": {
+            "type": "string",
+            "const": "DEPENDENCY",
+            "title": "Kind",
+            "default": "DEPENDENCY"
+          },
+          "type": {
+            "$ref": "#/components/schemas/DependencyType"
+          },
+          "tasks": {
+            "items": {
+              "type": "string",
+              "minLength": 1,
+              "pattern": "^[A-Za-z0-9_.-]+$"
+            },
+            "type": "array",
+            "minItems": 2,
+            "title": "Tasks"
+          },
+          "hard": {
+            "type": "boolean",
+            "title": "Hard",
+            "default": true
+          },
+          "description": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Description"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "type",
+          "tasks"
+        ],
+        "title": "DependencyConstraint"
+      },
+      "DependencyType": {
+        "type": "string",
+        "enum": [
+          "SAME_PROVIDER",
+          "DIFFERENT_PROVIDER"
+        ],
+        "title": "DependencyType"
+      },
+      "Direction": {
+        "type": "string",
+        "enum": [
+          "MAXIMIZE",
+          "MINIMIZE"
+        ],
+        "title": "Direction"
+      },
+      "ElementNode": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 1,
+            "pattern": "^[A-Za-z0-9_.-]+$",
+            "title": "Id"
+          },
+          "kind": {
+            "type": "string",
+            "const": "ELEMENT",
+            "title": "Kind",
+            "default": "ELEMENT"
+          },
+          "description": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Description"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id"
+        ],
+        "title": "ElementNode"
+      },
+      "EnginesResponseEnvelope": {
+        "properties": {
+          "result": {
+            "items": {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            "type": "array",
+            "title": "Result"
+          },
+          "timings_ms": {
+            "$ref": "#/components/schemas/RequestTimingsResponse"
+          }
+        },
+        "type": "object",
+        "required": [
+          "result",
+          "timings_ms"
+        ],
+        "title": "EnginesResponseEnvelope"
+      },
+      "Feasibility": {
+        "type": "string",
+        "enum": [
+          "FEASIBLE",
+          "INFEASIBLE",
+          "UNKNOWN"
+        ],
+        "title": "Feasibility"
+      },
+      "Feature": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 1,
+            "pattern": "^[A-Za-z0-9_.-]+$",
+            "title": "Id"
+          },
+          "name": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Name"
+          },
+          "direction": {
+            "$ref": "#/components/schemas/Direction"
+          },
+          "unit": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Unit"
+          },
+          "scale": {
+            "$ref": "#/components/schemas/Scale"
+          },
+          "valid_range": {
+            "$ref": "#/components/schemas/NumericRange"
+          },
+          "description": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Description"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "name",
+          "direction",
+          "unit",
+          "scale",
+          "valid_range"
+        ],
+        "title": "Feature"
+      },
+      "HTTPValidationError": {
+        "properties": {
+          "detail": {
+            "items": {
+              "$ref": "#/components/schemas/ValidationError"
+            },
+            "type": "array",
+            "title": "Detail"
+          }
+        },
+        "type": "object",
+        "title": "HTTPValidationError"
+      },
+      "Instance": {
+        "properties": {
+          "metadata": {
+            "$ref": "#/components/schemas/InstanceMetadata"
+          },
+          "providers": {
+            "items": {
+              "$ref": "#/components/schemas/ProviderRef"
+            },
+            "type": "array",
+            "minItems": 1,
+            "title": "Providers"
+          },
+          "tasks": {
+            "items": {
+              "$ref": "#/components/schemas/TaskRef"
+            },
+            "type": "array",
+            "minItems": 1,
+            "title": "Tasks"
+          },
+          "candidates": {
+            "items": {
+              "$ref": "#/components/schemas/Candidate"
+            },
+            "type": "array",
+            "minItems": 1,
+            "title": "Candidates"
+          },
+          "features": {
+            "items": {
+              "$ref": "#/components/schemas/Feature"
+            },
+            "type": "array",
+            "minItems": 1,
+            "title": "Features"
+          },
+          "composition": {
+            "$ref": "#/components/schemas/StructuredTree"
+          },
+          "aggregation_policies": {
+            "additionalProperties": {
+              "$ref": "#/components/schemas/AggregationPolicy"
+            },
+            "type": "object",
+            "minProperties": 1,
+            "title": "Aggregation Policies"
+          },
+          "constraints": {
+            "items": {
+              "oneOf": [
+                {
+                  "$ref": "#/components/schemas/AttributeBoundConstraint"
+                },
+                {
+                  "$ref": "#/components/schemas/DependencyConstraint"
+                }
+              ],
+              "discriminator": {
+                "propertyName": "kind",
+                "mapping": {
+                  "ATTRIBUTE_BOUND": "#/components/schemas/AttributeBoundConstraint",
+                  "DEPENDENCY": "#/components/schemas/DependencyConstraint"
+                }
+              }
+            },
+            "type": "array",
+            "title": "Constraints"
+          },
+          "objective": {
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/MonoObjective"
+              },
+              {
+                "$ref": "#/components/schemas/MultiObjective"
+              },
+              {
+                "$ref": "#/components/schemas/ManyObjective"
+              }
+            ],
+            "title": "Objective",
+            "discriminator": {
+              "propertyName": "type",
+              "mapping": {
+                "MANY": "#/components/schemas/ManyObjective",
+                "MONO": "#/components/schemas/MonoObjective",
+                "MULTI": "#/components/schemas/MultiObjective"
+              }
+            }
+          }
+        },
+        "type": "object",
+        "required": [
+          "metadata",
+          "providers",
+          "tasks",
+          "candidates",
+          "features",
+          "composition",
+          "aggregation_policies",
+          "objective"
+        ],
+        "title": "Instance",
+        "description": "The BIM tuple I=(T,P,C,F,G,\u039b,\u0394,O) \u2014 'Compact QoS-Aware Service Composition'."
+      },
+      "InstanceMetadata": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 1,
+            "pattern": "^[A-Za-z0-9_.-]+$",
+            "title": "Id"
+          },
+          "name": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Name"
+          },
+          "version": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Version"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          },
+          "description": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Description"
+          }
+        },
+        "additionalProperties": true,
+        "type": "object",
+        "required": [
+          "id",
+          "name",
+          "version",
+          "created_at"
+        ],
+        "title": "InstanceMetadata"
+      },
+      "InstanceRequest": {
+        "properties": {
+          "circuit_qasm": {
+            "type": "string",
+            "title": "Circuit Qasm"
+          },
+          "preferences": {
+            "$ref": "#/components/schemas/PreferencesRequest",
+            "default": {
+              "pareto": false
+            }
+          },
+          "shots": {
+            "type": "integer",
+            "title": "Shots",
+            "default": 1024
+          },
+          "live": {
+            "type": "boolean",
+            "title": "Live",
+            "default": true
+          },
+          "snapshot_path": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Snapshot Path",
+            "description": "Not accepted: any value is rejected with 422. `live: false` reads the snapshot configured on the server (QRB_SNAPSHOT_PATH)."
+          },
+          "providers": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Providers"
+          },
+          "force_refresh": {
+            "type": "boolean",
+            "title": "Force Refresh",
+            "default": true
+          }
+        },
+        "type": "object",
+        "required": [
+          "circuit_qasm"
+        ],
+        "title": "InstanceRequest"
+      },
+      "InstanceResponseEnvelope": {
+        "properties": {
+          "result": {
+            "$ref": "#/components/schemas/Instance"
+          },
+          "timings_ms": {
+            "$ref": "#/components/schemas/TimingsResponse"
+          }
+        },
+        "type": "object",
+        "required": [
+          "result",
+          "timings_ms"
+        ],
+        "title": "InstanceResponseEnvelope"
+      },
+      "InstanceTimings": {
+        "properties": {
+          "preprocessing_ms": {
+            "type": "number",
+            "title": "Preprocessing Ms"
+          },
+          "transpile_ms": {
+            "type": "number",
+            "title": "Transpile Ms"
+          },
+          "features_ms": {
+            "type": "number",
+            "title": "Features Ms"
+          },
+          "build_instance_ms": {
+            "type": "number",
+            "title": "Build Instance Ms"
+          },
+          "total_ms": {
+            "type": "number",
+            "title": "Total Ms"
+          },
+          "per_resource": {
+            "additionalProperties": {
+              "additionalProperties": {
+                "anyOf": [
+                  {
+                    "type": "number"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "type": "object"
+            },
+            "type": "object",
+            "title": "Per Resource"
+          },
+          "infeasible_reasons": {
+            "additionalProperties": {
+              "type": "string"
+            },
+            "type": "object",
+            "title": "Infeasible Reasons"
+          }
+        },
+        "type": "object",
+        "required": [
+          "preprocessing_ms",
+          "transpile_ms",
+          "features_ms",
+          "build_instance_ms",
+          "total_ms"
+        ],
+        "title": "InstanceTimings",
+        "description": "Timings for build_instance() alone \u2014 no catalog fetch, since\nbuild_instance() is handed an already-fetched resource list."
+      },
+      "LoopBounds": {
+        "properties": {
+          "min": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "minimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Min"
+          },
+          "max": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "minimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Max"
+          }
+        },
+        "type": "object",
+        "title": "LoopBounds"
+      },
+      "LoopNode": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 1,
+            "pattern": "^[A-Za-z0-9_.-]+$",
+            "title": "Id"
+          },
+          "kind": {
+            "type": "string",
+            "const": "LOOP",
+            "title": "Kind",
+            "default": "LOOP"
+          },
+          "body": {
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/TaskNode"
+              },
+              {
+                "$ref": "#/components/schemas/SeqNode"
+              },
+              {
+                "$ref": "#/components/schemas/AndNode"
+              },
+              {
+                "$ref": "#/components/schemas/XorNode"
+              },
+              {
+                "$ref": "#/components/schemas/LoopNode"
+              },
+              {
+                "$ref": "#/components/schemas/ElementNode"
+              }
+            ],
+            "title": "Body",
+            "discriminator": {
+              "propertyName": "kind",
+              "mapping": {
+                "AND": "#/components/schemas/AndNode",
+                "ELEMENT": "#/components/schemas/ElementNode",
+                "LOOP": "#/components/schemas/LoopNode",
+                "SEQ": "#/components/schemas/SeqNode",
+                "TASK": "#/components/schemas/TaskNode",
+                "XOR": "#/components/schemas/XorNode"
+              }
+            }
+          },
+          "expected_iterations": {
+            "anyOf": [
+              {
+                "type": "number",
+                "minimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Expected Iterations"
+          },
+          "bounds": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/LoopBounds"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "description": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Description"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "body"
+        ],
+        "title": "LoopNode"
+      },
+      "ManyObjective": {
+        "properties": {
+          "type": {
+            "type": "string",
+            "const": "MANY",
+            "title": "Type",
+            "default": "MANY"
+          },
+          "targets": {
+            "items": {
+              "type": "string",
+              "minLength": 1,
+              "pattern": "^[A-Za-z0-9_.-]+$"
+            },
+            "type": "array",
+            "minItems": 3,
+            "title": "Targets"
+          },
+          "weights": {
+            "additionalProperties": {
+              "type": "number"
+            },
+            "type": "object",
+            "minProperties": 1,
+            "title": "Weights"
+          },
+          "weights_sum_to_one": {
+            "type": "boolean",
+            "title": "Weights Sum To One",
+            "default": true
+          }
+        },
+        "type": "object",
+        "required": [
+          "targets",
+          "weights"
+        ],
+        "title": "ManyObjective"
+      },
+      "MonoObjective": {
+        "properties": {
+          "type": {
+            "type": "string",
+            "const": "MONO",
+            "title": "Type",
+            "default": "MONO"
+          },
+          "targets": {
+            "items": {
+              "type": "string",
+              "minLength": 1,
+              "pattern": "^[A-Za-z0-9_.-]+$"
+            },
+            "type": "array",
+            "minItems": 1,
+            "title": "Targets"
+          },
+          "weights": {
+            "additionalProperties": {
+              "type": "number"
+            },
+            "type": "object",
+            "minProperties": 1,
+            "title": "Weights"
+          },
+          "weights_sum_to_one": {
+            "type": "boolean",
+            "title": "Weights Sum To One",
+            "default": true
+          }
+        },
+        "type": "object",
+        "required": [
+          "targets",
+          "weights"
+        ],
+        "title": "MonoObjective"
+      },
+      "MultiObjective": {
+        "properties": {
+          "type": {
+            "type": "string",
+            "const": "MULTI",
+            "title": "Type",
+            "default": "MULTI"
+          },
+          "targets": {
+            "items": {
+              "type": "string",
+              "minLength": 1,
+              "pattern": "^[A-Za-z0-9_.-]+$"
+            },
+            "type": "array",
+            "maxItems": 3,
+            "minItems": 2,
+            "title": "Targets"
+          },
+          "weights": {
+            "additionalProperties": {
+              "type": "number"
+            },
+            "type": "object",
+            "minProperties": 1,
+            "title": "Weights"
+          },
+          "weights_sum_to_one": {
+            "type": "boolean",
+            "title": "Weights Sum To One",
+            "default": true
+          }
+        },
+        "type": "object",
+        "required": [
+          "targets",
+          "weights"
+        ],
+        "title": "MultiObjective"
+      },
+      "NumericRange": {
+        "properties": {
+          "min": {
+            "type": "number",
+            "title": "Min"
+          },
+          "max": {
+            "type": "number",
+            "title": "Max"
+          }
+        },
+        "type": "object",
+        "required": [
+          "min",
+          "max"
+        ],
+        "title": "NumericRange"
+      },
+      "PreferencesRequest": {
+        "properties": {
+          "preset": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Preset"
+          },
+          "weights": {
+            "anyOf": [
+              {
+                "additionalProperties": {
+                  "type": "number"
+                },
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Weights"
+          },
+          "constraints": {
+            "anyOf": [
+              {
+                "items": {
+                  "$ref": "#/components/schemas/ConstraintItem"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Constraints"
+          },
+          "require_provider": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Require Provider"
+          },
+          "pareto": {
+            "type": "boolean",
+            "title": "Pareto",
+            "default": false
+          }
+        },
+        "type": "object",
+        "title": "PreferencesRequest"
+      },
+      "PresetsResponseEnvelope": {
+        "properties": {
+          "result": {
+            "additionalProperties": {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            "type": "object",
+            "title": "Result"
+          },
+          "timings_ms": {
+            "$ref": "#/components/schemas/RequestTimingsResponse"
+          }
+        },
+        "type": "object",
+        "required": [
+          "result",
+          "timings_ms"
+        ],
+        "title": "PresetsResponseEnvelope"
+      },
+      "Provenance": {
+        "properties": {
+          "engine_id": {
+            "type": "string",
+            "title": "Engine Id"
+          },
+          "execution_time_ms": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Execution Time Ms"
+          },
+          "metadata": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Metadata"
+          }
+        },
+        "additionalProperties": true,
+        "type": "object",
+        "required": [
+          "engine_id"
+        ],
+        "title": "Provenance"
+      },
+      "ProviderRef": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 1,
+            "pattern": "^[A-Za-z0-9_.-]+$",
+            "title": "Id"
+          },
+          "name": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Name"
+          },
+          "description": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Description"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "name"
+        ],
+        "title": "ProviderRef"
+      },
+      "RequestTimingsResponse": {
+        "properties": {
+          "request_total_ms": {
+            "type": "number",
+            "title": "Request Total Ms"
+          }
+        },
+        "type": "object",
+        "required": [
+          "request_total_ms"
+        ],
+        "title": "RequestTimingsResponse"
+      },
+      "Scale": {
+        "type": "string",
+        "enum": [
+          "RATIO",
+          "INTERVAL",
+          "ORDINAL"
+        ],
+        "title": "Scale"
+      },
+      "SelectRequest": {
+        "properties": {
+          "circuit_qasm": {
+            "type": "string",
+            "title": "Circuit Qasm"
+          },
+          "preferences": {
+            "$ref": "#/components/schemas/PreferencesRequest",
+            "default": {
+              "pareto": false
+            }
+          },
+          "shots": {
+            "type": "integer",
+            "title": "Shots",
+            "default": 1024
+          },
+          "live": {
+            "type": "boolean",
+            "title": "Live",
+            "default": true
+          },
+          "snapshot_path": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Snapshot Path",
+            "description": "Not accepted: any value is rejected with 422. `live: false` reads the snapshot configured on the server (QRB_SNAPSHOT_PATH)."
+          },
+          "providers": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Providers"
+          },
+          "engine_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Engine Id"
+          },
+          "force_refresh": {
+            "type": "boolean",
+            "title": "Force Refresh",
+            "default": true
+          }
+        },
+        "type": "object",
+        "required": [
+          "circuit_qasm"
+        ],
+        "title": "SelectRequest"
+      },
+      "SelectResponseEnvelope": {
+        "properties": {
+          "result": {
+            "$ref": "#/components/schemas/SolveResponse"
+          },
+          "timings_ms": {
+            "$ref": "#/components/schemas/TimingsResponse"
+          }
+        },
+        "type": "object",
+        "required": [
+          "result",
+          "timings_ms"
+        ],
+        "title": "SelectResponseEnvelope"
+      },
+      "SeqNode": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 1,
+            "pattern": "^[A-Za-z0-9_.-]+$",
+            "title": "Id"
+          },
+          "kind": {
+            "type": "string",
+            "const": "SEQ",
+            "title": "Kind",
+            "default": "SEQ"
+          },
+          "children": {
+            "items": {
+              "oneOf": [
+                {
+                  "$ref": "#/components/schemas/TaskNode"
+                },
+                {
+                  "$ref": "#/components/schemas/SeqNode"
+                },
+                {
+                  "$ref": "#/components/schemas/AndNode"
+                },
+                {
+                  "$ref": "#/components/schemas/XorNode"
+                },
+                {
+                  "$ref": "#/components/schemas/LoopNode"
+                },
+                {
+                  "$ref": "#/components/schemas/ElementNode"
+                }
+              ],
+              "discriminator": {
+                "propertyName": "kind",
+                "mapping": {
+                  "AND": "#/components/schemas/AndNode",
+                  "ELEMENT": "#/components/schemas/ElementNode",
+                  "LOOP": "#/components/schemas/LoopNode",
+                  "SEQ": "#/components/schemas/SeqNode",
+                  "TASK": "#/components/schemas/TaskNode",
+                  "XOR": "#/components/schemas/XorNode"
+                }
+              }
+            },
+            "type": "array",
+            "minItems": 2,
+            "title": "Children"
+          },
+          "description": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Description"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "children"
+        ],
+        "title": "SeqNode"
+      },
+      "Solution": {
+        "properties": {
+          "objective_value": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Objective Value"
+          },
+          "binding": {
+            "additionalProperties": {
+              "type": "string"
+            },
+            "type": "object",
+            "title": "Binding"
+          },
+          "aggregated_features": {
+            "additionalProperties": {
+              "type": "number"
+            },
+            "type": "object",
+            "title": "Aggregated Features"
+          },
+          "violations": {
+            "items": {
+              "$ref": "#/components/schemas/ValidationViolation"
+            },
+            "type": "array",
+            "title": "Violations"
+          }
+        },
+        "type": "object",
+        "required": [
+          "binding"
+        ],
+        "title": "Solution"
+      },
+      "SolveResponse": {
+        "properties": {
+          "feasibility": {
+            "$ref": "#/components/schemas/Feasibility",
+            "default": "UNKNOWN"
+          },
+          "solutions": {
+            "items": {
+              "$ref": "#/components/schemas/Solution"
+            },
+            "type": "array",
+            "title": "Solutions"
+          },
+          "provenance": {
+            "$ref": "#/components/schemas/Provenance"
+          },
+          "diagnostics": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Diagnostics"
+          }
+        },
+        "type": "object",
+        "required": [
+          "solutions",
+          "provenance"
+        ],
+        "title": "SolveResponse"
+      },
+      "StructuredTree": {
+        "properties": {
+          "type": {
+            "type": "string",
+            "const": "STRUCTURED",
+            "title": "Type",
+            "default": "STRUCTURED"
+          },
+          "root": {
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/TaskNode"
+              },
+              {
+                "$ref": "#/components/schemas/SeqNode"
+              },
+              {
+                "$ref": "#/components/schemas/AndNode"
+              },
+              {
+                "$ref": "#/components/schemas/XorNode"
+              },
+              {
+                "$ref": "#/components/schemas/LoopNode"
+              },
+              {
+                "$ref": "#/components/schemas/ElementNode"
+              }
+            ],
+            "title": "Root",
+            "discriminator": {
+              "propertyName": "kind",
+              "mapping": {
+                "AND": "#/components/schemas/AndNode",
+                "ELEMENT": "#/components/schemas/ElementNode",
+                "LOOP": "#/components/schemas/LoopNode",
+                "SEQ": "#/components/schemas/SeqNode",
+                "TASK": "#/components/schemas/TaskNode",
+                "XOR": "#/components/schemas/XorNode"
+              }
+            }
+          }
+        },
+        "type": "object",
+        "required": [
+          "root"
+        ],
+        "title": "StructuredTree"
+      },
+      "TaskNode": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 1,
+            "pattern": "^[A-Za-z0-9_.-]+$",
+            "title": "Id"
+          },
+          "kind": {
+            "type": "string",
+            "const": "TASK",
+            "title": "Kind",
+            "default": "TASK"
+          },
+          "task_id": {
+            "type": "string",
+            "minLength": 1,
+            "pattern": "^[A-Za-z0-9_.-]+$",
+            "title": "Task Id"
+          },
+          "description": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Description"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "task_id"
+        ],
+        "title": "TaskNode"
+      },
+      "TaskRef": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 1,
+            "pattern": "^[A-Za-z0-9_.-]+$",
+            "title": "Id"
+          },
+          "name": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Name"
+          },
+          "description": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Description"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "name"
+        ],
+        "title": "TaskRef"
+      },
+      "TimingsResponse": {
+        "properties": {
+          "catalog_ms": {
+            "type": "number",
+            "title": "Catalog Ms"
+          },
+          "catalog_cache_hit": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Catalog Cache Hit"
+          },
+          "catalog_fetched_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Catalog Fetched At"
+          },
+          "instance": {
+            "$ref": "#/components/schemas/InstanceTimings"
+          },
+          "total_ms": {
+            "type": "number",
+            "title": "Total Ms"
+          },
+          "request_total_ms": {
+            "type": "number",
+            "title": "Request Total Ms"
+          }
+        },
+        "type": "object",
+        "required": [
+          "catalog_ms",
+          "catalog_cache_hit",
+          "catalog_fetched_at",
+          "instance",
+          "total_ms",
+          "request_total_ms"
+        ],
+        "title": "TimingsResponse",
+        "description": "PhaseTimings plus the one thing only the API layer knows: how long\nthe whole HTTP request took. A real extension, not a mirror \u2014 every\nother field is inherited from PhaseTimings itself, so a new field there\nshows up here for free instead of needing a hand-kept copy."
+      },
+      "ValidationError": {
+        "properties": {
+          "loc": {
+            "items": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "integer"
+                }
+              ]
+            },
+            "type": "array",
+            "title": "Location"
+          },
+          "msg": {
+            "type": "string",
+            "title": "Message"
+          },
+          "type": {
+            "type": "string",
+            "title": "Error Type"
+          },
+          "input": {
+            "title": "Input"
+          },
+          "ctx": {
+            "type": "object",
+            "title": "Context"
+          }
+        },
+        "type": "object",
+        "required": [
+          "loc",
+          "msg",
+          "type"
+        ],
+        "title": "ValidationError"
+      },
+      "ValidationViolation": {
+        "properties": {
+          "constraint_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Constraint Id"
+          },
+          "message": {
+            "type": "string",
+            "title": "Message"
+          },
+          "path": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Path"
+          },
+          "code": {
+            "type": "string",
+            "title": "Code"
+          },
+          "stage": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Stage"
+          },
+          "penalty": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Penalty"
+          },
+          "description": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Description"
+          }
+        },
+        "type": "object",
+        "required": [
+          "message",
+          "code"
+        ],
+        "title": "ValidationViolation"
+      },
+      "XorBranch": {
+        "properties": {
+          "p": {
+            "type": "number",
+            "maximum": 1.0,
+            "exclusiveMinimum": 0.0,
+            "title": "P"
+          },
+          "child": {
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/TaskNode"
+              },
+              {
+                "$ref": "#/components/schemas/SeqNode"
+              },
+              {
+                "$ref": "#/components/schemas/AndNode"
+              },
+              {
+                "$ref": "#/components/schemas/XorNode"
+              },
+              {
+                "$ref": "#/components/schemas/LoopNode"
+              },
+              {
+                "$ref": "#/components/schemas/ElementNode"
+              }
+            ],
+            "title": "Child",
+            "discriminator": {
+              "propertyName": "kind",
+              "mapping": {
+                "AND": "#/components/schemas/AndNode",
+                "ELEMENT": "#/components/schemas/ElementNode",
+                "LOOP": "#/components/schemas/LoopNode",
+                "SEQ": "#/components/schemas/SeqNode",
+                "TASK": "#/components/schemas/TaskNode",
+                "XOR": "#/components/schemas/XorNode"
+              }
+            }
+          }
+        },
+        "type": "object",
+        "required": [
+          "p",
+          "child"
+        ],
+        "title": "XorBranch"
+      },
+      "XorNode": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 1,
+            "pattern": "^[A-Za-z0-9_.-]+$",
+            "title": "Id"
+          },
+          "kind": {
+            "type": "string",
+            "const": "XOR",
+            "title": "Kind",
+            "default": "XOR"
+          },
+          "branches": {
+            "items": {
+              "$ref": "#/components/schemas/XorBranch"
+            },
+            "type": "array",
+            "minItems": 2,
+            "title": "Branches"
+          },
+          "description": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Description"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "branches"
+        ],
+        "title": "XorNode"
+      }
+    }
+  }
+}

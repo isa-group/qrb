@@ -13,3 +13,5 @@ apps/web/.next
 .env
 .env.*
 !.env.example
+apps/web/out
+apps/gateway/node_modules

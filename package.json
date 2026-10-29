@@ -19,6 +19,7 @@
     }
   },
   "workspaces": [
-    "apps/web"
+    "apps/web",
+    "apps/gateway"
   ]
 }

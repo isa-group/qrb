@@ -48,7 +48,7 @@ export function ResultTimings({ timings }: { timings: TimingsResponse }) {
   // spotting outliers, not reading them in whatever order the fan-out
   // happened to resolve in.
   const perResource = Object.entries(inst.per_resource ?? {}).sort(
-    ([, a], [, b]) => b.transpile_ms - a.transpile_ms
+    ([, a], [, b]) => (b.transpile_ms ?? 0) - (a.transpile_ms ?? 0)
   );
 
   const cacheNote =
@@ -98,8 +98,8 @@ export function ResultTimings({ timings }: { timings: TimingsResponse }) {
                     {infeasibleSet.has(candidateId) && ` (${(inst.infeasible_reasons ?? {})[candidateId]})`}
                   </span>
                   <span className="font-geist-mono text-ink-primary">
-                    transpile {phases.transpile_ms.toFixed(1)}ms · features{" "}
-                    {phases.features_ms.toFixed(1)}ms
+                    transpile {(phases.transpile_ms ?? 0).toFixed(1)}ms · features{" "}
+                    {(phases.features_ms ?? 0).toFixed(1)}ms
                   </span>
                 </li>
               ))}

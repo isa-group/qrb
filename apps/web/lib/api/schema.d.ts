@@ -11,10 +11,199 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** Health */
-        get: operations["health_health_get"];
+        /** Liveness */
+        get: operations["health"];
         put?: never;
         post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/keys": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List the caller's API keys */
+        get: operations["listApiKeys"];
+        put?: never;
+        /**
+         * Create an API key
+         * @description Signed-in (non-anonymous) session only. The secret `key` is returned once.
+         */
+        post: operations["createApiKey"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/keys/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /** Revoke an API key */
+        delete: operations["revokeApiKey"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/usage": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * The caller's quota
+         * @description For a session (anonymous or signed in) or an API key. Read-only, costs nothing, creates no identity.
+         */
+        get: operations["usage"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/auth/sign-in/social": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Start sign-in with GitHub or ORCID
+         * @description Better Auth. Returns the provider URL to redirect to; the provider returns to `/auth/callback/{provider}`.
+         */
+        post: operations["signInSocial"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/auth/callback/{provider}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * OAuth callback
+         * @description Better Auth. Called by the provider; sets the session cookie and redirects.
+         */
+        get: operations["authCallback"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/auth/sign-out": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Sign out */
+        post: operations["signOut"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/auth/get-session": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Current session
+         * @description Returns the session and user, or `null` without a session.
+         */
+        get: operations["getSession"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/auth/list-accounts": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Linked sign-in providers */
+        get: operations["listAccounts"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/auth/link-social": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Link another provider to the signed-in account */
+        post: operations["linkSocial"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/auth/unlink-account": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Unlink a provider
+         * @description Fails if it would remove the last sign-in method.
+         */
+        post: operations["unlinkAccount"];
         delete?: never;
         options?: never;
         head?: never;
@@ -30,7 +219,10 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** Select Endpoint */
+        /**
+         * Select Endpoint
+         * @description Costs quota units. Anonymous callers must send `X-Captcha-Token` (web app only); scripts use an API key.
+         */
         post: operations["select_endpoint_select_post"];
         delete?: never;
         options?: never;
@@ -47,7 +239,10 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** Instance Endpoint */
+        /**
+         * Instance Endpoint
+         * @description Costs quota units. Anonymous callers must send `X-Captcha-Token` (web app only); scripts use an API key.
+         */
         post: operations["instance_endpoint_instance_post"];
         delete?: never;
         options?: never;
@@ -62,7 +257,10 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** Catalog Endpoint */
+        /**
+         * Catalog Endpoint
+         * @description Catalog reads are open. A live refresh (`force_refresh=true`) requires sign-in and costs units.
+         */
         get: operations["catalog_endpoint_catalog_get"];
         put?: never;
         post?: never;
@@ -79,7 +277,10 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** Catalog Detail Endpoint */
+        /**
+         * Catalog Detail Endpoint
+         * @description Catalog reads are open. A live refresh (`force_refresh=true`) requires sign-in and costs units.
+         */
         get: operations["catalog_detail_endpoint_catalog__candidate_id__get"];
         put?: never;
         post?: never;
@@ -400,8 +601,6 @@ export interface components {
              * @default true
              */
             live: boolean;
-            /** Snapshot Path */
-            snapshot_path?: string | null;
             /** Providers */
             providers?: string[] | null;
             /**
@@ -421,6 +620,8 @@ export interface components {
          *     build_instance() is handed an already-fetched resource list.
          */
         InstanceTimings: {
+            /** Preprocessing Ms */
+            preprocessing_ms: number;
             /** Transpile Ms */
             transpile_ms: number;
             /** Features Ms */
@@ -432,7 +633,7 @@ export interface components {
             /** Per Resource */
             per_resource?: {
                 [key: string]: {
-                    [key: string]: number;
+                    [key: string]: number | null;
                 };
             };
             /** Infeasible Reasons */
@@ -608,8 +809,6 @@ export interface components {
              * @default true
              */
             live: boolean;
-            /** Snapshot Path */
-            snapshot_path?: string | null;
             /** Providers */
             providers?: string[] | null;
             /** Engine Id */
@@ -771,16 +970,42 @@ export interface components {
             /** Description */
             description?: string | null;
         };
+        Error: {
+            detail: string;
+        };
+        Usage: {
+            /** @enum {string} */
+            tier: "anonymous" | "signed_in";
+            /** @description Daily units. */
+            quota: number;
+            used: number;
+            remaining: number;
+            /**
+             * Format: date-time
+             * @description Next 00:00 UTC.
+             */
+            resetAt: string;
+            secondsUntilReset: number;
+            /** @description Anonymous callers only: the cap shared by all anonymous users at their IP. */
+            ip?: {
+                quota: number;
+                used: number;
+                remaining: number;
+            };
+        };
     };
     responses: never;
-    parameters: never;
+    parameters: {
+        /** @description Turnstile token; lets an anonymous web-app request through. Scripts use an API key instead. */
+        CaptchaToken: string;
+    };
     requestBodies: never;
     headers: never;
     pathItems: never;
 }
 export type $defs = Record<string, never>;
 export interface operations {
-    health_health_get: {
+    health: {
         parameters: {
             query?: never;
             header?: never;
@@ -789,15 +1014,464 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            /** @description Successful Response */
+            /** @description Alive. */
             200: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
                     "application/json": {
-                        [key: string]: string;
+                        /** @enum {string} */
+                        status?: "ok";
                     };
+                };
+            };
+            /** @description Rate limit or daily quota reached. `detail` names the limit. */
+            429: {
+                headers: {
+                    /** @description Seconds to wait before retrying. */
+                    "Retry-After"?: number;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+        };
+    };
+    listApiKeys: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Keys (never the secret). */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        keys: {
+                            id: string;
+                            name: string | null;
+                            /** @description First characters of the key, for recognition. */
+                            start: string | null;
+                            prefix: string | null;
+                            /** Format: date-time */
+                            createdAt: string;
+                        }[];
+                    };
+                };
+            };
+            /** @description Authentication required: sign in, send an API key in `x-api-key`, or use the web app (CAPTCHA token), or the API key is invalid, revoked or expired. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Forbidden: live refresh requires sign-in, or the CAPTCHA token is missing or invalid. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+        };
+    };
+    createApiKey: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    name: string;
+                };
+            };
+        };
+        responses: {
+            /** @description Created. */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        id: string;
+                        name: string | null;
+                        /** @description First characters of the key, for recognition. */
+                        start: string | null;
+                        prefix: string | null;
+                        /** Format: date-time */
+                        createdAt: string;
+                    } & {
+                        key: string;
+                    };
+                };
+            };
+            /** @description Invalid name. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Authentication required: sign in, send an API key in `x-api-key`, or use the web app (CAPTCHA token), or the API key is invalid, revoked or expired. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Forbidden: live refresh requires sign-in, or the CAPTCHA token is missing or invalid. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+        };
+    };
+    revokeApiKey: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Revoked. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        success?: boolean;
+                    };
+                };
+            };
+            /** @description Authentication required: sign in, send an API key in `x-api-key`, or use the web app (CAPTCHA token), or the API key is invalid, revoked or expired. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Forbidden: live refresh requires sign-in, or the CAPTCHA token is missing or invalid. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description API key not found. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+        };
+    };
+    usage: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Usage today. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Usage"];
+                };
+            };
+            /** @description Authentication required: sign in, send an API key in `x-api-key`, or use the web app (CAPTCHA token), or the API key is invalid, revoked or expired. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Rate limit or daily quota reached. `detail` names the limit. */
+            429: {
+                headers: {
+                    /** @description Seconds to wait before retrying. */
+                    "Retry-After"?: number;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+        };
+    };
+    signInSocial: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    /** @enum {string} */
+                    provider: "github" | "orcid";
+                    callbackURL?: string;
+                    errorCallbackURL?: string;
+                    disableRedirect?: boolean;
+                };
+            };
+        };
+        responses: {
+            /** @description Provider URL. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        url?: string;
+                        redirect?: boolean;
+                    };
+                };
+            };
+            /** @description Rate limit or daily quota reached. `detail` names the limit. */
+            429: {
+                headers: {
+                    /** @description Seconds to wait before retrying. */
+                    "Retry-After"?: number;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+        };
+    };
+    authCallback: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                provider: "github" | "orcid";
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Redirect to the app. */
+            302: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    signOut: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Signed out. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        success?: boolean;
+                    };
+                };
+            };
+        };
+    };
+    getSession: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Session or null. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": null | {
+                        session?: {
+                            [key: string]: unknown;
+                        };
+                        user?: {
+                            [key: string]: unknown;
+                        };
+                    };
+                };
+            };
+        };
+    };
+    listAccounts: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Linked accounts. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": ({
+                        id?: string;
+                        providerId?: string;
+                        accountId?: string;
+                    } & {
+                        [key: string]: unknown;
+                    })[];
+                };
+            };
+            /** @description Authentication required: sign in, send an API key in `x-api-key`, or use the web app (CAPTCHA token), or the API key is invalid, revoked or expired. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+        };
+    };
+    linkSocial: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    /** @enum {string} */
+                    provider: "github" | "orcid";
+                    callbackURL?: string;
+                };
+            };
+        };
+        responses: {
+            /** @description Provider URL. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        url?: string;
+                        redirect?: boolean;
+                    };
+                };
+            };
+            /** @description Authentication required: sign in, send an API key in `x-api-key`, or use the web app (CAPTCHA token), or the API key is invalid, revoked or expired. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+        };
+    };
+    unlinkAccount: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    providerId: string;
+                    accountId?: string;
+                };
+            };
+        };
+        responses: {
+            /** @description Unlinked. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        status?: boolean;
+                    };
+                };
+            };
+            /** @description Cannot unlink the last account. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Authentication required: sign in, send an API key in `x-api-key`, or use the web app (CAPTCHA token), or the API key is invalid, revoked or expired. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
                 };
             };
         };
@@ -805,7 +1479,10 @@ export interface operations {
     select_endpoint_select_post: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Turnstile token; lets an anonymous web-app request through. Scripts use an API key instead. */
+                "X-Captcha-Token"?: components["parameters"]["CaptchaToken"];
+            };
             path?: never;
             cookie?: never;
         };
@@ -818,19 +1495,72 @@ export interface operations {
             /** @description Successful Response */
             200: {
                 headers: {
+                    /** @description Daily units for the caller's tier. */
+                    "X-Quota-Limit"?: number;
+                    /** @description Units left today after this request. */
+                    "X-Quota-Remaining"?: number;
+                    /** @description Unix time (seconds) of the next 00:00 UTC, when the quota resets. */
+                    "X-Quota-Reset"?: number;
                     [name: string]: unknown;
                 };
                 content: {
                     "application/json": components["schemas"]["SelectResponseEnvelope"];
                 };
             };
-            /** @description Validation Error */
+            /** @description Authentication required: sign in, send an API key in `x-api-key`, or use the web app (CAPTCHA token), or the API key is invalid, revoked or expired. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Forbidden: live refresh requires sign-in, or the CAPTCHA token is missing or invalid. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Request body too large (limit 1 MiB). */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Validation error: `snapshot_path` is not accepted, or the body does not match the schema. */
             422: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
+                    "application/json": components["schemas"]["Error"] | components["schemas"]["HTTPValidationError"];
+                };
+            };
+            /** @description Rate limit or daily quota reached. `detail` names the limit. */
+            429: {
+                headers: {
+                    /** @description Seconds to wait before retrying. */
+                    "Retry-After"?: number;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Service unavailable: the upstream API or the CAPTCHA verifier could not be reached. */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
                 };
             };
         };
@@ -838,7 +1568,10 @@ export interface operations {
     instance_endpoint_instance_post: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Turnstile token; lets an anonymous web-app request through. Scripts use an API key instead. */
+                "X-Captcha-Token"?: components["parameters"]["CaptchaToken"];
+            };
             path?: never;
             cookie?: never;
         };
@@ -851,19 +1584,72 @@ export interface operations {
             /** @description Successful Response */
             200: {
                 headers: {
+                    /** @description Daily units for the caller's tier. */
+                    "X-Quota-Limit"?: number;
+                    /** @description Units left today after this request. */
+                    "X-Quota-Remaining"?: number;
+                    /** @description Unix time (seconds) of the next 00:00 UTC, when the quota resets. */
+                    "X-Quota-Reset"?: number;
                     [name: string]: unknown;
                 };
                 content: {
                     "application/json": components["schemas"]["InstanceResponseEnvelope"];
                 };
             };
-            /** @description Validation Error */
+            /** @description Authentication required: sign in, send an API key in `x-api-key`, or use the web app (CAPTCHA token), or the API key is invalid, revoked or expired. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Forbidden: live refresh requires sign-in, or the CAPTCHA token is missing or invalid. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Request body too large (limit 1 MiB). */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Validation error: `snapshot_path` is not accepted, or the body does not match the schema. */
             422: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
+                    "application/json": components["schemas"]["Error"] | components["schemas"]["HTTPValidationError"];
+                };
+            };
+            /** @description Rate limit or daily quota reached. `detail` names the limit. */
+            429: {
+                headers: {
+                    /** @description Seconds to wait before retrying. */
+                    "Retry-After"?: number;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Service unavailable: the upstream API or the CAPTCHA verifier could not be reached. */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
                 };
             };
         };
@@ -885,10 +1671,25 @@ export interface operations {
             /** @description Successful Response */
             200: {
                 headers: {
+                    /** @description Daily units for the caller's tier. */
+                    "X-Quota-Limit"?: number;
+                    /** @description Units left today after this request. */
+                    "X-Quota-Remaining"?: number;
+                    /** @description Unix time (seconds) of the next 00:00 UTC, when the quota resets. */
+                    "X-Quota-Reset"?: number;
                     [name: string]: unknown;
                 };
                 content: {
                     "application/json": components["schemas"]["CatalogResponseEnvelope"];
+                };
+            };
+            /** @description Forbidden: live refresh requires sign-in, or the CAPTCHA token is missing or invalid. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
                 };
             };
             /** @description Validation Error */
@@ -898,6 +1699,26 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+            /** @description Rate limit or daily quota reached. `detail` names the limit. */
+            429: {
+                headers: {
+                    /** @description Seconds to wait before retrying. */
+                    "Retry-After"?: number;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Service unavailable: the upstream API or the CAPTCHA verifier could not be reached. */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
                 };
             };
         };
@@ -920,10 +1741,25 @@ export interface operations {
             /** @description Successful Response */
             200: {
                 headers: {
+                    /** @description Daily units for the caller's tier. */
+                    "X-Quota-Limit"?: number;
+                    /** @description Units left today after this request. */
+                    "X-Quota-Remaining"?: number;
+                    /** @description Unix time (seconds) of the next 00:00 UTC, when the quota resets. */
+                    "X-Quota-Reset"?: number;
                     [name: string]: unknown;
                 };
                 content: {
                     "application/json": components["schemas"]["CatalogDetailResponseEnvelope"];
+                };
+            };
+            /** @description Forbidden: live refresh requires sign-in, or the CAPTCHA token is missing or invalid. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
                 };
             };
             /** @description Validation Error */
@@ -933,6 +1769,26 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+            /** @description Rate limit or daily quota reached. `detail` names the limit. */
+            429: {
+                headers: {
+                    /** @description Seconds to wait before retrying. */
+                    "Retry-After"?: number;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Service unavailable: the upstream API or the CAPTCHA verifier could not be reached. */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
                 };
             };
         };
@@ -955,6 +1811,26 @@ export interface operations {
                     "application/json": components["schemas"]["EnginesResponseEnvelope"];
                 };
             };
+            /** @description Rate limit or daily quota reached. `detail` names the limit. */
+            429: {
+                headers: {
+                    /** @description Seconds to wait before retrying. */
+                    "Retry-After"?: number;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Service unavailable: the upstream API or the CAPTCHA verifier could not be reached. */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
         };
     };
     presets_endpoint_presets_get: {
@@ -973,6 +1849,26 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["PresetsResponseEnvelope"];
+                };
+            };
+            /** @description Rate limit or daily quota reached. `detail` names the limit. */
+            429: {
+                headers: {
+                    /** @description Seconds to wait before retrying. */
+                    "Retry-After"?: number;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Service unavailable: the upstream API or the CAPTCHA verifier could not be reached. */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
                 };
             };
         };

@@ -23,5 +23,8 @@ COPY . /app
 RUN --mount=type=cache,target=/root/.cache/uv \
     uv sync --locked --package qrb-api
 
+# 0.0.0.0 is inside the container's own network namespace, so the gateway
+# can reach it on the private Docker network. Do not publish this port on the
+# host (docker-compose.yml does not); the API also requires the gateway secret.
 EXPOSE 8000
 CMD ["uvicorn", "qrb_api.main:app", "--host", "0.0.0.0", "--port", "8000"]

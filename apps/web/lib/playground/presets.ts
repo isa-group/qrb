@@ -4,6 +4,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 
 import { apiClient } from "@/lib/api/client";
+import { quotaMessage } from "@/lib/api/errors";
 import type { ConstraintOp } from "./constraint-ops";
 
 export interface PresetConstraint {
@@ -38,10 +39,21 @@ function persistUserPresets(presets: PresetMap): void {
   window.localStorage.setItem(USER_PRESETS_STORAGE_KEY, JSON.stringify(presets));
 }
 
-async function fetchBuiltinPresets(): Promise<PresetMap> {
+interface BuiltinPresets {
+  presets: PresetMap;
+  // Non-blocking: set when the open route is IP rate limited (429).
+  notice?: string;
+}
+
+async function fetchBuiltinPresets(): Promise<BuiltinPresets> {
   const result = await apiClient.GET("/presets").catch(() => null);
-  if (!result || result.error) return {};
-  return result.data.result as unknown as PresetMap;
+  if (!result) return { presets: {} };
+  if (!result.response.ok || !result.data) {
+    return result.response.status === 429
+      ? { presets: {}, notice: `Built-in presets unavailable. ${quotaMessage(result.response, result.error)}` }
+      : { presets: {} };
+  }
+  return { presets: result.data.result as unknown as PresetMap };
 }
 
 export function usePresets() {
@@ -67,8 +79,8 @@ export function usePresets() {
   // User presets of the same name override a built-in, mirroring the CLI's
   // all_presets() merge order.
   const presets = useMemo(
-    () => ({ ...(builtinsQuery.data ?? {}), ...userPresets }),
-    [builtinsQuery.data, userPresets]
+    () => ({ ...(builtinsQuery.data?.presets ?? {}), ...userPresets }),
+    [builtinsQuery.data?.presets, userPresets]
   );
 
   const saveUserPreset = useCallback((name: string, preset: Preset) => {
@@ -93,6 +105,7 @@ export function usePresets() {
     builtinNames,
     saveUserPreset,
     deleteUserPreset,
+    notice: builtinsQuery.data?.notice,
     isLoading: builtinsQuery.isLoading,
   };
 }

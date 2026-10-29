@@ -1,11 +1,15 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
+import Link from "next/link";
 import { useEffect, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { Info, X } from "lucide-react";
 
 import { BackendStatus } from "@/components/backend-status";
+import { CaptchaSlot } from "@/components/captcha-slot";
+import { QuotaStatus } from "@/components/quota-status";
+import type { QuotaInfo } from "@/lib/api/quota";
 import { CircuitEditor } from "@/components/circuit-editor";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -112,11 +116,17 @@ export function TaskSpecificationPanel({
   onResolve,
   resolving,
   circuitError,
+  signedIn,
+  authPending,
+  quota,
 }: {
   onChange: (values: TaskSpecFormValues | null) => void;
   onResolve: (values: TaskSpecFormValues) => void;
   resolving: boolean;
   circuitError?: string;
+  signedIn: boolean;
+  authPending: boolean;
+  quota: QuotaInfo | null;
 }) {
   const {
     register,
@@ -138,7 +148,13 @@ export function TaskSpecificationPanel({
   const engine = watch("engine");
   const forceRefresh = watch("forceRefresh");
 
-  const { presets, saveUserPreset } = usePresets();
+  // Live refresh is a signed-in feature: anonymous users are pinned to the
+  // cached catalog (resolveBinding enforces this too).
+  useEffect(() => {
+    if (!authPending) setValue("forceRefresh", signedIn, { shouldValidate: true });
+  }, [authPending, signedIn, setValue]);
+
+  const { presets, saveUserPreset, notice: presetsNotice } = usePresets();
   const enginesQuery = useEngines();
   const [savePresetName, setSavePresetName] = useState("");
   // What "Load preset…" last applied, so the panel can show which preset
@@ -304,6 +320,9 @@ export function TaskSpecificationPanel({
         >
           {presetStatusLabel}
         </p>
+        {presetsNotice && (
+          <p className="mt-1 text-caption text-ink-tertiary">{presetsNotice}</p>
+        )}
         <p className="mt-1 text-caption text-ink-tertiary">
           A preset sets both the constraints and the weighted criteria below —
           picking one replaces both.
@@ -566,7 +585,8 @@ export function TaskSpecificationPanel({
 
         <label className="mt-3 flex items-center gap-2 text-body text-ink-secondary">
           <Checkbox
-            checked={forceRefresh}
+            checked={signedIn && forceRefresh}
+            disabled={!signedIn}
             onCheckedChange={(checked) => setValue("forceRefresh", checked === true)}
           />
           Fetch live catalog
@@ -574,11 +594,22 @@ export function TaskSpecificationPanel({
             (off reuses the 90s cache — faster, may be stale)
           </span>
         </label>
+        {!authPending && !signedIn && (
+          <p className="mt-1 text-caption text-ink-tertiary">
+            <Link href="/signin?next=/playground" className="text-primary underline">
+              Sign in
+            </Link>{" "}
+            to fetch the live catalog.
+          </p>
+        )}
       </div>
 
-      <Button type="submit" className="mt-6 w-full" disabled={resolving}>
+      {!authPending && !signedIn && <CaptchaSlot />}
+
+      <Button type="submit" className="mt-6 w-full" disabled={resolving || authPending}>
         {resolving ? "Resolving…" : "Resolve Binding"}
       </Button>
+      <QuotaStatus quota={quota} />
     </form>
   );
 }

@@ -6,6 +6,7 @@ import { usePathname } from "next/navigation";
 
 import { useCommandPalette } from "@/components/command-palette-context";
 import { ThemeToggle } from "@/components/theme-toggle";
+import { UserMenu } from "@/components/user-menu";
 import { cn } from "@/lib/utils";
 
 const NAV_ITEMS = [
@@ -58,6 +59,7 @@ export function NavBar() {
             <span className="font-geist-mono">⌘K</span>
           </button>
           <ThemeToggle />
+          <UserMenu />
           <a
             href="https://github.com"
             target="_blank"

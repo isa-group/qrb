@@ -1,4 +1,5 @@
 import { apiClient } from "./client";
+import { catalogError } from "./errors";
 import { jitterCatalog, MOCK_CALIBRATION_DETAILS, MOCK_CATALOG } from "./mock-catalog";
 import type { CatalogResource, CatalogResourceDetail, CatalogTimings } from "./types";
 
@@ -34,12 +35,12 @@ export async function fetchCatalogResources(
     return { resources: jitterCatalog(filtered), timings: MOCK_TIMINGS };
   }
 
-  const { data, error } = await apiClient.GET("/catalog", {
+  const { data, error, response } = await apiClient.GET("/catalog", {
     params: {
       query: { provider: providers, live: true, force_refresh: options?.forceRefresh },
     },
   });
-  if (error) throw new Error("Failed to load catalog");
+  if (error) throw catalogError(response, error);
   return { resources: data.result as unknown as CatalogResource[], timings: data.timings_ms };
 }
 

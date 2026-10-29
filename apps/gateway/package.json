@@ -1,0 +1,29 @@
+{
+  "name": "gateway",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "bun --watch src/index.ts",
+    "start": "bun src/index.ts",
+    "test": "bun test",
+    "openapi": "bash scripts/openapi-snapshot.sh",
+    "openapi:print": "bun scripts/print-openapi.ts",
+    "db:migrate": "bun src/db/migrate.ts up",
+    "db:migrate:down": "bun src/db/migrate.ts down",
+    "db:auth:generate": "auth generate --config src/db/auth-schema.config.ts --yes"
+  },
+  "dependencies": {
+    "@better-auth/api-key": "1.7.14",
+    "@electric-sql/pglite": "^0.5.13",
+    "better-auth": "^1.7.14",
+    "hono": "^4.13.14",
+    "kysely": "^0.29.7",
+    "pg": "^8.23.1"
+  },
+  "devDependencies": {
+    "@types/bun": "^1.4.4",
+    "@types/pg": "^8.23.1",
+    "auth": "1.7.14",
+    "typescript": "^5"
+  }
+}

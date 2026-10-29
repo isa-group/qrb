@@ -31,9 +31,9 @@ tasks:
       - uv run qrb {{.CLI_ARGS}}
 
   api:dev:
-    desc: Run the API locally with autoreload
+    desc: 'Run the API locally with autoreload, bound to 127.0.0.1 (needs QRB_GATEWAY_SECRET, or QRB_ALLOW_UNAUTHENTICATED=1 for direct dev access)'
     cmds:
-      - uv run uvicorn qrb_api.main:app --reload
+      - uv run uvicorn qrb_api.main:app --reload --host 127.0.0.1 --port 8000
 
   web:dev:
     desc: Run the frontend locally (http://localhost:3000)
@@ -51,7 +51,7 @@ tasks:
       - bun run --cwd apps/web lint
 
   web:types:
-    desc: Regenerate apps/web's typed API client from apps/api's live OpenAPI schema (needs uv synced)
+    desc: Regenerate apps/web's typed API client from the gateway's OpenAPI document (offline; run gateway:openapi first if apps/api changed)
     cmds:
       - bun run --cwd apps/web generate:api-types
 
@@ -59,6 +59,36 @@ tasks:
     desc: Build and deploy the frontend to Cloudflare Pages (needs `wrangler login` first)
     cmds:
       - bun run --cwd apps/web deploy
+
+  gateway:dev:
+    desc: Run the gateway locally with reload
+    cmds:
+      - bun run --cwd apps/gateway dev
+
+  gateway:test:
+    desc: Run the gateway test suite
+    cmds:
+      - bun run --cwd apps/gateway test
+
+  gateway:openapi:
+    desc: Regenerate the committed FastAPI schema snapshot (apps/gateway/openapi/qrb-api.json) (needs uv synced). Run after changing apps/api, then task web:types
+    cmds:
+      - bun run --cwd apps/gateway openapi
+
+  gateway:migrate:
+    desc: Apply pending gateway database migrations (needs DATABASE_URL, or PGLITE_DATA_DIR for a local PGlite database)
+    cmds:
+      - bun run --cwd apps/gateway db:migrate
+
+  gateway:migrate:down:
+    desc: 'Roll back the latest gateway migration, e.g. task gateway:migrate:down -- --all to roll back all of them'
+    cmds:
+      - bun run --cwd apps/gateway db:migrate:down {{.CLI_ARGS}}
+
+  gateway:auth:generate:
+    desc: 'Print the full Better Auth schema SQL for the gateway''s plugin set, e.g. task gateway:auth:generate -- --output /tmp/auth.sql (diff it against apps/gateway/src/db/migrations after upgrading Better Auth)'
+    cmds:
+      - bun run --cwd apps/gateway db:auth:generate {{.CLI_ARGS}}
 
   catalog:refresh:
     desc: 'Fetch the live catalog and freeze it to a reproducible snapshot (needs credentials, see .env.example)'
@@ -125,15 +155,25 @@ tasks:
       - docker run --rm qrb-artifact
 
   docker:build:
-    desc: Build the API and CLI Docker images
+    desc: Build the production stack images (gateway + web, api) and the CLI image
     cmds:
-      - docker build -f docker/api.Dockerfile -t qrb-api .
+      - docker compose build gateway api
       - docker build -f docker/cli.Dockerfile -t qrb-cli .
 
-  docker:api:
-    desc: Run the API via docker compose (http://localhost:8000, docs at /scalar)
+  docker:up:
+    desc: 'Start the production stack (postgres, api, migrations, gateway on 127.0.0.1:${PORT:-3001}); needs real secrets in .env, see docs/deploy-vps.md'
     cmds:
-      - docker compose up --build api
+      - docker compose up -d --build
+
+  docker:dev:
+    desc: 'Start the stack locally with dev settings, no real OAuth/Turnstile secrets (http://localhost:3001)'
+    cmds:
+      - docker compose -f docker-compose.yml -f docker-compose.dev.yml up --build
+
+  docker:migrate:
+    desc: Apply pending gateway migrations against the compose Postgres (also runs automatically on docker:up)
+    cmds:
+      - docker compose run --rm gateway-migrate
 
   docker:cli:
     desc: 'Run the CLI via docker compose, e.g. task docker:cli -- select circuit.qasm --preset fastest'
@@ -141,6 +181,6 @@ tasks:
       - docker compose run --rm cli {{.CLI_ARGS}}
 
   docker:down:
-    desc: Stop and remove docker compose services
+    desc: Stop and remove docker compose services (keeps the pgdata volume)
     cmds:
-      - docker compose down
+      - docker compose --profile poller down

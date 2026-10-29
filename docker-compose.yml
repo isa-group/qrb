@@ -1,10 +1,119 @@
+# Production-shaped stack: the gateway (web build + auth + quotas) is the only
+# entry point and is published on 127.0.0.1 only, for the VPS's reverse proxy.
+# The API and Postgres are private to the compose network.
+#
+#   docker compose up -d --build            # production (needs real secrets)
+#   task docker:dev                         # local, no real OAuth/Turnstile
+#                                           # secrets (docker-compose.dev.yml)
+# See docs/deploy-vps.md and .env.example.
+
+x-gateway-env: &gateway-env
+  NODE_ENV: production
+  PORT: ${PORT:-3001}
+  # 0.0.0.0 is the container's own network namespace; the host-side publish
+  # below is loopback-only.
+  HOST: 0.0.0.0
+  DATABASE_URL: postgresql+psycopg://qrb:${POSTGRES_PASSWORD:-qrb}@postgres:5432/qrb
+
 services:
+  postgres:
+    image: postgres:17-alpine
+    restart: unless-stopped
+    # Never published: reachable only on the compose network.
+    environment:
+      POSTGRES_USER: qrb
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-qrb}
+      POSTGRES_DB: qrb
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U qrb -d qrb"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
+
+  # One-shot: applies pending gateway migrations, then exits 0. The gateway
+  # waits for it (service_completed_successfully), so a plain
+  # `docker compose up -d` always migrates first. Migrations are idempotent.
+  gateway-migrate:
+    build: &gateway-build
+      context: .
+      dockerfile: docker/gateway.Dockerfile
+      args:
+        NEXT_PUBLIC_API_BASE_URL: ${NEXT_PUBLIC_API_BASE_URL:-}
+        NEXT_PUBLIC_USE_MOCK_CATALOG: ${NEXT_PUBLIC_USE_MOCK_CATALOG:-false}
+        NEXT_PUBLIC_CATALOG_POLL_INTERVAL_MS: ${NEXT_PUBLIC_CATALOG_POLL_INTERVAL_MS:-600000}
+        NEXT_PUBLIC_TURNSTILE_SITE_KEY: ${NEXT_PUBLIC_TURNSTILE_SITE_KEY:-}
+    command: ["bun", "src/db/migrate.ts", "up"]
+    environment:
+      NODE_ENV: production
+      DATABASE_URL: postgresql+psycopg://qrb:${POSTGRES_PASSWORD:-qrb}@postgres:5432/qrb
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: "no"
+    healthcheck:
+      disable: true
+
+  gateway:
+    build: *gateway-build
+    restart: unless-stopped
+    # Loopback only: the VPS reverse proxy (TLS) forwards to this port.
+    ports:
+      - "127.0.0.1:${PORT:-3001}:${PORT:-3001}"
+    environment:
+      <<: *gateway-env
+      QRB_API_URL: http://api:8000
+      # Same value as the api service's QRB_GATEWAY_SECRET.
+      QRB_GATEWAY_SECRET: ${QRB_GATEWAY_SECRET:-}
+      BETTER_AUTH_URL: ${BETTER_AUTH_URL:-}
+      BETTER_AUTH_SECRET: ${BETTER_AUTH_SECRET:-}
+      GITHUB_CLIENT_ID: ${GITHUB_CLIENT_ID:-}
+      GITHUB_CLIENT_SECRET: ${GITHUB_CLIENT_SECRET:-}
+      ORCID_CLIENT_ID: ${ORCID_CLIENT_ID:-}
+      ORCID_CLIENT_SECRET: ${ORCID_CLIENT_SECRET:-}
+      ORCID_ISSUER: ${ORCID_ISSUER:-}
+      TURNSTILE_SECRET_KEY: ${TURNSTILE_SECRET_KEY:-}
+      TURNSTILE_EXPECTED_HOSTNAME: ${TURNSTILE_EXPECTED_HOSTNAME:-}
+      TURNSTILE_EXPECTED_ACTION: ${TURNSTILE_EXPECTED_ACTION:-}
+      # X-Forwarded-For is trusted only from these peers. Through a published
+      # port, the host reverse proxy reaches the container from the compose
+      # network's gateway address, NOT 127.0.0.1. The network subnet is pinned
+      # below so that address is known: 172.28.0.1 for the default subnet. If
+      # you change QRB_NETWORK_SUBNET, set TRUSTED_PROXIES to match, and
+      # verify with docs/deploy-vps.md section 2.2.
+      TRUSTED_PROXIES: ${TRUSTED_PROXIES:-127.0.0.1,::1,172.28.0.1}
+      # Quotas and rate limits. Empty values fall back to the gateway defaults.
+      QRB_LIMITS_MODE: ${QRB_LIMITS_MODE:-enforce}
+      QRB_LIMIT_ANON_DAILY: ${QRB_LIMIT_ANON_DAILY:-}
+      QRB_LIMIT_SIGNED_IN_DAILY: ${QRB_LIMIT_SIGNED_IN_DAILY:-}
+      QRB_LIMIT_LIVE_REFRESH_WEIGHT: ${QRB_LIMIT_LIVE_REFRESH_WEIGHT:-}
+      QRB_LIMIT_ANON_IP_DAILY: ${QRB_LIMIT_ANON_IP_DAILY:-}
+      QRB_LIMIT_BURST_WINDOW_SECONDS: ${QRB_LIMIT_BURST_WINDOW_SECONDS:-}
+      QRB_LIMIT_BURST_ANON: ${QRB_LIMIT_BURST_ANON:-}
+      QRB_LIMIT_BURST_SIGNED_IN: ${QRB_LIMIT_BURST_SIGNED_IN:-}
+      QRB_LIMIT_BURST_API_KEY: ${QRB_LIMIT_BURST_API_KEY:-}
+      QRB_LIMIT_OPEN_WINDOW_SECONDS: ${QRB_LIMIT_OPEN_WINDOW_SECONDS:-}
+      QRB_LIMIT_OPEN_PER_IP: ${QRB_LIMIT_OPEN_PER_IP:-}
+    depends_on:
+      gateway-migrate:
+        condition: service_completed_successfully
+      postgres:
+        condition: service_healthy
+      api:
+        condition: service_started
+
   api:
     build:
       context: .
       dockerfile: docker/api.Dockerfile
-    ports:
-      - "8000:8000"
+    restart: unless-stopped
+    # No published port: only services on the compose network (the gateway)
+    # can reach the API. It also requires QRB_GATEWAY_SECRET and
+    # refuses every request but /health while that is unset.
+    expose:
+      - "8000"
     environment:
       QISKIT_IBM_TOKEN: ${QISKIT_IBM_TOKEN:-}
       QISKIT_IBM_INSTANCE: ${QISKIT_IBM_INSTANCE:-}
@@ -13,7 +122,8 @@ services:
       AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID:-}
       AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY:-}
       AWS_REGION: ${AWS_REGION:-us-east-1}
-      WEB_ORIGINS: ${WEB_ORIGINS:-http://localhost:3069}
+      QRB_GATEWAY_SECRET: ${QRB_GATEWAY_SECRET:-}
+      QRB_SNAPSHOT_PATH: ${QRB_SNAPSHOT_PATH:-}
 
   cli:
     build:
@@ -33,19 +143,27 @@ services:
     profiles:
       - cli
 
-  web:
+  poller:
     build:
       context: .
-      dockerfile: docker/web.Dockerfile
-      args:
-        NEXT_PUBLIC_API_BASE_URL: ${NEXT_PUBLIC_API_BASE_URL:-http://localhost:8000}
-        NEXT_PUBLIC_USE_MOCK_CATALOG: ${NEXT_PUBLIC_USE_MOCK_CATALOG:-true}
-        NEXT_PUBLIC_CATALOG_POLL_INTERVAL_MS: ${NEXT_PUBLIC_CATALOG_POLL_INTERVAL_MS:-600000}
-    ports:
-      - "3069:80"
+      dockerfile: docker/poller.Dockerfile
+    environment:
+      QISKIT_IBM_TOKEN: ${QISKIT_IBM_TOKEN:-}
+      QISKIT_IBM_INSTANCE: ${QISKIT_IBM_INSTANCE:-}
+      QISKIT_IBM_INSTANCES: ${QISKIT_IBM_INSTANCES:-}
+      QISKIT_IBM_CHANNEL: ${QISKIT_IBM_CHANNEL:-}
+      AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID:-}
+      AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY:-}
+      AWS_REGION: ${AWS_REGION:-us-east-1}
+      QRB_POLLER_INTERVAL_SECONDS: ${QRB_POLLER_INTERVAL_SECONDS:-900}
+      # Shares the gateway's Postgres (different tables).
+      DATABASE_URL: postgresql+psycopg://qrb:${POSTGRES_PASSWORD:-qrb}@postgres:5432/qrb
     depends_on:
-      api:
-        condition: service_started
+      postgres:
+        condition: service_healthy
+    restart: unless-stopped
+    profiles:
+      - poller
 
   artifact:
     build:
@@ -53,3 +171,12 @@ services:
       dockerfile: docker/artifact.Dockerfile
     profiles:
       - artifact
+
+volumes:
+  pgdata:
+
+networks:
+  default:
+    ipam:
+      config:
+        - subnet: ${QRB_NETWORK_SUBNET:-172.28.0.0/24}

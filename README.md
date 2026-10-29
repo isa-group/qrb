@@ -148,11 +148,17 @@ flag to `false` in `apps/web/.env.local`.
 ## Docker
 
 ```bash
-task docker:build        # build the api and cli images
-task docker:api          # api + postgres via docker compose (http://localhost:8000)
+task docker:build        # build the gateway (incl. web build), api and cli images
+task docker:dev          # whole stack locally, no real secrets (http://localhost:3001)
+task docker:up           # production stack (real secrets in .env; docs/deploy-vps.md)
 task docker:cli -- select circuit.qasm --preset fastest
 task docker:down
 ```
+
+## Deployment
+
+To host QRB on a single VPS behind an existing reverse proxy (gateway, auth,
+Postgres, backups, rollout), follow [docs/deploy-vps.md](docs/deploy-vps.md).
 
 ## Reproducing the paper's experiments
 

@@ -1,0 +1,34 @@
+# Local override: `docker compose up` without real OAuth / Turnstile secrets.
+#
+#   docker compose -f docker-compose.yml -f docker-compose.dev.yml up --build
+#   (or: task docker:dev)  ->  http://localhost:3001
+#
+# The gateway runs with NODE_ENV=development, so it does not demand
+# BETTER_AUTH_SECRET / GitHub / ORCID / Turnstile credentials. Sign-in with
+# GitHub/ORCID only works if you provide your own dev OAuth apps in .env;
+# anonymous use (with Cloudflare's always-pass Turnstile test keys) works as is.
+# The gateway still sends the shared secret to the API, so
+# QRB_ALLOW_UNAUTHENTICATED is NOT needed (and must not be set).
+# Never use this file in production.
+services:
+  api:
+    environment:
+      QRB_GATEWAY_SECRET: ${QRB_GATEWAY_SECRET:-dev-gateway-secret-not-for-production}
+
+  gateway-migrate:
+    environment:
+      NODE_ENV: development
+
+  gateway:
+    build:
+      args:
+        # Cloudflare test site key: the widget always passes.
+        NEXT_PUBLIC_TURNSTILE_SITE_KEY: ${NEXT_PUBLIC_TURNSTILE_SITE_KEY:-1x00000000000000000000AA}
+        NEXT_PUBLIC_USE_MOCK_CATALOG: ${NEXT_PUBLIC_USE_MOCK_CATALOG:-true}
+    environment:
+      NODE_ENV: development
+      QRB_GATEWAY_SECRET: ${QRB_GATEWAY_SECRET:-dev-gateway-secret-not-for-production}
+      BETTER_AUTH_URL: ${BETTER_AUTH_URL:-http://localhost:3001}
+      BETTER_AUTH_SECRET: ${BETTER_AUTH_SECRET:-dev-only-better-auth-secret-0123456789abcdef}
+      # Cloudflare test secret: accepts any token.
+      TURNSTILE_SECRET_KEY: ${TURNSTILE_SECRET_KEY:-1x0000000000000000000000000000000AA}
