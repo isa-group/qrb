@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import os
 import time
 
 import httpx
@@ -17,7 +18,10 @@ from openbinding.models import (
     SolveResponse,
 )
 
-DEFAULT_BASE_URL = "https://openbinding.score.us.es/api"
+PUBLIC_BASE_URL = "https://openbinding.score.us.es/api"
+# Override with OPENBINDING_URL to use a self-hosted (e.g. local) gateway.
+# Empty or unset falls back to the public gateway.
+DEFAULT_BASE_URL = os.environ.get("OPENBINDING_URL") or PUBLIC_BASE_URL
 
 
 class SolveFailedError(RuntimeError):

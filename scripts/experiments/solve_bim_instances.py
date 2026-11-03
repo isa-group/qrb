@@ -17,7 +17,6 @@ from __future__ import annotations
 
 import json
 import math
-import os
 import sys
 from pathlib import Path
 
@@ -31,7 +30,7 @@ ENGINE = "minizinc-csp"
 
 
 def main() -> int:
-    base_url = os.environ.get("OPENBINDING_URL", DEFAULT_BASE_URL)
+    base_url = DEFAULT_BASE_URL
     mismatches = 0
     with OpenBindingClient(base_url=base_url) as client:
         for path in sorted(BIM_DIR.glob("fms_*.json")):

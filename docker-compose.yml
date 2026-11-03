@@ -14,6 +14,7 @@ services:
       AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY:-}
       AWS_REGION: ${AWS_REGION:-us-east-1}
       WEB_ORIGINS: ${WEB_ORIGINS:-http://localhost:3069}
+      OPENBINDING_URL: ${OPENBINDING_URL:-}
 
   cli:
     build:
@@ -27,6 +28,7 @@ services:
       AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID:-}
       AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY:-}
       AWS_REGION: ${AWS_REGION:-us-east-1}
+      OPENBINDING_URL: ${OPENBINDING_URL:-}
     working_dir: /workspace
     volumes:
       - .:/workspace
@@ -51,5 +53,80 @@ services:
     build:
       context: .
       dockerfile: docker/artifact.Dockerfile
+    environment:
+      OPENBINDING_URL: ${OPENBINDING_URL:-}
     profiles:
       - artifact
+
+  # Self-hosted OpenBinding gateway + solver engines (profile: openbinding).
+  # Built from github.com/isa-group/OpenBinding, cloned into vendor/openbinding
+  # by `task openbinding:fetch` (pinned to OPENBINDING_REF in Taskfile.yml).
+  # Start with `task openbinding:up`; then point QRB at it with
+  # OPENBINDING_URL=http://localhost:${OPENBINDING_PORT:-8001} (host) or
+  # http://openbinding:8000 (from another service in this compose file).
+  openbinding:
+    build:
+      context: ./vendor/openbinding/openbinding-gateway
+    profiles:
+      - openbinding
+    ports:
+      - "${OPENBINDING_PORT:-8001}:8000"
+    volumes:
+      - ./vendor/openbinding/schemas:/app/schemas:ro
+    environment:
+      APP_ENV: dev
+      GENERAL_SCHEMA_PATH: /app/schemas/general/schema.json
+      SCHEMAS_DIR: /app/schemas
+      CORS_ALLOW_ORIGINS: "*"
+      ENGINE_MINIZINC_URL: http://openbinding-minizinc:3000
+      ENGINE_RANDOM_SEARCH_URL: http://openbinding-random-search:8080
+      ENGINE_MANY_HEURISTIC_URL: http://openbinding-many-heuristic:8080
+    healthcheck:
+      test: ["CMD", "curl", "-fsS", "http://localhost:8000/health"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+      start_period: 10s
+    depends_on:
+      openbinding-minizinc:
+        condition: service_healthy
+      openbinding-random-search:
+        condition: service_healthy
+      openbinding-many-heuristic:
+        condition: service_healthy
+
+  openbinding-minizinc:
+    build:
+      context: ./vendor/openbinding/engines/minizinc-csp
+    profiles:
+      - openbinding
+    healthcheck:
+      test: ["CMD", "curl", "-fsS", "http://localhost:3000/health"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+      start_period: 20s
+
+  openbinding-random-search:
+    build:
+      context: ./vendor/openbinding/engines/random-search
+    profiles:
+      - openbinding
+    healthcheck:
+      test: ["CMD", "curl", "-fsS", "http://localhost:8080/health"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+      start_period: 30s
+
+  openbinding-many-heuristic:
+    build:
+      context: ./vendor/openbinding/engines/many-heuristic
+    profiles:
+      - openbinding
+    healthcheck:
+      test: ["CMD", "curl", "-fsS", "http://localhost:8080/health"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+      start_period: 30s

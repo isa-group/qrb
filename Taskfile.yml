@@ -2,6 +2,11 @@ version: "3"
 
 vars:
   SNAPSHOT_PATH: '{{.SNAPSHOT_PATH | default "catalog_snapshot.json"}}'
+  OPENBINDING_REPO: https://github.com/isa-group/OpenBinding.git
+  # Pinned for reproducibility; bump deliberately.
+  OPENBINDING_REF: '{{.OPENBINDING_REF | default "3023a6e511ee330b19a62f16badd3136eb0aa9e4"}}'
+  OPENBINDING_DIR: vendor/openbinding
+  OPENBINDING_PORT: '{{.OPENBINDING_PORT | default "8001"}}'
 
 tasks:
   sync:
@@ -144,3 +149,38 @@ tasks:
     desc: Stop and remove docker compose services
     cmds:
       - docker compose down
+
+  openbinding:fetch:
+    desc: Clone/update the OpenBinding gateway sources into vendor/openbinding at OPENBINDING_REF
+    cmds:
+      - test -d {{.OPENBINDING_DIR}}/.git || git clone {{.OPENBINDING_REPO}} {{.OPENBINDING_DIR}}
+      - git -C {{.OPENBINDING_DIR}} fetch --quiet origin
+      - git -C {{.OPENBINDING_DIR}} checkout --quiet --detach {{.OPENBINDING_REF}}
+      - 'echo "OpenBinding at $(git -C {{.OPENBINDING_DIR}} rev-parse --short HEAD)"'
+
+  openbinding:up:
+    desc: 'Build and start a local OpenBinding gateway + engines (http://localhost:8001), then use it with OPENBINDING_URL=http://localhost:8001'
+    deps: [openbinding:fetch]
+    env:
+      OPENBINDING_PORT: '{{.OPENBINDING_PORT}}'
+    cmds:
+      - docker compose --profile openbinding up -d --build --wait openbinding
+      - 'echo "OpenBinding gateway ready: export OPENBINDING_URL=http://localhost:{{.OPENBINDING_PORT}}"'
+
+  openbinding:check:
+    desc: List engines through the local OpenBinding gateway
+    env:
+      OPENBINDING_URL: http://localhost:{{.OPENBINDING_PORT}}
+    cmds:
+      - uv run qrb engines
+
+  openbinding:logs:
+    desc: Follow the local OpenBinding gateway and engine logs
+    cmds:
+      - docker compose --profile openbinding logs -f openbinding openbinding-minizinc openbinding-random-search openbinding-many-heuristic
+
+  openbinding:down:
+    desc: Stop the local OpenBinding gateway and engines
+    cmds:
+      - docker compose --profile openbinding stop openbinding openbinding-minizinc openbinding-random-search openbinding-many-heuristic
+      - docker compose --profile openbinding rm -f openbinding openbinding-minizinc openbinding-random-search openbinding-many-heuristic

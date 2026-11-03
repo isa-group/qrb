@@ -68,6 +68,11 @@ feasible sets and bindings but not to draw the figure.
 External dependencies: steps marked _network_ call the public OpenBinding
 gateway (`https://openbinding.score.us.es/api`, override with
 `OPENBINDING_URL`); only live catalog ingestion needs provider credentials.
+To run the gateway yourself instead, `task openbinding:up` clones
+[OpenBinding](https://github.com/isa-group/OpenBinding) at the pinned commit
+`3023a6e` (`OPENBINDING_REF` in `Taskfile.yml`) and starts it with its three
+engines via docker compose; then set `OPENBINDING_URL=http://localhost:8001`
+(e.g. `OPENBINDING_URL=http://localhost:8001 task reproduce:bim`).
 Live runs see today's catalog, so their bindings and latencies differ from
 the paper's; the frozen snapshot (`output/shared_catalog_snapshot.json`,
 captured 2026-07-12) is what makes the reported numbers reproducible.

@@ -42,3 +42,6 @@ yarn-error.log*
 .DS_Store
 *.pem
 scripts/experiments/rerun/
+
+# Local OpenBinding checkout (task openbinding:fetch)
+/vendor/
