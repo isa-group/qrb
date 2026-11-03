@@ -1,4 +1,4 @@
-"""Smoke test run by `task test`: the RQ1 BIM instances validate against the
+"""Smoke test run by `task test`: the RQ1 and RQ3 BIM instances validate against the
 OpenBinding schema and their offline optimum matches the paper."""
 
 import json
@@ -8,7 +8,9 @@ from openbinding import Instance
 
 from verify_bim_instances import BIM_DIR, EXPECTED, solve
 
-INSTANCES = sorted([*BIM_DIR.glob("fms_*.json"), *BIM_DIR.glob("experiment3_*.json")])
+INSTANCES = sorted(
+    [*BIM_DIR.glob("fms_*.json"), *BIM_DIR.glob("experiment3_*.json"), *BIM_DIR.glob("rq3_*.json")]
+)
 
 
 @pytest.mark.parametrize("path", INSTANCES, ids=lambda p: p.name)

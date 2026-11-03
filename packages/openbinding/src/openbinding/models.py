@@ -226,6 +226,15 @@ class AttributeBoundConstraint(BaseModel):
     hard: bool = True
     description: str | None = None
 
+    @model_validator(mode="after")
+    def _local_needs_scope(self) -> "AttributeBoundConstraint":
+        # Mirrors the gateway's general schema: a LOCAL bound must say what it applies to.
+        if self.scope == "LOCAL" and not (self.tasks or self.candidates):
+            raise ValueError(
+                f"constraint {self.id!r}: scope LOCAL requires 'tasks' or 'candidates'"
+            )
+        return self
+
 
 class DependencyConstraint(BaseModel):
     id: Identifier
