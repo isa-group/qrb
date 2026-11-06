@@ -1,0 +1,501 @@
+/* /bind: an Operate surface on the shared layer (DESIGN.md). Two panes: inputs on a graphite panel,
+   results in a black well beside them that stays in view while weights change. */
+
+/* Same frame as every page: the shared gutter and content width, so the nav's spread state and the
+   workspace start on one left edge. */
+.page {
+  max-width: calc(var(--max) + 2 * var(--gutter));
+  margin: 0 auto;
+  padding: calc(var(--s-900) + var(--s-200)) var(--gutter) var(--s-900);
+}
+
+.head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--s-75) var(--s-300);
+  margin-bottom: var(--s-300);
+}
+/* Reopened from the account's history: a quiet line under the title; Danger Rose when it failed. */
+.reopened { flex-basis: 100%; display: flex; align-items: center; gap: var(--s-75); color: var(--ink-2); }
+.reopened[data-failed] { color: var(--danger); }
+
+.grid {
+  display: grid;
+  grid-template-columns: minmax(380px, 5fr) minmax(0, 7fr);
+  gap: var(--s-400);
+  align-items: start;
+}
+
+/* ---------- inputs ---------- */
+
+.inputs {
+  background: var(--surface-1);
+  border-radius: 16px;
+}
+
+.block {
+  display: grid;
+  gap: var(--s-100);
+  padding: var(--s-300);
+}
+.block + .block { border-top: 1px solid var(--line); }
+
+.blockHead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--s-100);
+  flex-wrap: wrap;
+}
+.tools { display: flex; gap: var(--s-75); flex-wrap: wrap; }
+
+.field { display: grid; gap: var(--s-50); margin: 0; padding: 0; border: 0; min-width: 0; }
+.field legend { padding: 0; margin-bottom: var(--s-50); }
+
+.control {
+  min-width: 0;
+  padding: var(--s-75) var(--s-100);
+  border: 1px solid var(--line-strong);
+  border-radius: 8px;
+  background: var(--bg);
+  color: var(--ink);
+  font: inherit;
+  font-size: 14px;
+  line-height: 20px;
+  transition: border-color 300ms var(--ease);
+}
+.control:hover { border-color: var(--ink-3); }
+.control:disabled { color: var(--ink-3); cursor: progress; }
+.control[aria-invalid="true"],
+.code[aria-invalid="true"] { border-color: var(--danger); }
+.num { width: 96px; font-variant-numeric: tabular-nums; }
+
+.code {
+  width: 100%;
+  padding: var(--s-100) var(--s-200);
+  border: 1px solid var(--line-strong);
+  border-radius: 8px;
+  background: var(--bg);
+  color: var(--ink-2);
+  font-family: var(--font-mono);
+  font-size: 14px;
+  line-height: 20px;
+  tab-size: 2;
+  resize: vertical;
+  transition: border-color 300ms var(--ease);
+}
+.code:hover { border-color: var(--ink-3); }
+
+/* The circuit editor: a real textarea with transparent text over a highlighted copy of the same text.
+   Both share the .code box metrics; the copy follows the textarea's scroll. */
+.editor { position: relative; border-radius: 8px; background: var(--bg); }
+.codeLayer {
+  position: absolute;
+  inset: 0;
+  margin: 0;
+  overflow: hidden;
+  pointer-events: none;
+  white-space: pre;
+  border-color: transparent;
+  background: transparent;
+}
+.codeLayer code { display: block; font: inherit; }
+.codeInput {
+  position: relative;
+  display: block;
+  background: transparent;
+  color: transparent;
+  caret-color: var(--ink);
+  white-space: pre;
+  overflow: auto;
+}
+.codeInput::selection { color: transparent; background: var(--selection); }
+
+.rows { display: grid; gap: var(--s-75); }
+
+.weight {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(120px, 1.4fr) 48px 32px;
+  align-items: center;
+  gap: var(--s-100);
+}
+.rowLabel { display: grid; min-width: 0; }
+/* The feature's colour, as an 8px dot before its name; the slider and its split segment match. */
+.weight .rowLabel > span:first-child { display: inline-flex; align-items: center; gap: var(--s-75); }
+.weight .rowLabel > span:first-child::before { content: ""; flex: none; width: 8px; height: 8px; border-radius: 999px; background: var(--w); }
+.range { width: 100%; accent-color: var(--w, var(--ink-2)); cursor: pointer; }
+.range:disabled { cursor: not-allowed; opacity: 0.5; }
+
+.bound {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto auto 32px;
+  align-items: center;
+  gap: var(--s-75) var(--s-100);
+}
+.valueWrap { display: inline-flex; align-items: center; gap: var(--s-75); }
+.boundError { grid-column: 1 / -1; }
+
+.locked {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--s-75);
+  min-height: 32px;
+  color: var(--ink-2);
+}
+.locked svg { color: var(--ink-3); }
+.locked .caption-2 { margin-left: auto; }
+
+.switchRow { min-height: 32px; display: flex; align-items: center; }
+
+/* Switch: a native checkbox with role="switch", drawn as a track and thumb. */
+.switch { display: inline-flex; align-items: flex-start; gap: var(--s-100); cursor: pointer; }
+.switch > span { display: grid; }
+.switch input {
+  appearance: none;
+  flex: none;
+  position: relative;
+  width: 36px;
+  height: 20px;
+  margin: 0;
+  border-radius: 999px;
+  background: var(--line-strong);
+  cursor: pointer;
+  transition: background-color 300ms var(--ease);
+}
+.switch input::before {
+  content: "";
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 16px;
+  height: 16px;
+  border-radius: 999px;
+  background: var(--ink-3);
+  transition: transform 300ms var(--ease), background-color 300ms var(--ease);
+}
+.switch input:checked { background: var(--ink); }
+.switch input:checked::before { transform: translateX(16px); background: var(--bg); }
+.switch:hover input:not(:checked) { background: var(--ink-3); }
+.switch:hover input:not(:checked)::before { background: var(--ink-2); }
+
+/* Adds a weight or constraint: looks like a small secondary button, works as a native select. */
+.add {
+  position: relative;
+  justify-self: start;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--s-75);
+  margin-top: var(--s-50);
+  padding: var(--s-75) var(--s-100);
+  border: 1px solid var(--line-strong);
+  border-radius: 8px;
+  color: var(--ink);
+  cursor: pointer;
+  transition: background-color 300ms var(--ease), border-color 300ms var(--ease);
+}
+.add:hover { background: var(--surface-2); border-color: var(--ink-3); }
+.add:focus-within { outline: 2px solid var(--accent-soft); outline-offset: 3px; }
+.add select { position: absolute; inset: 0; width: 100%; opacity: 0; cursor: pointer; font-size: 16px; }
+
+.remove {
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--ink-3);
+  cursor: pointer;
+  transition: background-color 300ms var(--ease), color 300ms var(--ease);
+}
+.remove:hover { background: var(--surface-2); color: var(--ink); }
+
+/* Provider: a segmented radio group. Outer 8px radius, 4px gap, so inner segments take 4px. */
+.segmented {
+  display: inline-flex;
+  flex-wrap: wrap;
+  justify-self: start;
+  gap: var(--s-25);
+  padding: var(--s-50);
+  border: 1px solid var(--line-strong);
+  border-radius: 8px;
+  background: var(--bg);
+}
+.segmented label { position: relative; cursor: pointer; }
+.segmented input { position: absolute; opacity: 0; inset: 0; margin: 0; cursor: pointer; }
+.segmented span {
+  display: block;
+  padding: var(--s-50) var(--s-100);
+  border-radius: 4px;
+  color: var(--ink-2);
+  transition: background-color 300ms var(--ease), color 300ms var(--ease);
+}
+.segmented label:hover span { color: var(--ink); }
+.segmented input:checked + span { background: var(--surface-2); color: var(--ink); }
+.segmented input:focus-visible + span { outline: 2px solid var(--accent-soft); outline-offset: 2px; }
+
+.optionRow { display: flex; flex-wrap: wrap; gap: var(--s-300); align-items: flex-start; margin-top: var(--s-75); }
+.paretoSwitch { flex: 1 1 220px; padding-top: var(--s-300); }
+/* Pareto and fresh data, stacked beside Shots. */
+.switches { flex: 1 1 220px; display: grid; gap: var(--s-200); padding-top: var(--s-300); }
+.switches .paretoSwitch { padding-top: 0; }
+
+.error {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--s-50);
+  color: var(--danger);
+}
+.error svg { flex: none; margin-top: var(--s-25); }
+
+/* Solve stays reachable at the foot of the inputs pane while it scrolls. */
+.actions {
+  position: sticky;
+  bottom: 0;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--s-100);
+  padding: var(--s-200) var(--s-300);
+  border-top: 1px solid var(--line);
+  border-radius: 0 0 16px 16px;
+  background: var(--surface-1);
+}
+
+/* ---------- results ---------- */
+
+.results {
+  position: sticky;
+  top: var(--s-900);
+  max-height: calc(100svh - var(--s-900) - var(--s-200));
+  overflow: auto;
+  padding: var(--s-300);
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  background: var(--bg);
+  scroll-margin-top: var(--s-900);
+}
+.results h2:focus { outline: none; }
+
+.idle { display: grid; gap: var(--s-300); }
+.idleIntro { display: grid; gap: var(--s-200); max-width: 640px; }
+
+/* The live request: a code well like the landing page's, inside the results pane. */
+.request { margin: 0; border: 1px solid var(--line); border-radius: 8px; overflow: hidden; }
+.requestBar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--s-100);
+  flex-wrap: wrap;
+  padding: var(--s-75) var(--s-75) var(--s-75) var(--s-200);
+  border-bottom: 1px solid var(--line);
+  background: var(--surface-1);
+}
+.request pre {
+  margin: 0;
+  max-height: 420px;
+  overflow: auto;
+  padding: var(--s-200);
+  font-size: 12px;
+  line-height: 16px;
+  color: var(--ink-2);
+  tab-size: 2;
+}
+
+/* The binding's own figures, beside its name: the evidence for the answer. */
+.evidence {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--s-200) var(--s-500);
+  margin-top: var(--s-300);
+}
+.evidence div { display: grid; gap: var(--s-25); }
+.evidence dd { font-variant-numeric: tabular-nums; }
+.idleList { display: grid; gap: var(--s-75); padding-left: var(--s-200); list-style: disc; }
+
+.solving { display: grid; gap: var(--s-300); }
+.skHead { display: grid; gap: var(--s-75); }
+.skHead .sk:first-child { width: 40%; height: 36px; }
+.skHead .sk:last-child { width: 25%; }
+.skRows { display: grid; gap: var(--s-100); }
+.sk {
+  display: block;
+  height: 20px;
+  border-radius: 8px;
+  background: var(--surface-1);
+  animation: sk-pulse 1200ms var(--ease) infinite alternate;
+}
+.inputs .sk { background: var(--surface-2); }
+@keyframes sk-pulse { from { opacity: 0.5; } to { opacity: 1; } }
+
+.failed { display: grid; gap: var(--s-100); justify-items: start; max-width: 640px; }
+.failed > svg { color: var(--danger); }
+.detail {
+  width: 100%;
+  max-height: 160px;
+  overflow: auto;
+  margin: 0;
+  padding: var(--s-100) var(--s-200);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  color: var(--ink-3);
+  font-size: 12px;
+  line-height: 16px;
+  white-space: pre-wrap;
+}
+
+.blocked { display: grid; gap: var(--s-200); justify-items: start; max-width: 560px; margin: var(--s-900) auto; }
+.blocked > svg { color: var(--danger); }
+
+.resultHead { display: flex; align-items: flex-start; justify-content: space-between; gap: var(--s-200); flex-wrap: wrap; }
+.resultTitle { display: grid; gap: var(--s-50); min-width: 0; }
+.resultTitle h2 { overflow-wrap: anywhere; }
+.meta { display: flex; flex-wrap: wrap; gap: var(--s-50) var(--s-200); margin-top: var(--s-100); }
+
+.tableWrap { margin-top: var(--s-300); overflow-x: auto; }
+.table { width: 100%; border-collapse: collapse; text-align: left; font-variant-numeric: tabular-nums; }
+.table th,
+.table td { padding: var(--s-100) var(--s-75); vertical-align: top; }
+.table thead th {
+  position: sticky;
+  top: calc(-1 * var(--s-300));
+  z-index: 1;
+  border-bottom: 1px solid var(--line);
+  background: var(--bg);
+  font-weight: 500;
+  white-space: nowrap;
+}
+.table thead th:not(:first-child),
+.table td { text-align: right; }
+.table td { white-space: nowrap; color: var(--ink-2); }
+.table tbody th { font-weight: 400; min-width: 160px; }
+.table tbody th > span { display: block; }
+.table tbody tr:not(.groupRow) > * { border-top: 1px solid var(--line); }
+.groupRow th { padding-top: var(--s-300); }
+
+.sortBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--s-50);
+  padding: 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+  transition: color 300ms var(--ease);
+}
+.sortBtn:hover { color: var(--ink); }
+.table th[aria-sort="ascending"] .sortBtn,
+.table th[aria-sort="descending"] .sortBtn { color: var(--ink); }
+
+.cand { display: inline-flex !important; align-items: center; gap: var(--s-50); }
+.chosen tr:not(.groupRow) > * { background: var(--accent-wash); }
+.chosen tr:not(.groupRow) > *:first-child { box-shadow: inset 2px 0 0 var(--accent-soft); } /* taste-skill-ignore: the winner row's 2px marker, a data mark not a card border */
+.check { color: var(--accent-soft); flex: none; }
+
+/* The binding: its name, provider and figures on the violet wash. */
+.winnerPanel {
+  margin: calc(-1 * var(--s-100));
+  padding: var(--s-300);
+  border: 1px solid var(--accent-edge);
+  border-radius: 8px;
+  background: var(--accent-wash);
+}
+.winnerPanel .resultTitle > p:first-child { color: var(--accent-soft); }
+
+/* Provider marker: an 8px dot in the provider's colour before its name. */
+.provider { display: inline-flex; align-items: center; gap: var(--s-75); }
+.provider::before {
+  content: "";
+  flex: none;
+  width: 8px;
+  height: 8px;
+  border-radius: 999px;
+  background: var(--ink-3);
+}
+.provider[data-provider="ibm"]::before { background: var(--provider-ibm); }
+.provider[data-provider="braket"]::before { background: var(--provider-braket); }
+.chosen td { color: var(--ink); }
+.excluded td { color: var(--ink-3); }
+.reasons { display: grid; gap: var(--s-25); white-space: normal; }
+.table tbody tr.reasonRow > td {
+  padding-top: 0;
+  border-top: 0;
+  text-align: left;
+  white-space: normal;
+}
+.table tbody tr.reasonRow > td::before { content: none; }
+
+/* ---------- responsive ---------- */
+
+@media (max-width: 1024px) {
+  .grid { grid-template-columns: minmax(0, 1fr); }
+  .results { position: static; max-height: none; overflow: visible; }
+}
+
+@media (max-width: 640px) {
+  .page { padding-bottom: var(--s-700); }
+  .block { padding: var(--s-200); }
+  .actions { padding: var(--s-200); }
+  .results { padding: var(--s-200); }
+  .weight { grid-template-columns: minmax(0, 1fr) 48px 32px; }
+  .weight .rowLabel { grid-column: 1 / -1; }
+  .bound { grid-template-columns: minmax(0, 1fr) 32px; }
+  .bound > .title-4 { grid-column: 1 / -1; }
+  .bound > select { grid-column: 1; justify-self: start; }
+
+  /* Each candidate becomes one block; every value stays visible with its label. */
+  .table thead { display: none; }
+  .table,
+  .table tbody,
+  .table tr,
+  .table th,
+  .table td { display: block; width: 100%; }
+  .table tbody tr:not(.groupRow) { padding: var(--s-75) 0; border-top: 1px solid var(--line); }
+  .table tbody tr:not(.groupRow) > * { border-top: 0; }
+  .table th,
+  .table td { padding: var(--s-25) var(--s-75); }
+  .table td { display: flex; justify-content: space-between; gap: var(--s-200); }
+  .table td::before { content: attr(data-label); color: var(--ink-3); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sk { animation: none; }
+}
+
+/* Inside the table the row-head spans stack as blocks; the provider keeps its dot beside the name. */
+.table tbody th > .provider { display: flex; }
+.winnerPanel + .meta { margin-top: var(--s-200); }
+
+/* Weights: each slider sets an importance on its own; the share beside it and the split bar show
+   what Solve sends. Each feature carries its own colour (features.ts) on its dot, slider and segment. */
+.share { text-align: right; font-variant-numeric: tabular-nums; }
+.split {
+  display: flex;
+  gap: var(--s-25);
+  height: 8px;
+  margin-top: var(--s-50);
+  border-radius: 4px;
+  overflow: hidden;
+}
+.split span {
+  display: flex;
+  align-items: center;
+  min-width: 0;
+  padding: 0 var(--s-75);
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  font-size: 12px;
+  line-height: 16px;
+  font-weight: 500;
+  color: var(--bg);
+}
+
+.candLink { color: var(--ink); text-decoration: none; }
+.candLink:hover { text-decoration: underline; text-decoration-color: var(--ink-3); }

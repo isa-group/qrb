@@ -1,10 +1,16 @@
 import createClient from "openapi-fetch";
 
-import type { paths } from "./schema";
+import type { components, paths } from "./schema";
 
-// Points at apps/api (FastAPI). Configure per-environment via .env —
-// see .env.example. Falls back to the local dev server.
-const baseUrl =
-  process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:8000";
+/** Base URL of the QRB API. Set NEXT_PUBLIC_QRB_API (inlined at build time). */
+export const API_BASE_URL =
+  process.env.NEXT_PUBLIC_QRB_API?.replace(/\/$/, "") ?? "http://localhost:8000";
 
-export const apiClient = createClient<paths>({ baseUrl });
+/** Sends the gateway's session cookie, so a signed-in visitor's requests use their account's budget. */
+export const api = createClient<paths>({ baseUrl: API_BASE_URL, credentials: "include" });
+
+export type Schemas = components["schemas"];
+export type CatalogSource = Schemas["CatalogSource"];
+export type CandidateEvaluation = Schemas["CandidateEvaluation"];
+export type SelectRequest = Schemas["SelectRequest"];
+export type SelectResponse = Schemas["SelectResponseEnvelope"];

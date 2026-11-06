@@ -1,0 +1,7 @@
+/* /docs: Scalar's reference under the site's floating nav. Scalar owns the layout below it. */
+.page { padding-top: calc(var(--s-900) - var(--s-200)); min-height: 100svh; }
+.loading { display: grid; gap: var(--s-200); max-width: 960px; margin: var(--s-600) auto; padding: 0 var(--gutter); }
+.loading span { display: block; height: 28px; border-radius: 8px; background: var(--surface-1); animation: sk-pulse 1200ms var(--ease) infinite alternate; }
+.loading span:first-child { width: 40%; height: 40px; }
+@keyframes sk-pulse { from { opacity: 0.5; } to { opacity: 1; } }
+@media (prefers-reduced-motion: reduce) { .loading span { animation: none; } }

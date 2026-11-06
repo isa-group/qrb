@@ -11,7 +11,10 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** Health */
+        /**
+         * Check the API
+         * @description Returns `{"status": "ok"}` when the API process is up. It does not contact any provider.
+         */
         get: operations["health_health_get"];
         put?: never;
         post?: never;
@@ -30,7 +33,14 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** Select Endpoint */
+        /**
+         * Bind a circuit
+         * @description Transpiles the circuit for every candidate QPU, computes its features, builds the BIM instance from your preferences and solves it with OpenBinding. Returns the binding, every candidate with its features and the constraint that excluded it, the data source and phase timings.
+         *
+         *     Use `preferences.preset` for a named preset (see `GET /presets`), or `weights` and `constraints` directly. `require_provider` limits candidates to `ibm` or `braket`; `pareto: true` returns every non-dominated binding (the `many-heuristic` engine) instead of one optimum (`minizinc-csp`). `shots` only feeds the cost estimate.
+         *
+         *     Latency: about a second by default, on stored data, queues refreshed every 2 minutes (plus transpilation on large circuits). `"force_refresh": true` asks the providers now: tens of seconds.
+         */
         post: operations["select_endpoint_select_post"];
         delete?: never;
         options?: never;
@@ -47,7 +57,10 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** Instance Endpoint */
+        /**
+         * Build the BIM instance
+         * @description Everything `POST /select` does before solving: returns the Binding Instance Model the solver would receive, with the providers, candidates and their features, the constraints and the objective. Useful to inspect features or to send the instance to OpenBinding yourself.
+         */
         post: operations["instance_endpoint_instance_post"];
         delete?: never;
         options?: never;
@@ -62,7 +75,10 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** Catalog Endpoint */
+        /**
+         * List the catalog
+         * @description Every QPU QRB can bind to, with its provider, vendor, qubits, queue, status, calibration time and the device medians of two-qubit and readout error. From the stored catalog by default (queues every 2 minutes) (`force_refresh=true` fetches now); `live=false` lists the frozen snapshot; `provider` filters (`ibm`, `braket`).
+         */
         get: operations["catalog_endpoint_catalog_get"];
         put?: never;
         post?: never;
@@ -79,8 +95,31 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** Catalog Detail Endpoint */
+        /**
+         * Get one QPU
+         * @description One catalog entry plus its calibration summary: native gates and the device medians of T1, T2, one- and two-qubit gate error and readout error. A median is `null` where the provider reports none (IBM reports no T1/T2 in the snapshot).
+         */
         get: operations["catalog_detail_endpoint_catalog__candidate_id__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/catalog/{candidate_id}/topology": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get a QPU's topology and calibration
+         * @description The coupling map with every per-qubit and per-coupler calibration value the provider reports (described by `qubit_fields` and `coupler_fields`: id, label, unit, which direction is better), their device medians, device-wide figures for providers without per-qubit data (IonQ, AQT), and 2D coordinates to draw the map. IBM's extra qubit fields (anharmonicity, readout length, assignment errors) are live only. The layout is computed once per device and coupling map, then cached.
+         */
+        get: operations["catalog_topology_endpoint_catalog__candidate_id__topology_get"];
         put?: never;
         post?: never;
         delete?: never;
@@ -96,8 +135,31 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** Engines Endpoint */
+        /**
+         * List solver engines
+         * @description The OpenBinding engines available to `POST /select`'s `engine_id`. By default QRB uses `minizinc-csp`, and `many-heuristic` in Pareto mode.
+         */
         get: operations["engines_endpoint_engines_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/features": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List features
+         * @description Every feature QRB computes for a candidate, with its unit, direction (whether higher or lower is better), scale and valid range: the same declarations as the `features` of `POST /instance`, without building one. The `*_normalized` companions are what the objective weights act on.
+         */
+        get: operations["features_endpoint_features_get"];
         put?: never;
         post?: never;
         delete?: never;
@@ -113,7 +175,10 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** Presets Endpoint */
+        /**
+         * List preference presets
+         * @description The named presets `preferences.preset` accepts, each with its weights and constraints: `balanced`, `fidelity-first`, `cheapest`, `fastest`, and the encodings of three approaches from the literature, `nisq-analyzer`, `q-orchestrator` and `mqt-predictor`.
+         */
         get: operations["presets_endpoint_presets_get"];
         put?: never;
         post?: never;
@@ -174,9 +239,20 @@ export interface components {
              * Hard
              * @default true
              */
-            hard: boolean;
+            hard?: boolean;
             /** Description */
             description?: string | null;
+        };
+        /** CalibrationField */
+        CalibrationField: {
+            /** Id */
+            id: string;
+            /** Label */
+            label: string;
+            /** Unit */
+            unit: string;
+            /** Better */
+            better?: string | null;
         };
         /** Candidate */
         Candidate: {
@@ -195,12 +271,80 @@ export interface components {
             /** Description */
             description?: string | null;
         };
+        /** CandidateEvaluation */
+        CandidateEvaluation: {
+            /** Candidate Id */
+            candidate_id: string;
+            /** Name */
+            name: string;
+            /** Provider Id */
+            provider_id: string;
+            /** Selected */
+            selected: boolean;
+            /** Features */
+            features: {
+                [key: string]: number;
+            };
+            /** Violated Constraints */
+            violated_constraints: components["schemas"]["ConstraintViolation"][];
+            /** Excluded Reason */
+            excluded_reason?: string | null;
+        };
+        /**
+         * CatalogDetail
+         * @description A catalog entry plus its calibration summary (device medians).
+         */
+        CatalogDetail: {
+            /**
+             * Candidate Id
+             * @description Stable id used everywhere in the API: `<provider>.<resource>`, e.g. `ibm.ibm_aachen`, `braket.Forte_1`.
+             */
+            candidate_id: string;
+            /** Name */
+            name: string;
+            /**
+             * Provider Id
+             * @description `ibm` (IBM Quantum) or `braket` (Amazon Braket).
+             */
+            provider_id: string;
+            /**
+             * Vendor
+             * @description Hardware vendor: IBM, IonQ, IQM, Rigetti, AQT.
+             */
+            vendor: string;
+            /** Num Qubits */
+            num_qubits: number;
+            /**
+             * Queue Length
+             * @description Pending jobs at the provider, where it reports them.
+             */
+            queue_length: number | null;
+            /**
+             * Status
+             * @description The provider's own status text (`active`, `ONLINE`, ...).
+             */
+            status: string;
+            /** Operational */
+            operational: boolean;
+            /** Last Calibrated At */
+            last_calibrated_at: string | null;
+            /** Median Gate Error 2Q */
+            median_gate_error_2q?: number | null;
+            /** Median Readout Error */
+            median_readout_error?: number | null;
+            /** Native Gates */
+            native_gates: string[];
+            /** Median T1 Us */
+            median_t1_us: number | null;
+            /** Median T2 Us */
+            median_t2_us: number | null;
+            /** Median Gate Error 1Q */
+            median_gate_error_1q: number | null;
+        };
         /** CatalogDetailResponseEnvelope */
         CatalogDetailResponseEnvelope: {
-            /** Result */
-            result: {
-                [key: string]: unknown;
-            };
+            result: components["schemas"]["CatalogDetail"];
+            source: components["schemas"]["CatalogSource"];
             timings_ms: components["schemas"]["CatalogDetailTimingsResponse"];
         };
         /** CatalogDetailTimingsResponse */
@@ -219,10 +363,64 @@ export interface components {
         /** CatalogResponseEnvelope */
         CatalogResponseEnvelope: {
             /** Result */
-            result: {
-                [key: string]: unknown;
-            }[];
+            result: components["schemas"]["CatalogRow"][];
+            source: components["schemas"]["CatalogSource"];
             timings_ms: components["schemas"]["CatalogTimingsResponse"];
+        };
+        /**
+         * CatalogRow
+         * @description One QPU in the catalog.
+         */
+        CatalogRow: {
+            /**
+             * Candidate Id
+             * @description Stable id used everywhere in the API: `<provider>.<resource>`, e.g. `ibm.ibm_aachen`, `braket.Forte_1`.
+             */
+            candidate_id: string;
+            /** Name */
+            name: string;
+            /**
+             * Provider Id
+             * @description `ibm` (IBM Quantum) or `braket` (Amazon Braket).
+             */
+            provider_id: string;
+            /**
+             * Vendor
+             * @description Hardware vendor: IBM, IonQ, IQM, Rigetti, AQT.
+             */
+            vendor: string;
+            /** Num Qubits */
+            num_qubits: number;
+            /**
+             * Queue Length
+             * @description Pending jobs at the provider, where it reports them.
+             */
+            queue_length: number | null;
+            /**
+             * Status
+             * @description The provider's own status text (`active`, `ONLINE`, ...).
+             */
+            status: string;
+            /** Operational */
+            operational: boolean;
+            /** Last Calibrated At */
+            last_calibrated_at: string | null;
+            /** Median Gate Error 2Q */
+            median_gate_error_2q?: number | null;
+            /** Median Readout Error */
+            median_readout_error?: number | null;
+        };
+        /** CatalogSource */
+        CatalogSource: {
+            /**
+             * Mode
+             * @enum {string}
+             */
+            mode: "live" | "snapshot";
+            /** As Of */
+            as_of: string | null;
+            /** Cache Hit */
+            cache_hit: boolean | null;
         };
         /** CatalogTimingsResponse */
         CatalogTimingsResponse: {
@@ -251,12 +449,22 @@ export interface components {
          * @enum {string}
          */
         ComposeFnName: "SUM" | "PRODUCT" | "MAX" | "MIN" | "SCALED_SUM" | "SCALED_PRODUCT" | "SCALED_MIN" | "SCALED_MAX" | "MEAN";
-        /** ConstraintItem */
+        /**
+         * ConstraintItem
+         * @description A hard limit on one feature. A QPU that breaks it is excluded, and the response says so.
+         */
         ConstraintItem: {
-            /** Feature */
+            /**
+             * Feature
+             * @description Feature id, e.g. `cost`, `queue`, `num_qubits`, `operational` (the `features` that `POST /instance` returns).
+             */
             feature: string;
+            /** @description `<=`, `>=`, `==`, `<` or `>`. (`IN_RANGE` is not accepted here: `value` is a single number.) */
             op: components["schemas"]["ConstraintOp"];
-            /** Value */
+            /**
+             * Value
+             * @description The bound, in the feature's unit: USD for `cost`, pending jobs for `queue`, 1 for a yes/no feature.
+             */
             value: number;
         };
         /**
@@ -264,6 +472,18 @@ export interface components {
          * @enum {string}
          */
         ConstraintOp: "<=" | ">=" | "==" | "<" | ">" | "IN_RANGE";
+        /** ConstraintViolation */
+        ConstraintViolation: {
+            /** Constraint Id */
+            constraint_id: string;
+            /** Feature */
+            feature: string;
+            op: components["schemas"]["ConstraintOp"];
+            /** Value */
+            value: number | components["schemas"]["NumericRange"];
+            /** Actual */
+            actual: number;
+        };
         /** DependencyConstraint */
         DependencyConstraint: {
             /** Id */
@@ -280,7 +500,7 @@ export interface components {
              * Hard
              * @default true
              */
-            hard: boolean;
+            hard?: boolean;
             /** Description */
             description?: string | null;
         };
@@ -289,6 +509,12 @@ export interface components {
          * @enum {string}
          */
         DependencyType: "SAME_PROVIDER" | "DIFFERENT_PROVIDER";
+        /** DeviceValue */
+        DeviceValue: {
+            field: components["schemas"]["CalibrationField"];
+            /** Value */
+            value: number | null;
+        };
         /**
          * Direction
          * @enum {string}
@@ -332,6 +558,11 @@ export interface components {
             valid_range: components["schemas"]["NumericRange"];
             /** Description */
             description?: string | null;
+        };
+        /** FeaturesResponseEnvelope */
+        FeaturesResponseEnvelope: {
+            /** Result */
+            result: components["schemas"]["Feature"][];
         };
         /** HTTPValidationError */
         HTTPValidationError: {
@@ -380,39 +611,50 @@ export interface components {
         } & {
             [key: string]: unknown;
         };
-        /** InstanceRequest */
+        /**
+         * InstanceRequest
+         * @description A circuit and preferences; returns the BIM instance instead of solving it.
+         */
         InstanceRequest: {
-            /** Circuit Qasm */
+            /**
+             * Circuit Qasm
+             * @description The circuit, as OpenQASM 3 source.
+             */
             circuit_qasm: string;
             /**
              * @default {
              *       "pareto": false
              *     }
              */
-            preferences: components["schemas"]["PreferencesRequest"];
+            preferences?: components["schemas"]["PreferencesRequest"];
             /**
              * Shots
+             * @description Shots, used only to estimate cost. Nothing is run.
              * @default 1024
              */
-            shots: number;
+            shots?: number;
             /**
              * Live
+             * @description `true`: live provider data. `false`: the frozen catalog snapshot (2026-07-11).
              * @default true
              */
-            live: boolean;
-            /** Snapshot Path */
-            snapshot_path?: string | null;
-            /** Providers */
+            live?: boolean;
+            /**
+             * Providers
+             * @description Limit the catalog fetch to these providers (`ibm`, `braket`).
+             */
             providers?: string[] | null;
             /**
              * Force Refresh
-             * @default true
+             * @description `true`: fetch live provider data now. `false` (default): the stored catalog.
+             * @default false
              */
-            force_refresh: boolean;
+            force_refresh?: boolean;
         };
         /** InstanceResponseEnvelope */
         InstanceResponseEnvelope: {
             result: components["schemas"]["Instance"];
+            source: components["schemas"]["CatalogSource"];
             timings_ms: components["schemas"]["TimingsResponse"];
         };
         /**
@@ -421,6 +663,8 @@ export interface components {
          *     build_instance() is handed an already-fetched resource list.
          */
         InstanceTimings: {
+            /** Preprocessing Ms */
+            preprocessing_ms: number;
             /** Transpile Ms */
             transpile_ms: number;
             /** Features Ms */
@@ -432,7 +676,7 @@ export interface components {
             /** Per Resource */
             per_resource?: {
                 [key: string]: {
-                    [key: string]: number;
+                    [key: string]: number | null;
                 };
             };
             /** Infeasible Reasons */
@@ -481,7 +725,7 @@ export interface components {
              * Weights Sum To One
              * @default true
              */
-            weights_sum_to_one: boolean;
+            weights_sum_to_one?: boolean;
         };
         /** MonoObjective */
         MonoObjective: {
@@ -500,7 +744,7 @@ export interface components {
              * Weights Sum To One
              * @default true
              */
-            weights_sum_to_one: boolean;
+            weights_sum_to_one?: boolean;
         };
         /** MultiObjective */
         MultiObjective: {
@@ -519,7 +763,7 @@ export interface components {
              * Weights Sum To One
              * @default true
              */
-            weights_sum_to_one: boolean;
+            weights_sum_to_one?: boolean;
         };
         /** NumericRange */
         NumericRange: {
@@ -528,23 +772,39 @@ export interface components {
             /** Max */
             max: number;
         };
-        /** PreferencesRequest */
+        /**
+         * PreferencesRequest
+         * @description What you care about: a preset, or weights and constraints, plus optional filters.
+         */
         PreferencesRequest: {
-            /** Preset */
+            /**
+             * Preset
+             * @description A named preset from `GET /presets` (e.g. `balanced`, `nisq-analyzer`). Its weights and constraints apply.
+             */
             preset?: string | null;
-            /** Weights */
+            /**
+             * Weights
+             * @description Feature id to weight. Proportional: each feature is normalised to 0..1 across candidates first.
+             */
             weights?: {
                 [key: string]: number;
             } | null;
-            /** Constraints */
+            /**
+             * Constraints
+             * @description Hard limits; a QPU that breaks any of them is excluded.
+             */
             constraints?: components["schemas"]["ConstraintItem"][] | null;
-            /** Require Provider */
+            /**
+             * Require Provider
+             * @description Only consider QPUs from this provider: `ibm` or `braket`.
+             */
             require_provider?: string | null;
             /**
              * Pareto
+             * @description Return every non-dominated binding (the `many-heuristic` engine) instead of one optimum.
              * @default false
              */
-            pareto: boolean;
+            pareto?: boolean;
         };
         /** PresetsResponseEnvelope */
         PresetsResponseEnvelope: {
@@ -588,41 +848,59 @@ export interface components {
          * @enum {string}
          */
         Scale: "RATIO" | "INTERVAL" | "ORDINAL";
-        /** SelectRequest */
+        /**
+         * SelectRequest
+         * @description A circuit and the preferences to bind it by.
+         */
         SelectRequest: {
-            /** Circuit Qasm */
+            /**
+             * Circuit Qasm
+             * @description The circuit, as OpenQASM 3 source.
+             */
             circuit_qasm: string;
             /**
              * @default {
              *       "pareto": false
              *     }
              */
-            preferences: components["schemas"]["PreferencesRequest"];
+            preferences?: components["schemas"]["PreferencesRequest"];
             /**
              * Shots
+             * @description Shots, used only to estimate cost. Nothing is run.
              * @default 1024
              */
-            shots: number;
+            shots?: number;
             /**
              * Live
+             * @description `true`: live provider data. `false`: the frozen catalog snapshot (2026-07-11).
              * @default true
              */
-            live: boolean;
-            /** Snapshot Path */
-            snapshot_path?: string | null;
-            /** Providers */
+            live?: boolean;
+            /**
+             * Providers
+             * @description Limit the catalog fetch to these providers (`ibm`, `braket`).
+             */
             providers?: string[] | null;
-            /** Engine Id */
+            /**
+             * Engine Id
+             * @description OpenBinding engine (see `GET /engines`). Default: `minizinc-csp`, or `many-heuristic` in Pareto mode.
+             */
             engine_id?: string | null;
             /**
              * Force Refresh
-             * @default true
+             * @description `true`: ask IBM and Braket now (tens of seconds) and store the result as the newest catalog.
+             *     `false` (default): use the stored catalog (queues refreshed every 2 minutes, calibration every
+             *     10 to 30); stale data is refreshed automatically.
+             * @default false
              */
-            force_refresh: boolean;
+            force_refresh?: boolean;
         };
         /** SelectResponseEnvelope */
         SelectResponseEnvelope: {
             result: components["schemas"]["SolveResponse"];
+            source: components["schemas"]["CatalogSource"];
+            /** Candidates */
+            candidates: components["schemas"]["CandidateEvaluation"][];
             timings_ms: components["schemas"]["TimingsResponse"];
         };
         /** SeqNode */
@@ -657,7 +935,7 @@ export interface components {
         /** SolveResponse */
         SolveResponse: {
             /** @default UNKNOWN */
-            feasibility: components["schemas"]["Feasibility"];
+            feasibility?: components["schemas"]["Feasibility"];
             /** Solutions */
             solutions: components["schemas"]["Solution"][];
             provenance: components["schemas"]["Provenance"];
@@ -673,7 +951,7 @@ export interface components {
              * @default STRUCTURED
              * @constant
              */
-            type: "STRUCTURED";
+            type?: "STRUCTURED";
             /** Root */
             root: components["schemas"]["TaskNode"] | components["schemas"]["SeqNode"] | components["schemas"]["AndNode"] | components["schemas"]["XorNode"] | components["schemas"]["LoopNode"] | components["schemas"]["ElementNode"];
         };
@@ -719,6 +997,91 @@ export interface components {
             total_ms: number;
             /** Request Total Ms */
             request_total_ms: number;
+        };
+        /** Topology */
+        Topology: {
+            /** Candidate Id */
+            candidate_id: string;
+            /** Num Qubits */
+            num_qubits: number;
+            /** All To All */
+            all_to_all: boolean;
+            /** Layout */
+            layout: string;
+            /** Width */
+            width: number;
+            /** Height */
+            height: number;
+            /** Processor */
+            processor?: string | null;
+            /**
+             * Qubit Fields
+             * @default []
+             */
+            qubit_fields?: components["schemas"]["CalibrationField"][];
+            /**
+             * Coupler Fields
+             * @default []
+             */
+            coupler_fields?: components["schemas"]["CalibrationField"][];
+            /**
+             * Medians
+             * @default {}
+             */
+            medians?: {
+                [key: string]: number | null;
+            };
+            /**
+             * Device
+             * @default []
+             */
+            device?: components["schemas"]["DeviceValue"][];
+            /** Qubits */
+            qubits: components["schemas"]["TopologyQubit"][];
+            /** Couplers */
+            couplers: components["schemas"]["TopologyCoupler"][];
+        };
+        /** TopologyCoupler */
+        TopologyCoupler: {
+            /** A */
+            a: number;
+            /** B */
+            b: number;
+            /** Error 2Q */
+            error_2q: number | null;
+            /**
+             * Values
+             * @default {}
+             */
+            values?: {
+                [key: string]: number | null;
+            };
+        };
+        /** TopologyQubit */
+        TopologyQubit: {
+            /** Index */
+            index: number;
+            /** X */
+            x: number;
+            /** Y */
+            y: number;
+            /** Readout Error */
+            readout_error: number | null;
+            /** Error 1Q */
+            error_1q: number | null;
+            /**
+             * Values
+             * @default {}
+             */
+            values?: {
+                [key: string]: number | null;
+            };
+        };
+        /** TopologyResponseEnvelope */
+        TopologyResponseEnvelope: {
+            result: components["schemas"]["Topology"];
+            source: components["schemas"]["CatalogSource"];
+            timings_ms: components["schemas"]["CatalogDetailTimingsResponse"];
         };
         /** ValidationError */
         ValidationError: {
@@ -824,14 +1187,42 @@ export interface operations {
                     "application/json": components["schemas"]["SelectResponseEnvelope"];
                 };
             };
-            /** @description Validation Error */
+            /** @description The `x-api-key` header holds an unknown, revoked or expired key. Requests without the header are not refused. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description The request body is over 1 MiB. */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description The request is invalid: the circuit does not parse, or a field has the wrong shape. `detail` says what failed. */
             422: {
                 headers: {
                     [name: string]: unknown;
                 };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
+                content?: never;
+            };
+            /** @description A daily budget or a rate limit is reached. `detail` names the limit; `Retry-After` gives the seconds to wait. */
+            429: {
+                headers: {
+                    /** @description Seconds to wait before retrying. */
+                    "Retry-After"?: number;
+                    [name: string]: unknown;
                 };
+                content?: never;
+            };
+            /** @description Provider data is unavailable (no credentials, or a provider is down). Live requests never fall back to the snapshot. */
+            502: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
             };
         };
     };
@@ -857,14 +1248,42 @@ export interface operations {
                     "application/json": components["schemas"]["InstanceResponseEnvelope"];
                 };
             };
-            /** @description Validation Error */
+            /** @description The `x-api-key` header holds an unknown, revoked or expired key. Requests without the header are not refused. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description The request body is over 1 MiB. */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description The request is invalid: the circuit does not parse, or a field has the wrong shape. `detail` says what failed. */
             422: {
                 headers: {
                     [name: string]: unknown;
                 };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
+                content?: never;
+            };
+            /** @description A daily budget or a rate limit is reached. `detail` names the limit; `Retry-After` gives the seconds to wait. */
+            429: {
+                headers: {
+                    /** @description Seconds to wait before retrying. */
+                    "Retry-After"?: number;
+                    [name: string]: unknown;
                 };
+                content?: never;
+            };
+            /** @description Provider data is unavailable (no credentials, or a provider is down). Live requests never fall back to the snapshot. */
+            502: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
             };
         };
     };
@@ -873,7 +1292,7 @@ export interface operations {
             query?: {
                 live?: boolean;
                 provider?: string[] | null;
-                /** @description Skip the 90s catalog cache and fetch live, even if it's still warm. */
+                /** @description Fetch live provider data now (and store it) instead of the stored catalog. */
                 force_refresh?: boolean;
             };
             header?: never;
@@ -891,6 +1310,13 @@ export interface operations {
                     "application/json": components["schemas"]["CatalogResponseEnvelope"];
                 };
             };
+            /** @description The `x-api-key` header holds an unknown, revoked or expired key. Requests without the header are not refused. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
             /** @description Validation Error */
             422: {
                 headers: {
@@ -900,13 +1326,29 @@ export interface operations {
                     "application/json": components["schemas"]["HTTPValidationError"];
                 };
             };
+            /** @description A daily budget or a rate limit is reached. `detail` names the limit; `Retry-After` gives the seconds to wait. */
+            429: {
+                headers: {
+                    /** @description Seconds to wait before retrying. */
+                    "Retry-After"?: number;
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Provider data is unavailable (no credentials, or a provider is down). Live requests never fall back to the snapshot. */
+            502: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
         };
     };
     catalog_detail_endpoint_catalog__candidate_id__get: {
         parameters: {
             query?: {
                 live?: boolean;
-                /** @description Skip the 90s catalog cache and fetch live, even if it's still warm. */
+                /** @description Fetch live provider data now (and store it) instead of the stored catalog. */
                 force_refresh?: boolean;
             };
             header?: never;
@@ -926,6 +1368,20 @@ export interface operations {
                     "application/json": components["schemas"]["CatalogDetailResponseEnvelope"];
                 };
             };
+            /** @description The `x-api-key` header holds an unknown, revoked or expired key. Requests without the header are not refused. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description No QPU with that candidate id is in the catalog. `detail` names it. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
             /** @description Validation Error */
             422: {
                 headers: {
@@ -934,6 +1390,87 @@ export interface operations {
                 content: {
                     "application/json": components["schemas"]["HTTPValidationError"];
                 };
+            };
+            /** @description A daily budget or a rate limit is reached. `detail` names the limit; `Retry-After` gives the seconds to wait. */
+            429: {
+                headers: {
+                    /** @description Seconds to wait before retrying. */
+                    "Retry-After"?: number;
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Provider data is unavailable (no credentials, or a provider is down). Live requests never fall back to the snapshot. */
+            502: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    catalog_topology_endpoint_catalog__candidate_id__topology_get: {
+        parameters: {
+            query?: {
+                live?: boolean;
+                /** @description Fetch live provider data now (and store it) instead of the stored catalog. */
+                force_refresh?: boolean;
+            };
+            header?: never;
+            path: {
+                candidate_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TopologyResponseEnvelope"];
+                };
+            };
+            /** @description The `x-api-key` header holds an unknown, revoked or expired key. Requests without the header are not refused. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description No QPU with that candidate id is in the catalog. `detail` names it. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+            /** @description A daily budget or a rate limit is reached. `detail` names the limit; `Retry-After` gives the seconds to wait. */
+            429: {
+                headers: {
+                    /** @description Seconds to wait before retrying. */
+                    "Retry-After"?: number;
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Provider data is unavailable (no credentials, or a provider is down). Live requests never fall back to the snapshot. */
+            502: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
             };
         };
     };
@@ -953,6 +1490,33 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["EnginesResponseEnvelope"];
+                };
+            };
+            /** @description The OpenBinding gateway could not be reached. */
+            502: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    features_endpoint_features_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FeaturesResponseEnvelope"];
                 };
             };
         };

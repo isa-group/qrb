@@ -1,0 +1,32 @@
+/* The nav's account entry: the same shape and states as the nav links. */
+.link {
+  display: flex;
+  align-items: center;
+  padding: var(--s-75) var(--s-100);
+  border-radius: 8px;
+  color: var(--ink-2);
+  text-decoration: none;
+  white-space: nowrap;
+  transition: background-color 300ms var(--ease), color 300ms var(--ease);
+}
+.link:hover { background: var(--surface-2); color: var(--ink); }
+.link[aria-current="page"] { color: var(--ink); background: var(--surface-2); }
+
+/* Signed in: the avatar sits inside the link's 8px padding, so the pill keeps its height. */
+.user { gap: var(--s-75); padding-block: var(--s-50); padding-left: var(--s-50); }
+.name { max-width: 12ch; overflow: hidden; text-overflow: ellipsis; }
+
+.avatar {
+  display: inline-grid;
+  place-items: center;
+  flex: none;
+  overflow: hidden;
+  border-radius: 999px;
+  background: var(--surface-2);
+  border: 1px solid var(--line-strong);
+  color: var(--ink);
+  font-size: 12px;
+  line-height: 16px;
+  font-weight: 600;
+}
+.avatar img { width: 100%; height: 100%; object-fit: cover; }

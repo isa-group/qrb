@@ -1,0 +1,156 @@
+.wrap {
+  position: fixed;
+  top: var(--s-200);
+  left: 0;
+  right: 0;
+  z-index: 50;
+  display: flex;
+  justify-content: center;
+  pointer-events: none;
+}
+
+/* The bar's layout never changes. At the top of a page the wordmark and the links are translated
+   together to the content's left edge and there is no container; when the page scrolls they glide back and a
+   single container layer grows in behind them. Its right edge tracks the button's slot, so when
+   "Bind a circuit" joins, the pill widens in the same 600ms move that brings the button in. */
+.bar {
+  pointer-events: auto;
+  position: relative;
+  isolation: isolate;
+  display: flex;
+  align-items: center;
+  gap: var(--s-300);
+  padding: var(--s-75) var(--s-75) var(--s-75) var(--s-300);
+}
+.bar[data-measured] { transition: transform 600ms var(--ease); }
+.bar::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  right: var(--cta-slot, 0px);
+  z-index: -1;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  background: var(--nav-fill);
+  backdrop-filter: blur(16px) saturate(1.2);
+  -webkit-backdrop-filter: blur(16px) saturate(1.2);
+  opacity: 0;
+  transform: scale(0.96);
+  transition: opacity 600ms var(--ease), transform 600ms var(--ease), right 600ms var(--ease);
+}
+.bar[data-condensed="true"]::before { opacity: 1; transform: none; }
+.bar[data-cta="on"]::before { right: 0; }
+
+.bar[data-measured] .mark,
+.bar[data-measured] .links { transition: transform 600ms var(--ease), background-color 300ms var(--ease), color 300ms var(--ease); }
+.bar[data-condensed="false"] .mark,
+.bar[data-condensed="false"] .links { transform: translateX(var(--spread, 0px)); }
+
+/* Landing: the button holds its slot while hidden; the bar shifts by half of it to stay centred. */
+.bar[data-cta="off"] { transform: translateX(var(--cta-shift, 0px)); }
+.cta {
+  transition: opacity 400ms var(--ease), transform 600ms var(--ease), background-color 300ms var(--ease);
+}
+/* Joining: the button waits for the pill to start widening, then fades and slides in from the links. */
+.bar[data-cta="on"] .cta { transition-delay: 150ms, 150ms, 0ms; }
+.bar[data-cta="off"] .cta {
+  opacity: 0;
+  transform: translateX(calc(-1 * var(--s-300)));
+  pointer-events: none;
+}
+
+.mark {
+  display: inline-flex;
+  align-items: center;
+  border-radius: 4px;
+  text-decoration: none;
+}
+.mark img { display: block; width: 73px; height: 24px; }
+
+.links { display: flex; align-items: center; gap: var(--s-75); }
+/* The account entry, set apart from the page links by a short hairline. Empty until the session is known. */
+.account { display: flex; align-items: center; gap: var(--s-75); }
+.account:empty { display: none; }
+.account::before { content: ""; width: 1px; height: var(--s-200); background: var(--line); }
+
+.link {
+  display: block;
+  padding: var(--s-75) var(--s-100);
+  border-radius: 8px;
+  color: var(--ink-2);
+  text-decoration: none;
+  transition: background-color 300ms var(--ease), color 300ms var(--ease);
+}
+.link:hover { background: var(--surface-2); color: var(--ink); }
+.link[aria-current="page"] { color: var(--ink); background: var(--surface-2); }
+
+.toggle {
+  display: none;
+  position: relative;
+  width: 40px;
+  height: 40px;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  cursor: pointer;
+}
+.toggle span {
+  position: absolute;
+  left: var(--s-100);
+  right: var(--s-100);
+  height: 2px;
+  border-radius: 2px;
+  background: var(--ink);
+  transition: transform 500ms var(--ease);
+}
+.toggle span:first-child { transform: translateY(-4px); }
+.toggle span:last-child { transform: translateY(4px); }
+.toggle[data-open="true"] span:first-child { transform: rotate(45deg); }
+.toggle[data-open="true"] span:last-child { transform: rotate(-45deg); }
+
+.panel {
+  pointer-events: auto;
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  padding: var(--s-900) var(--gutter) var(--s-600);
+  background: var(--menu-fill);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+}
+.panel ul { display: flex; flex-direction: column; gap: var(--s-300); }
+.panel a { text-decoration: none; }
+.panel a[aria-current="page"] { text-decoration: underline; text-decoration-color: var(--ink-3); text-underline-offset: 8px; }
+.panel[data-open="true"] li {
+  animation: menu-in 500ms var(--ease) both;
+  animation-delay: calc(var(--i) * 60ms);
+}
+
+@keyframes menu-in {
+  from { opacity: 0; transform: translateY(var(--s-300)); }
+}
+
+@media (max-width: 760px) {
+  .wrap { justify-content: stretch; padding: 0 var(--s-200); }
+  .bar { width: 100%; gap: var(--s-75); padding-left: var(--s-200); }
+  .bar[data-cta="off"] { transform: none; }
+  .bar::before { right: 0; }
+  .bar[data-condensed="false"] .mark,
+  .bar[data-condensed="false"] .links { transform: none; }
+  .links { display: none; }
+  .mark { margin-right: auto; }
+  .toggle { display: block; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .bar,
+  .bar::before,
+  .mark,
+  .links,
+  .cta { transition-property: opacity, background-color; }
+  .bar[data-cta="off"] { transition: none; }
+  .bar::before,
+  .bar[data-cta="off"] .cta { transform: none; }
+  .panel[data-open="true"] li { animation-name: menu-fade; }
+  @keyframes menu-fade { from { opacity: 0; } }
+}

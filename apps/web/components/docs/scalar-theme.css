@@ -1,0 +1,53 @@
+/* Scalar themed with the site's tokens (DESIGN.md: Monospace dark, Geist, violet action).
+   Scalar renders into the page's own DOM, so its variables can point at ours. */
+.dark-mode,
+.scalar-app {
+  --scalar-custom-header-height: calc(var(--s-900) - var(--s-200));
+
+  --scalar-font: var(--font-sans);
+  --scalar-font-code: var(--font-mono);
+
+  --scalar-background-1: var(--bg);
+  --scalar-background-2: var(--surface-1);
+  --scalar-background-3: var(--surface-2);
+  --scalar-background-accent: var(--accent-wash);
+
+  --scalar-color-1: var(--ink);
+  --scalar-color-2: var(--ink-2);
+  --scalar-color-3: var(--ink-3);
+  --scalar-color-accent: var(--accent-soft);
+
+  --scalar-border-color: var(--line);
+  --scalar-radius: 8px;
+  --scalar-radius-lg: 16px;
+  --scalar-radius-xl: 16px;
+
+  --scalar-button-1: var(--accent);
+  --scalar-button-1-color: var(--accent-ink);
+  --scalar-button-1-hover: var(--accent-hover);
+
+  /* HTTP methods and status colours: the data colours already in the system */
+  --scalar-color-green: #77d5a3;
+  --scalar-color-blue: #85cdf1;
+  --scalar-color-orange: #ffd395;
+  --scalar-color-yellow: #ffd395;
+  --scalar-color-red: var(--danger);
+  --scalar-color-purple: var(--accent-soft);
+
+  --scalar-sidebar-background-1: var(--bg);
+  --scalar-sidebar-color-1: var(--ink);
+  --scalar-sidebar-color-2: var(--ink-2);
+  --scalar-sidebar-border-color: var(--line);
+  --scalar-sidebar-item-hover-background: var(--surface-1);
+  --scalar-sidebar-item-hover-color: var(--ink);
+  --scalar-sidebar-item-active-background: var(--surface-2);
+  --scalar-sidebar-color-active: var(--ink);
+  --scalar-sidebar-search-background: var(--surface-1);
+  --scalar-sidebar-search-border-color: var(--line-strong);
+  --scalar-sidebar-search-color: var(--ink-3);
+}
+
+/* Scalar's SDK-generator promotions link out to its paid service; not part of QRB's docs. */
+.explore-scalar-card,
+.selected-client-action,
+.generate-sdk-button { display: none !important; }

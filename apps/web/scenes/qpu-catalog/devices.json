@@ -1,0 +1,89 @@
+{
+  "captured_at": "2026-07-11T19:13:19.431708Z",
+  "devices": [
+    {
+      "id": "ibm_boston",
+      "name": "ibm_boston",
+      "vendor": "IBM",
+      "provider": "ibm",
+      "qubits": 156
+    },
+    {
+      "id": "ibm_fez",
+      "name": "ibm_fez",
+      "vendor": "IBM",
+      "provider": "ibm",
+      "qubits": 156
+    },
+    {
+      "id": "ibm_pittsburgh",
+      "name": "ibm_pittsburgh",
+      "vendor": "IBM",
+      "provider": "ibm",
+      "qubits": 156
+    },
+    {
+      "id": "ibm_marrakesh",
+      "name": "ibm_marrakesh",
+      "vendor": "IBM",
+      "provider": "ibm",
+      "qubits": 156
+    },
+    {
+      "id": "ibm_kingston",
+      "name": "ibm_kingston",
+      "vendor": "IBM",
+      "provider": "ibm",
+      "qubits": 156
+    },
+    {
+      "id": "ibm_aachen",
+      "name": "ibm_aachen",
+      "vendor": "IBM",
+      "provider": "ibm",
+      "qubits": 156
+    },
+    {
+      "id": "Forte 1",
+      "name": "Forte 1",
+      "vendor": "IonQ",
+      "provider": "braket",
+      "qubits": 36
+    },
+    {
+      "id": "Forte Enterprise 1",
+      "name": "Forte Enterprise 1",
+      "vendor": "IonQ",
+      "provider": "braket",
+      "qubits": 36
+    },
+    {
+      "id": "Cepheus-1-108Q",
+      "name": "Cepheus-1-108Q",
+      "vendor": "Rigetti",
+      "provider": "braket",
+      "qubits": 107
+    },
+    {
+      "id": "Garnet",
+      "name": "Garnet",
+      "vendor": "IQM",
+      "provider": "braket",
+      "qubits": 20
+    },
+    {
+      "id": "Emerald",
+      "name": "Emerald",
+      "vendor": "IQM",
+      "provider": "braket",
+      "qubits": 53
+    },
+    {
+      "id": "IBEX Q1",
+      "name": "IBEX Q1",
+      "vendor": "AQT",
+      "provider": "braket",
+      "qubits": 12
+    }
+  ]
+}

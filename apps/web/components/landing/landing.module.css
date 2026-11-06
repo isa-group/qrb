@@ -1,0 +1,312 @@
+/* ---------- frame ---------- */
+.inner {
+  width: 100%;
+  max-width: calc(var(--max) + 2 * var(--gutter));
+  margin: 0 auto;
+  padding: 0 var(--gutter);
+}
+
+.section { padding: var(--section) 0; }
+.section [id] { scroll-margin-top: var(--s-900); }
+
+.head { display: grid; gap: var(--s-300); max-width: 760px; margin-bottom: var(--s-700); }
+.lead { max-width: 680px; }
+
+/* ---------- hero ---------- */
+.hero {
+  position: relative;
+  min-height: max(640px, 100svh);
+  display: flex;
+  align-items: center;
+  overflow: hidden;
+  isolation: isolate;
+}
+
+.scene { position: absolute; inset: 0; z-index: -1; background: var(--bg); }
+/* Desktop: dim the art behind the copy column so the type always reads. */
+@media (min-width: 1025px) {
+  .scene {
+    mask-image: linear-gradient(90deg, rgb(0 0 0 / 0.35) 0%, rgb(0 0 0 / 0.35) 30%, #000 58%), linear-gradient(180deg, #000 80%, transparent);
+    mask-composite: intersect;
+    -webkit-mask-image: linear-gradient(90deg, rgb(0 0 0 / 0.35) 0%, rgb(0 0 0 / 0.35) 30%, #000 58%), linear-gradient(180deg, #000 80%, transparent);
+    -webkit-mask-composite: source-in;
+  }
+}
+.scene canvas { opacity: 0; transition: opacity 900ms var(--ease); }
+.scene[data-ready="true"] canvas { opacity: 1; }
+.poster {
+  /* Same framing as the live scene: a square at full height (the scene keeps its vertical field in a
+     wide box), centred on the cryostat's axis, so the handover to the canvas does not move anything. */
+  position: absolute;
+  top: 0;
+  left: 50%;
+  height: 100%;
+  width: auto;
+  max-width: none;
+  aspect-ratio: 1;
+  transform: translateX(-50%);
+  transition: opacity 900ms var(--ease);
+}
+@media (min-width: 1025px) {
+  /* The square ends left of the copy column; fade its edge so it never shows as a seam. */
+  .poster {
+    left: 70%;
+    mask-image: linear-gradient(90deg, transparent 0%, #000 22%);
+    -webkit-mask-image: linear-gradient(90deg, transparent 0%, #000 22%);
+  }
+}
+.scene[data-ready="true"] .poster { opacity: 0; }
+
+.heroCopy {
+  width: 100%;
+  max-width: calc(var(--max) + 2 * var(--gutter));
+  margin: 0 auto;
+  padding: var(--s-900) var(--gutter);
+}
+.heroTitle { max-width: 680px; }
+.heroLine { display: block; animation: rise 800ms var(--ease) both; }
+.heroLine + .heroLine { animation-delay: 110ms; }
+.heroSub { max-width: 520px; margin-top: var(--s-300); animation: rise 800ms 220ms var(--ease) both; }
+.heroAction { margin-top: var(--s-400); animation: rise 800ms 300ms var(--ease) both; }
+
+@keyframes rise {
+  from { opacity: 0; transform: translateY(var(--s-300)); }
+}
+
+@media (max-width: 1024px) {
+  .hero { min-height: 0; flex-direction: column; align-items: stretch; }
+  .scene {
+    position: relative; inset: auto; z-index: 0; height: min(46svh, 420px);
+    mask-image: linear-gradient(180deg, #000 70%, transparent 100%);
+    -webkit-mask-image: linear-gradient(180deg, #000 70%, transparent 100%);
+  }
+  .heroCopy { padding-top: var(--s-300); padding-bottom: var(--s-700); }
+  .heroSub { margin-top: var(--s-200); }
+  .heroAction { margin-top: var(--s-300); }
+  .heroTitle.heroTitle { font-size: 48px; line-height: 48px; }
+}
+
+@media (max-width: 640px) {
+  .heroTitle.heroTitle { font-size: 30px; line-height: 36px; }
+  .heroSub { font-size: 16px; line-height: 24px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .heroLine, .heroSub, .heroAction { animation-name: fade; }
+  @keyframes fade { from { opacity: 0; } }
+}
+
+/* ---------- how it works ---------- */
+.steps {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--s-600) var(--s-400);
+  counter-reset: step;
+}
+.step { display: grid; max-width: 60ch; gap: var(--s-100); align-content: start; padding-top: var(--s-300); border-top: 1px solid var(--line); }
+.stepFlow { display: flex; align-items: baseline; gap: var(--s-100); }
+.stepIndex {
+  display: inline-grid;
+  place-items: center;
+  width: var(--s-300);
+  height: var(--s-300);
+  border-radius: 999px;
+  background: var(--surface-2);
+  color: var(--ink);
+  font-size: 12px;
+  line-height: 16px;
+  font-weight: 600;
+  flex: none;
+  transform: translateY(-2px);
+}
+
+@media (max-width: 1024px) { .steps { grid-template-columns: repeat(2, 1fr); } }
+@media (max-width: 640px) { .steps { grid-template-columns: 1fr; gap: var(--s-400); } }
+
+/* ---------- tagline ---------- */
+.taglineSection { padding: var(--s-900) 0; }
+.tagline { max-width: 680px; }
+.taglineLine { display: block; }
+
+/* The tagline shares its section with the catalog floor: the statement and the preset choice on the
+   left, the 12 QPUs on the right with the chosen preset's binding lit. */
+.taglineGrid {
+  display: grid;
+  grid-template-columns: minmax(0, 5fr) minmax(0, 6fr);
+  grid-template-areas: "tagline scene" "panel scene";
+  grid-template-rows: auto 1fr;
+  column-gap: var(--s-700);
+  row-gap: var(--s-600);
+  align-items: start;
+}
+.taglineGrid > .tagline { grid-area: tagline; }
+.catalog { display: contents; }
+.catalogScene {
+  grid-area: scene;
+  position: relative;
+  aspect-ratio: 1;
+  width: 100%;
+  max-width: 720px;
+  justify-self: end;
+  overflow: hidden;
+  background: var(--bg);
+  /* Fade the floor into the page on every side, so the square never shows as an edge. */
+  mask-image: linear-gradient(90deg, transparent, #000 10%, #000 90%, transparent), linear-gradient(180deg, transparent, #000 10%, #000 90%, transparent);
+  mask-composite: intersect;
+  -webkit-mask-image: linear-gradient(90deg, transparent, #000 10%, #000 90%, transparent), linear-gradient(180deg, transparent, #000 10%, #000 90%, transparent);
+  -webkit-mask-composite: source-in;
+}
+.catalogScene canvas { position: absolute; inset: 0; opacity: 0; transition: opacity 900ms var(--ease); }
+.catalogScene[data-ready="true"] canvas { opacity: 1; }
+.catalogPoster { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; transition: opacity 900ms var(--ease); }
+.catalogScene[data-ready="true"] .catalogPoster { opacity: 0; }
+.catalogPanel { grid-area: panel; display: grid; gap: var(--s-200); justify-items: start; align-self: end; }
+.catalogChoice { margin: 0; padding: 0; border: 0; min-width: 0; display: grid; gap: var(--s-75); }
+.catalogChoice legend { padding: 0; margin-bottom: var(--s-75); }
+.catalogResult {
+  display: grid;
+  gap: var(--s-50);
+  padding: var(--s-300);
+  min-width: 320px;
+  border: 1px solid var(--accent-edge);
+  border-radius: 8px;
+  background: var(--accent-wash);
+}
+.catalogLabel { color: var(--accent-soft); }
+
+/* Segmented choice and provider marker, as on /bind. */
+.segmented {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: var(--s-25);
+  padding: var(--s-50);
+  border: 1px solid var(--line-strong);
+  border-radius: 8px;
+  background: var(--bg);
+}
+.segmented label { position: relative; cursor: pointer; }
+.segmented input { position: absolute; opacity: 0; inset: 0; margin: 0; cursor: pointer; }
+.segmented span { display: block; padding: var(--s-50) var(--s-100); border-radius: 4px; color: var(--ink-2); transition: background-color 300ms var(--ease), color 300ms var(--ease); }
+.segmented label:hover span { color: var(--ink); }
+.segmented input:checked + span { background: var(--surface-2); color: var(--ink); }
+.segmented input:focus-visible + span { outline: 2px solid var(--accent-soft); outline-offset: 2px; }
+.provider { display: inline-flex; align-items: center; gap: var(--s-75); }
+.provider::before { content: ""; width: 8px; height: 8px; border-radius: 999px; background: var(--ink-3); }
+.provider[data-provider="ibm"]::before { background: var(--provider-ibm); }
+.provider[data-provider="braket"]::before { background: var(--provider-braket); }
+
+@media (max-width: 1024px) {
+  .taglineGrid { grid-template-columns: minmax(0, 1fr); grid-template-areas: "tagline" "scene" "panel"; grid-template-rows: auto; row-gap: var(--s-400); }
+  .catalogScene { justify-self: stretch; max-width: none; }
+  .catalogResult { min-width: 0; width: 100%; }
+}
+.taglineLine + .taglineLine { margin-top: var(--s-300); }
+.tagline [data-word] { transition: opacity 500ms var(--ease); }
+.tagline [data-word][data-lit="false"] { opacity: 0.3; }
+
+/* ---------- results ---------- */
+.rq {
+  display: grid;
+  grid-template-columns: 4fr 8fr;
+  gap: var(--s-400);
+  padding: var(--s-600) 0;
+  border-top: 1px solid var(--line);
+}
+.rqLabel { display: grid; gap: var(--s-50); align-content: start; }
+.rqBody { display: grid; gap: var(--s-300); justify-items: start; }
+.rqBody > p { max-width: 68ch; }
+.figure { color: var(--ink); font-variant-numeric: tabular-nums; }
+.facts { display: grid; grid-template-columns: repeat(2, 1fr); gap: var(--s-500) var(--s-400); width: 100%; }
+.facts > div { display: grid; gap: var(--s-75); align-content: start; }
+.presets { display: flex; flex-wrap: wrap; gap: var(--s-75); }
+.scope { max-width: 680px; padding-top: var(--s-300); border-top: 1px solid var(--line); }
+
+@media (max-width: 760px) {
+  .rq { grid-template-columns: 1fr; gap: var(--s-300); }
+  .facts { grid-template-columns: 1fr; }
+}
+
+/* ---------- code ---------- */
+.code {
+  min-width: 0;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  background: var(--bg);
+  overflow: hidden;
+}
+.codeBar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--s-200);
+  padding: var(--s-75) var(--s-75) var(--s-75) var(--s-200);
+  border-bottom: 1px solid var(--line);
+}
+.code pre {
+  margin: 0;
+  padding: var(--s-200);
+  overflow-x: auto;
+  font-size: 14px;
+  line-height: 20px;
+  color: var(--ink-2);
+  tab-size: 2;
+}
+
+/* ---------- api ---------- */
+.api { display: grid; gap: var(--s-300); }
+.apiFoot { display: flex; align-items: center; justify-content: space-between; gap: var(--s-300); margin-top: var(--s-400); flex-wrap: wrap; }
+.apiNotes { display: grid; gap: var(--s-75); }
+.apiNotes p { text-wrap: pretty; }
+
+
+/* ---------- faq ---------- */
+.faqGrid { display: grid; grid-template-columns: 4fr 8fr; gap: var(--s-400); }
+.faqGrid .head { margin-bottom: 0; align-self: start; position: sticky; top: var(--s-900); }
+.faq { display: grid; gap: var(--s-75); }
+.qa { border-radius: 16px; background: var(--surface-1); transition: background-color 300ms var(--ease); }
+.qa[open] { background: var(--surface-2); }
+.qa summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--s-300);
+  padding: var(--s-300);
+  cursor: pointer;
+  list-style: none;
+  border-radius: 16px;
+}
+.qa summary::-webkit-details-marker { display: none; }
+.qa:not([open]):hover { background: var(--surface-2); }
+.caret { flex: none; color: var(--ink-3); transition: transform 500ms var(--ease); }
+.qa[open] .caret { transform: rotate(180deg); }
+.qa p { padding: 0 var(--s-300) var(--s-300); max-width: 68ch; }
+
+@media (max-width: 760px) {
+  .faqGrid { grid-template-columns: 1fr; }
+  .faqGrid .head { position: static; }
+}
+
+/* ---------- cite ---------- */
+.cite { display: grid; gap: var(--s-300); }
+.citeLinks { display: flex; flex-wrap: wrap; align-items: center; gap: var(--s-200); margin-top: var(--s-400); }
+
+
+/* ---------- final + footer ---------- */
+.final { padding: var(--s-900) 0; background: var(--surface-1); }
+.final .inner { display: flex; align-items: center; justify-content: space-between; gap: var(--s-400); flex-wrap: wrap; }
+.final h2 { max-width: 680px; }
+
+.footer { padding: var(--s-600) 0; }
+.footerRow { display: flex; justify-content: space-between; gap: var(--s-300); flex-wrap: wrap; }
+/* The mono lockup (the brand kit's footer version) beside the credit line. */
+.footerBrand { display: flex; align-items: center; gap: var(--s-200); flex-wrap: wrap; }
+.footerMark { display: block; flex: none; width: 73px; height: 24px; }
+.footerLinks { display: flex; gap: var(--s-300); flex-wrap: wrap; }
+.footerLinks a { color: var(--ink-2); }
+
+/* RQ labels: "RQ1 · Expressiveness" on one line when the label column is wide; on tablet the column
+   is narrow, so the name drops under the number instead of leaving a dangling separator. */
+@media (max-width: 1024px) and (min-width: 641px) {
+  .rqSep { display: none; }
+  .rqName { display: block; }
+}

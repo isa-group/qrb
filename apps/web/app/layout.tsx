@@ -1,91 +1,66 @@
-import type { Metadata } from "next";
-import { Geist, Geist_Mono, Inter } from "next/font/google";
+import type { Metadata, Viewport } from "next";
+import { Geist, Geist_Mono } from "next/font/google";
+
+import { SiteNav } from "@/components/site-nav";
+
 import "./globals.css";
 
-import { CommandPalette } from "@/components/command-palette";
-import { CommandPaletteProvider } from "@/components/command-palette-context";
-import { QueryProvider } from "@/components/query-provider";
-import { ThemeProvider } from "@/components/theme-provider";
-import { TooltipProvider } from "@/components/ui/tooltip";
-import { NavBar } from "@/components/nav-bar";
-
-// Variable names are namespaced (--next-font-*) so they don't collide with
-// the design-doc-named Tailwind theme keys (--font-geist-sans etc.) declared
-// in globals.css, which alias to these.
-const geistSans = Geist({
-  variable: "--next-font-geist-sans",
+const geist = Geist({
   subsets: ["latin"],
+  variable: "--font-geist",
+  display: "swap",
 });
-
 const geistMono = Geist_Mono({
-  variable: "--next-font-geist-mono",
   subsets: ["latin"],
-});
-
-const inter = Inter({
-  variable: "--next-font-inter",
-  subsets: ["latin"],
+  variable: "--font-geist-mono",
+  display: "swap",
 });
 
 export const metadata: Metadata = {
-  title: {
-    default: "QRB",
-    template: "%s · QRB",
-  },
+  title:
+    "QRB · Quantum Resource Binder: optimal QPU selection for your preferences",
   description:
-    "Declarative quantum resource binding — a live catalog, preferences, and a binding engine.",
-  applicationName: "QRB",
-  keywords: [
-    "quantum computing",
-    "quantum resource selection",
-    "IBM Quantum",
-    "Amazon Braket",
-    "qubit binding",
-    "QoS-aware service composition",
-  ],
-  formatDetection: { telephone: false },
+    "QRB turns an OpenQASM 3 circuit and declared preferences into the optimal binding across IBM Quantum and Amazon Braket QPUs, solved exactly with OpenBinding. It never runs jobs. ICSOC 2026.",
   openGraph: {
-    title: "QRB",
+    title: "QRB · Quantum Resource Binder",
     description:
-      "Declarative quantum resource binding — a live catalog, preferences, and a binding engine.",
-    siteName: "QRB",
+      "Declare what matters. QRB binds your circuit to the quantum resource that is optimal for your preferences, across IBM Quantum and Amazon Braket.",
+    images: [
+      {
+        url: "/og-image.png",
+        width: 1200,
+        height: 630,
+        alt: "QRB, Quantum Resource Binder: declare what matters, get the right QPU for it.",
+      },
+    ],
     type: "website",
   },
-  twitter: {
-    card: "summary_large_image",
-    title: "QRB",
-    description:
-      "Declarative quantum resource binding — a live catalog, preferences, and a binding engine.",
-  },
-  robots: {
-    index: true,
-    follow: true,
+  twitter: { card: "summary_large_image", images: ["/og-image.png"] },
+  // The "Bound Q" mark from brand/ (web/ in the brand kit).
+  icons: {
+    icon: [
+      { url: "/favicon.ico", sizes: "48x48" },
+      { url: "/favicon.svg", type: "image/svg+xml" },
+    ],
+    apple: "/apple-touch-icon.png",
   },
 };
 
+export const viewport: Viewport = { themeColor: "#10151d" };
+
 export default function RootLayout({
   children,
-}: Readonly<{
+}: {
   children: React.ReactNode;
-}>) {
+}) {
   return (
-    <html
-      lang="en"
-      suppressHydrationWarning
-      className={`${geistSans.variable} ${geistMono.variable} ${inter.variable} h-full antialiased`}
-    >
-      <body className="min-h-full flex flex-col">
-        <ThemeProvider>
-          <QueryProvider>
-            <TooltipProvider delayDuration={150}>
-              <CommandPaletteProvider>
-                <CommandPalette />
-                <NavBar />
-                <div className="flex-1 flex flex-col">{children}</div>
-              </CommandPaletteProvider>
-            </TooltipProvider>
-          </QueryProvider>
-        </ThemeProvider>
+    <html lang="en" className={`${geist.variable} ${geistMono.variable}`}>
+      <body>
+        <a className="skip btn btn-primary button-sm" href="#main">
+          Skip to content
+        </a>
+        <SiteNav />
+        <main id="main">{children}</main>
       </body>
     </html>
   );

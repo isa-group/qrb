@@ -1,182 +1,243 @@
-@import "tailwindcss";
-@import "tw-animate-css";
-@import "shadcn/tailwind.css";
-
-/*
- * Design tokens ported from .claude/DESINGN.md (QRB Design Reference v2).
- * Dark is the default, unprefixed root theme; `.light` / `[data-theme="light"]`
- * override the design-doc color tokens below for the secondary light theme.
- * Every derived alias (shadcn's --color-background, --color-primary, etc.)
- * points at those tokens via var(), so overriding the base token alone is
- * enough — nothing needs to be redeclared per-theme twice.
- *
- * Naming notes:
- * - The design doc calls the accent color "Current". Tailwind reserves
- *   `current` as a hardcoded `currentColor` keyword (verified empirically: a
- *   `--color-current` theme key is silently ignored for text-/bg-/border-
- *   current utilities), and shadcn's own components already hard-code
- *   `bg-primary`/`text-primary-foreground` for the exact same "brand action
- *   color" role. So "Current" is registered as `--color-primary` — same
- *   role shadcn already expects, no parallel token system.
- * - shadcn's own generic `--accent` (a neutral hover/highlight surface used
- *   internally by menu/command/dropdown components) is a different concept
- *   from the brand violet, so it's kept distinct and mapped to the panel
- *   surface rather than repurposed for violet.
- */
-
-@custom-variant light (&:where(.light, .light *));
-
-@theme {
-  /* Fonts — aliased from the next/font variables set in app/layout.tsx */
-  --font-geist-sans: var(--next-font-geist-sans), "FK Grotesk", ui-sans-serif,
-    system-ui, sans-serif;
-  --font-inter: var(--next-font-inter), ui-sans-serif, system-ui, sans-serif;
-  --font-geist-mono: var(--next-font-geist-mono), "JetBrains Mono",
-    ui-monospace, monospace;
-  --font-sans: var(--font-inter);
-  --font-mono: var(--font-geist-mono);
-
-  /* Type scale (§5) */
-  --text-caption: 11px;
-  --text-caption--line-height: 1.45;
-  --text-mono-caption: 11px;
-  --text-mono-caption--line-height: 1.4;
-  --text-body: 14px;
-  --text-body--line-height: 1.5;
-  --text-body-lg: 16px;
-  --text-body-lg--line-height: 1.5;
-  --text-mono-body: 13px;
-  --text-mono-body--line-height: 1.4;
-  --text-subheading: 18px;
-  --text-subheading--line-height: 1.4;
-  --text-heading-sm: 20px;
-  --text-heading-sm--line-height: 1.3;
-  --text-heading: 24px;
-  --text-heading--line-height: 1.25;
-  --text-heading-lg: 32px;
-  --text-heading-lg--line-height: 1.15;
-  --text-display: 40px;
-  --text-display--line-height: 1.05;
-  --text-mono-display: 20px;
-  --text-mono-display--line-height: 1.2;
-
-  /* Radius (§6) — literal scale, overrides both Tailwind's and shadcn's default proportional scale */
-  --radius-xs: 4px;
-  --radius-sm: 6px;
-  --radius-md: 8px;
-  --radius-lg: 10px;
-  --radius-xl: 10px;
-  --radius-full: 9999px;
-
-  /* Elevation exceptions (§8) — everything else is border-first, no shadow */
-  --shadow-focus: 0 0 0 2px var(--color-void), 0 0 0 4px var(--color-primary);
-  --shadow-live-pulse: 0 0 12px rgba(139, 92, 246, 0.35);
-
-  /* Colors — dark values are the default (§4) */
-  --color-void: #09090b;
-  --color-panel: #111113;
-  --color-instrument: #18181b;
-  --color-deep-well: #202024;
-  --color-hairline: rgba(255, 255, 255, 0.08);
-  --color-hairline-bright: rgba(255, 255, 255, 0.14);
-  --color-ink-primary: #f4f4f5;
-  --color-ink-secondary: #a1a1aa;
-  --color-ink-tertiary: #71717a;
-  --color-ink-faint: #52525b;
-  --color-primary: #8b5cf6;
-  --color-primary-foreground: var(--color-void);
-  --color-primary-bright: #a78bfa;
-  --color-primary-dim: rgba(139, 92, 246, 0.14);
-  --color-eligible: #34d399;
-  --color-eligible-dim: rgba(52, 211, 153, 0.12);
-  --color-pending: #fbbf24;
-  --color-pending-dim: rgba(251, 191, 36, 0.12);
-  --color-violation: #f87171;
-  --color-violation-dim: rgba(248, 113, 113, 0.12);
-  --color-provider-ibm: #78a9ff;
-  --color-provider-aws: #fb923c;
-
-  /* shadcn semantic aliases — point at the design-doc tokens above so shadcn/ui
-     components (Button, Dialog, Command, Sidebar, ...) inherit the same theme
-     with no separate palette to keep in sync. */
-  --color-background: var(--color-void);
-  --color-foreground: var(--color-ink-primary);
-  --color-card: var(--color-instrument);
-  --color-card-foreground: var(--color-ink-primary);
-  --color-popover: var(--color-deep-well);
-  --color-popover-foreground: var(--color-ink-primary);
-  --color-secondary: var(--color-panel);
-  --color-secondary-foreground: var(--color-ink-primary);
-  --color-muted: var(--color-panel);
-  --color-muted-foreground: var(--color-ink-tertiary);
-  --color-accent: var(--color-panel);
-  --color-accent-foreground: var(--color-ink-primary);
-  --color-destructive: var(--color-violation);
-  --color-border: var(--color-hairline);
-  --color-input: var(--color-hairline-bright);
-  --color-ring: var(--color-primary);
-  --color-sidebar: var(--color-panel);
-  --color-sidebar-foreground: var(--color-ink-secondary);
-  --color-sidebar-primary: var(--color-primary);
-  --color-sidebar-primary-foreground: var(--color-void);
-  --color-sidebar-accent: var(--color-primary-dim);
-  --color-sidebar-accent-foreground: var(--color-primary);
-  --color-sidebar-border: var(--color-hairline);
-  --color-sidebar-ring: var(--color-primary);
-}
+/* QRB visual system: landing-page-design rules (flat dark grounds, Tailwind type, radius
+   and spacing scales, one base easing curve), Geist throughout, Geist Mono for code only. */
 
 :root {
-  /* Layout (§6) — referenced via arbitrary-value utilities, e.g. max-w-(--page-max-width) */
-  --page-max-width: 1240px;
-  --reading-max-width: 760px;
-  --section-gap: 48px;
-  --card-padding: 16px;
-  --element-gap: 8px;
-  --sidebar-width: 260px;
+  /* Spacing tokens */
+  --s-25: 2px;
+  --s-50: 4px;
+  --s-75: 8px;
+  --s-100: 12px;
+  --s-200: 16px;
+  --s-300: 24px;
+  --s-400: 32px;
+  --s-500: 40px;
+  --s-600: 48px;
+  --s-700: 64px;
+  --s-800: 80px;
+  --s-900: 96px;
+
+  --gutter: var(--s-900);
+  --section: var(--s-900);
+  --max: 1248px;
+
+  --ease: cubic-bezier(0.22, 1, 0.36, 1);
+
+  --font-sans: var(--font-geist), system-ui, sans-serif;
+  --font-mono: var(--font-geist-mono), ui-monospace, monospace;
 }
 
-.light,
-[data-theme="light"] {
-  --color-void: #ffffff;
-  --color-panel: #f6f6f7;
-  --color-instrument: #ffffff;
-  --color-deep-well: #eeeef0;
-  --color-hairline: rgba(9, 9, 11, 0.1);
-  --color-hairline-bright: rgba(9, 9, 11, 0.18);
-  --color-ink-primary: #0a0a0b;
-  --color-ink-secondary: #52525b;
-  --color-ink-tertiary: #71717a;
-  --color-ink-faint: #a1a1aa;
-  --color-primary: #7c3aed;
-  --color-primary-foreground: #ffffff;
-  --color-primary-bright: #6d28d9;
-  --color-primary-dim: rgba(124, 58, 237, 0.1);
-  --color-eligible: #059669;
-  --color-eligible-dim: rgba(5, 150, 105, 0.1);
-  --color-pending: #d97706;
-  --color-pending-dim: rgba(217, 119, 6, 0.1);
-  --color-violation: #dc2626;
-  --color-violation-dim: rgba(220, 38, 38, 0.1);
-  --color-provider-ibm: #0f62fe;
-  --color-provider-aws: #ea580c;
-
-  --shadow-focus: 0 0 0 2px var(--color-void), 0 0 0 4px var(--color-primary);
-  --shadow-live-pulse: 0 0 12px rgba(124, 58, 237, 0.25);
+/* ---------- theme: Monospace (Google IDX), github.com/keksiqc/monospace-theme, MIT. Dark only. ---------- */
+:root {
+  color-scheme: dark;
+  /* Grounds */
+  --bg: #10151d;
+  --surface-1: #171f2b;
+  --surface-2: #1f2939;
+  --line: #333e4f;
+  --line-strong: #3d495a;
+  /* Ink (13.7, 9.6 and 6.2 to 1 on the ground) */
+  --ink: #d9dfe7;
+  --ink-2: #b4bdc9;
+  --ink-3: #8b98a9;
+  /* The one action colour. Its text is dark: black holds 7.1:1 on #a87ffb, white only 3.0:1. */
+  --accent: #a87ffb;
+  --accent-hover: #b895fd;
+  --accent-ink: #000000;
+  --accent-soft: #bd9cfe;
+  --selection: rgb(38 77 203 / 0.5);
+  /* Errors only. 6.2:1 on the ground. */
+  --danger: #f76769;
+  /* The winner: the violet at about 16% and 40% over the ground. */
+  --accent-wash: #282640;
+  --accent-edge: #4d3f76;
+  /* Providers (data only) */
+  --provider-ibm: #92a9ff;
+  --provider-braket: #ff9e64;
+  /* Weight features (data only), Monospace token colours */
+  --feat-expected_fidelity: #77d5a3;
+  --feat-cost: #ffd395;
+  --feat-queue: #fd8da3;
+  --feat-critical_depth: #85cdf1;
+  --feat-estimated_success_probability: #bd9cfe;
+  /* Code */
+  --code-key: #85cdf1;
+  --code-string: #77d5a3;
+  --code-number: #92a9ff;
+  --code-fn: #bd9cfe;
+  --code-keyword: #fd8da3;
+  --code-punct: #9ca7b6;
+  --code-comment: #7f8d9f;
+  /* Translucent nav and menu */
+  --nav-fill: rgb(23 31 43 / 0.6);
+  --menu-fill: rgb(16 21 29 / 0.86);
+  /* Hero headline gradient */
+  --hero-from: #d9dfe7;
+  --hero-to: #8b98a9;
 }
 
-@layer base {
-  * {
-    @apply border-border outline-ring/50;
-  }
-  body {
-    @apply bg-background text-foreground;
-  }
-  html {
-    @apply font-sans;
-  }
+@media (max-width: 1024px) {
+  :root { --gutter: var(--s-600); }
+}
+@media (max-width: 640px) {
+  :root { --gutter: var(--s-300); --section: var(--s-700); }
 }
 
-::selection {
-  background: var(--color-primary-dim);
-  color: var(--color-ink-primary);
+*,
+*::before,
+*::after { box-sizing: border-box; }
+
+html {
+  background: var(--bg);
+  scroll-behavior: smooth;
+  scrollbar-color: var(--line-strong) var(--bg);
 }
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+}
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--font-sans);
+  font-size: 16px;
+  line-height: 24px;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+  font-variant-numeric: tabular-nums;
+}
+
+h1, h2, h3, h4, h5, h6, p, figure, blockquote, dl, dd, ol, ul { margin: 0; }
+ol, ul { padding: 0; list-style: none; }
+h1, h2, h3, h4, h5, h6 { text-wrap: balance; }
+p, li, dd { text-wrap: pretty; }
+img { display: block; max-width: 100%; }
+/* Form controls take the page face; browsers default them to the system font. */
+button, input, select, textarea { font: inherit; color: inherit; }
+
+a { color: inherit; text-decoration-color: var(--line-strong); text-underline-offset: 4px; }
+a:hover { text-decoration-color: var(--ink-3); }
+
+::selection { background: var(--selection); color: var(--ink); }
+
+:focus-visible {
+  outline: 2px solid var(--accent-soft);
+  outline-offset: 3px;
+  border-radius: 4px;
+}
+
+/* Text styles (landing-page-design B1) */
+.heading-1 { font-size: 60px; line-height: 60px; font-weight: 600; letter-spacing: -0.035em; }
+.heading-2 { font-size: 48px; line-height: 48px; font-weight: 600; letter-spacing: -0.03em; }
+.heading-3 { font-size: 36px; line-height: 40px; font-weight: 600; letter-spacing: -0.025em; }
+.heading-4 { font-size: 30px; line-height: 36px; font-weight: 600; letter-spacing: -0.02em; }
+.heading-5 { font-size: 24px; line-height: 32px; font-weight: 600; letter-spacing: -0.015em; }
+.heading-6 { font-size: 20px; line-height: 28px; font-weight: 600; }
+.title-1 { font-size: 20px; line-height: 28px; font-weight: 500; }
+.title-2 { font-size: 18px; line-height: 28px; font-weight: 500; }
+.title-3 { font-size: 16px; line-height: 24px; font-weight: 500; }
+.title-4 { font-size: 14px; line-height: 20px; font-weight: 500; }
+.body-3 { font-size: 16px; line-height: 24px; font-weight: 400; }
+.body-5 { font-size: 14px; line-height: 20px; font-weight: 500; }
+.body-6 { font-size: 14px; line-height: 20px; font-weight: 400; }
+.button-md { font-size: 16px; line-height: 24px; font-weight: 600; }
+.button-sm { font-size: 14px; line-height: 20px; font-weight: 600; }
+.caption-2 { font-size: 14px; line-height: 20px; font-weight: 400; }
+.caption-4 { font-size: 12px; line-height: 16px; font-weight: 500; }
+
+@media (max-width: 640px) {
+  .heading-2 { font-size: 30px; line-height: 36px; }
+  .heading-3 { font-size: 30px; line-height: 36px; }
+}
+
+.muted { color: var(--ink-3); }
+.soft { color: var(--ink-2); }
+
+/* Buttons */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--s-75);
+  padding: var(--s-75) var(--s-100);
+  border-radius: 8px;
+  border: 1px solid transparent;
+  text-decoration: none;
+  cursor: pointer;
+  transition: background-color 300ms var(--ease), border-color 300ms var(--ease), transform 500ms var(--ease);
+}
+.btn:active { transform: translateY(1px); }
+.btn-primary { background: var(--accent); color: var(--accent-ink); }
+.btn-primary:hover { background: var(--accent-hover); }
+.btn-secondary { background: transparent; color: var(--ink); border-color: var(--line-strong); }
+.btn-secondary:hover { background: var(--surface-1); border-color: var(--ink-3); }
+.btn[aria-disabled="true"] { color: var(--ink-3); border-color: var(--line); cursor: not-allowed; }
+.btn[aria-disabled="true"]:hover { background: transparent; border-color: var(--line); }
+.btn[aria-disabled="true"]:active { transform: none; }
+.btn-primary[aria-disabled="true"],
+.btn-primary[aria-disabled="true"]:hover { background: var(--surface-2); border-color: transparent; color: var(--ink-3); }
+
+/* Text link with arrow */
+.link {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--s-50);
+  color: var(--ink);
+  text-decoration: none;
+}
+.link svg { transition: transform 300ms var(--ease); }
+.link:hover svg { transform: translateX(var(--s-50)); }
+
+/* Skip link */
+.skip {
+  position: fixed;
+  left: var(--s-200);
+  top: var(--s-200);
+  z-index: 100;
+  transform: translateY(-200%);
+  transition: transform 300ms var(--ease);
+}
+.skip:focus-visible { transform: none; }
+
+/* Code */
+code, pre, kbd, samp { font-family: var(--font-mono); }
+:not(pre) > code {
+  font-size: 0.875em;
+  padding: var(--s-25) var(--s-50);
+  border-radius: 4px;
+  background: var(--surface-2);
+}
+
+/* Scroll reveals: content is visible by default; only script marks it pending. */
+[data-reveal="pending"] { opacity: 0; transform: translateY(var(--s-400)); }
+[data-reveal="in"] {
+  opacity: 1;
+  transform: none;
+  transition: opacity 700ms var(--ease), transform 700ms var(--ease);
+}
+@media (prefers-reduced-motion: reduce) {
+  [data-reveal="pending"] { transform: none; }
+  [data-reveal="in"] { transition: opacity 700ms var(--ease); }
+}
+
+/* Screen reader only text */
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* Code colours (components/highlight.tsx): drawn from the palette, so code reads as part of the site.
+   Monospace's token colours: property names sky, strings green, constants blue, entities purple, keywords pink. */
+.tok-key { color: var(--code-key); }
+.tok-string { color: var(--code-string); }
+.tok-number { color: var(--code-number); }
+.tok-fn { color: var(--code-fn); }
+.tok-keyword { color: var(--code-keyword); }
+.tok-punct { color: var(--code-punct); }
+.tok-comment { color: var(--code-comment); }

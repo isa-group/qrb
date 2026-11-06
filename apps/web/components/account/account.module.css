@@ -1,0 +1,377 @@
+/* /signin (Read) and /account (Operate): the shared layer, the same controls, wells and states as
+   /bind and /catalog. */
+
+.page {
+  max-width: calc(var(--max) + 2 * var(--gutter));
+  margin: 0 auto;
+  padding: calc(var(--s-900) + var(--s-200)) var(--gutter) var(--s-900);
+}
+
+/* ---------- sign in ---------- */
+.narrow {
+  max-width: calc(520px + 2 * var(--gutter));
+  margin: 0 auto;
+  padding: calc(var(--s-900) + var(--s-600)) var(--gutter) var(--s-900);
+}
+.narrow h1 { text-wrap: balance; }
+.lead { margin-top: var(--s-200); text-wrap: pretty; }
+.providers { display: grid; gap: var(--s-100); margin-top: var(--s-500); }
+.provider { justify-content: center; width: 100%; padding-block: var(--s-100); }
+.provider:disabled { opacity: 0.5; cursor: not-allowed; }
+.facts {
+  display: grid;
+  gap: var(--s-100);
+  margin-top: var(--s-500);
+  padding: 0;
+  list-style: none;
+  text-wrap: pretty;
+}
+.facts li { padding-top: var(--s-100); border-top: 1px solid var(--line); }
+.notice {
+  margin-top: var(--s-500);
+  padding: var(--s-200) var(--s-300);
+  border-radius: 16px;
+  background: var(--surface-1);
+  color: var(--ink-2);
+}
+
+/* ---------- account: ledger rows ----------
+   No panels. The page is a ledger on the ground: each topic is a row ruled by a hairline, its label
+   column (4fr) beside its content (8fr), the DESIGN.md split for grouped rows. Activity runs full
+   width last. Only wells (code, the circuit) and an open bind row step up a tone. */
+
+.head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--s-300);
+  padding-bottom: var(--s-600);
+}
+.who { display: flex; align-items: center; gap: var(--s-200); min-width: 0; }
+.who h1 { overflow-wrap: anywhere; }
+
+.row {
+  display: grid;
+  grid-template-columns: minmax(0, 4fr) minmax(0, 8fr);
+  gap: var(--s-200) var(--s-400);
+  padding: var(--s-600) 0;
+  border-top: 1px solid var(--line);
+}
+.rowLabel { display: grid; gap: var(--s-75); align-content: start; max-width: 320px; }
+.rowLabel p { text-wrap: pretty; }
+.rowBody { display: grid; gap: var(--s-400); min-width: 0; }
+
+.today { display: grid; gap: var(--s-200); }
+.figure { display: flex; flex-wrap: wrap; align-items: baseline; gap: var(--s-75); font-variant-numeric: tabular-nums; }
+
+/* The day's budget: a Raised Graphite track filled by source, Danger when nothing is left. */
+.meter { display: flex; height: 8px; border-radius: 999px; background: var(--surface-2); overflow: hidden; }
+.meterKey,
+.meterBrowser,
+.meterOther { display: block; height: 100%; }
+.meterKey { background: var(--ink); }
+.meterBrowser { background: var(--ink-3); }
+.meterOther { background: var(--line-strong); }
+.meter[data-out] .meterKey,
+.meter[data-out] .meterBrowser { background: var(--danger); }
+
+.split { display: flex; flex-wrap: wrap; gap: var(--s-75) var(--s-300); }
+.legendKey,
+.legendBrowser,
+.legendOther,
+.legendQuota { display: inline-flex; align-items: center; gap: var(--s-75); }
+.legendKey::before,
+.legendBrowser::before,
+.legendOther::before { content: ""; width: 8px; height: 8px; border-radius: 2px; }
+.legendKey::before { background: var(--ink); }
+.legendBrowser::before { background: var(--ink-3); }
+.legendOther::before { background: var(--line-strong); }
+.legendQuota::before { content: ""; width: 12px; border-top: 1px dashed var(--ink-3); }
+
+/* ---------- 30-day chart ---------- */
+.chartWrap { display: grid; gap: var(--s-100); }
+.readout { display: flex; flex-wrap: wrap; align-items: baseline; gap: var(--s-25) var(--s-75); min-height: 20px; font-variant-numeric: tabular-nums; }
+.chart {
+  position: relative;
+  display: grid;
+  grid-template-columns: repeat(30, minmax(0, 1fr));
+  align-items: end;
+  gap: var(--s-50);
+  height: 176px;
+  border-bottom: 1px solid var(--line);
+  border-radius: 4px 4px 0 0;
+  cursor: default;
+}
+.chart:focus-visible { outline: 2px solid var(--accent-soft); outline-offset: 6px; }
+.bar {
+  display: flex;
+  flex-direction: column-reverse;
+  height: 100%;
+  min-width: 0;
+  border-radius: 4px 4px 0 0;
+  transition: background-color 300ms var(--ease);
+}
+.bar:hover,
+.bar[data-active] { background: var(--surface-1); }
+.barKey,
+.barBrowser { display: block; flex: none; width: 100%; }
+.barKey { background: var(--ink); }
+.barBrowser { background: var(--ink-3); }
+/* The budget line carries no label inside the plot (it would sit on the tallest bars); the legend names it. */
+.quotaLine { position: absolute; left: 0; right: 0; border-top: 1px dashed var(--ink-3); pointer-events: none; }
+.chartAxis { position: relative; height: 16px; white-space: nowrap; }
+.chartAxis span { position: absolute; top: 0; }
+.chartAxis span:first-child { left: 0; }
+.chartAxis .axisMid { transform: translateX(-50%); }
+.chartAxis .axisToday { right: 0; color: var(--ink-2); }
+.legend { display: flex; flex-wrap: wrap; align-items: center; gap: var(--s-100) var(--s-300); }
+.chartHint { margin-left: auto; }
+
+/* ---------- costs: a quiet disclosure under the chart ---------- */
+.costs { border-top: 1px solid var(--line); }
+.costs summary {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--s-75);
+  margin-top: var(--s-200);
+  color: var(--ink);
+  cursor: pointer;
+  list-style: none;
+}
+.costs summary::-webkit-details-marker { display: none; }
+.costs summary:focus-visible { outline: 2px solid var(--accent-soft); outline-offset: 3px; border-radius: 4px; }
+.costsCaret { color: var(--ink-3); transition: transform 500ms var(--ease); }
+.costs[open] .costsCaret { transform: rotate(180deg); }
+.limits { width: 100%; margin-top: var(--s-200); border-collapse: collapse; text-align: left; font-variant-numeric: tabular-nums; }
+.limits th,
+.limits td { padding: var(--s-100) 0; border-top: 1px solid var(--line); vertical-align: top; }
+.limits th { width: 36%; padding-right: var(--s-200); font-weight: 500; color: var(--ink-2); }
+.limits td { color: var(--ink-3); text-wrap: pretty; }
+.limits td > span { display: block; }
+.limits .price { color: var(--ink); }
+
+/* ---------- API key ---------- */
+.empty { display: grid; gap: var(--s-200); justify-items: start; max-width: 60ch; }
+/* The new key, once: on the winner's violet wash, the key in Geist Mono (machine output). */
+.secret {
+  display: grid;
+  gap: var(--s-100);
+  padding: var(--s-200);
+  border: 1px solid var(--accent-edge);
+  border-radius: 8px;
+  background: var(--accent-wash);
+}
+.secretRow { display: flex; flex-wrap: wrap; align-items: center; gap: var(--s-100); }
+.secretValue {
+  flex: 1 1 240px;
+  min-width: 0;
+  padding: var(--s-75) var(--s-100);
+  border-radius: 4px;
+  background: var(--bg);
+  font-family: var(--font-mono);
+  font-size: 14px;
+  line-height: 20px;
+  overflow-wrap: anywhere;
+  user-select: all;
+}
+.keyRow { display: flex; flex-wrap: wrap; align-items: flex-start; justify-content: space-between; gap: var(--s-200); }
+/* Under the one-time secret, a rule separates the key's own row from it. */
+.secret + .keyRow { padding-top: var(--s-200); border-top: 1px solid var(--line); }
+.keyStart { font-family: var(--font-mono); font-size: 14px; }
+.confirm { display: grid; gap: var(--s-100); max-width: 320px; }
+.confirmActions { display: flex; flex-wrap: wrap; gap: var(--s-75); }
+.danger { color: var(--danger); border-color: var(--danger); }
+.danger:hover { border-color: var(--danger); }
+
+.code { margin: 0; border: 1px solid var(--line); border-radius: 8px; overflow: hidden; background: var(--bg); }
+.code figcaption {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--s-100);
+  flex-wrap: wrap;
+  padding: var(--s-75) var(--s-75) var(--s-75) var(--s-200);
+  border-bottom: 1px solid var(--line);
+}
+.code pre {
+  margin: 0;
+  overflow-x: auto;
+  padding: var(--s-200);
+  font-family: var(--font-mono);
+  font-size: 12px;
+  line-height: 16px;
+  color: var(--ink-2);
+}
+
+/* ---------- activity ---------- */
+.activity { display: grid; gap: var(--s-300); padding-top: var(--s-600); border-top: 1px solid var(--line); }
+.activityHead { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: var(--s-200); }
+.activityHead p { margin-top: var(--s-75); }
+.activityTools { display: flex; flex-wrap: wrap; align-items: center; gap: var(--s-100); }
+.segmented {
+  display: inline-flex;
+  gap: var(--s-25);
+  padding: var(--s-50);
+  border: 1px solid var(--line-strong);
+  border-radius: 8px;
+  background: var(--bg);
+}
+.segmented label { position: relative; cursor: pointer; }
+.segmented input { position: absolute; opacity: 0; inset: 0; margin: 0; cursor: pointer; }
+.segmented span {
+  display: block;
+  padding: var(--s-50) var(--s-100);
+  border-radius: 4px;
+  color: var(--ink-2);
+  transition: background-color 300ms var(--ease), color 300ms var(--ease);
+}
+.segmented label:hover span { color: var(--ink); }
+.segmented input:checked + span { background: var(--surface-2); color: var(--ink); }
+.segmented input:focus-visible + span { outline: 2px solid var(--accent-soft); outline-offset: 2px; }
+
+.tableWrap { overflow-x: auto; }
+/* Rules run exactly the page's width: the outer cells carry no side padding. */
+.activityTable tr > :first-child { padding-left: 0; }
+.activityTable tr > :last-child { padding-right: 0; }
+.activityTable tbody tr[data-open] > :first-child,
+.activityTable tbody tr.detailRow > td { padding-left: var(--s-200); }
+.activityTable tbody tr[data-open] > :last-child { padding-right: var(--s-100); }
+.activityTable { width: 100%; border-collapse: collapse; text-align: left; font-variant-numeric: tabular-nums; }
+.activityTable th,
+.activityTable td { padding: var(--s-100); vertical-align: top; }
+.activityTable thead th { font-weight: 500; white-space: nowrap; border-bottom: 1px solid var(--line); }
+.activityTable tbody th { font-weight: 400; }
+.activityTable tbody tr > * { border-top: 1px solid var(--line); color: var(--ink-2); transition: background-color 300ms var(--ease); }
+.activityTable tbody tr:first-child > * { border-top: 0; }
+.activityTable tbody tr:hover > * { background: var(--surface-1); }
+.activityTable tbody tr[data-off] > * { color: var(--ink-3); }
+.activityTable tbody td > span,
+.activityTable tbody th > span { display: block; }
+.cellMain { color: var(--ink); }
+.activityTable tbody td > span.inline { display: inline; }
+.num { text-align: right !important; white-space: nowrap; }
+.endpoint { font-family: var(--font-mono); font-size: 12px; line-height: 16px; color: var(--ink); background: none; padding: 0; }
+.iconBtn {
+  display: inline-grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--ink-3);
+  cursor: pointer;
+  transition: background-color 300ms var(--ease), color 300ms var(--ease);
+}
+.iconBtn:hover { background: var(--surface-2); color: var(--ink); }
+.iconBtn:disabled { cursor: not-allowed; opacity: 0.5; }
+.activityFoot { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--s-100); }
+.confirmInline { display: flex; flex-wrap: wrap; align-items: center; gap: var(--s-75); }
+.emptyActivity { display: grid; gap: var(--s-100); justify-items: start; max-width: 68ch; }
+.inlineError { display: flex; flex-wrap: wrap; align-items: center; gap: var(--s-100); }
+
+/* Bind rows open in place: the open row and its detail step up to Graphite, the circuit sits in a
+   Ground well inside it. */
+.bindsTable .bindRow { cursor: pointer; }
+.bindsTable .bindRow[data-open] > * { background: var(--surface-1); }
+.toggleCell { width: 48px; text-align: right; }
+.caret { transition: transform 500ms var(--ease); }
+.bindRow[data-open] .caret { transform: rotate(180deg); }
+.pendingText { animation: sk-pulse 1200ms var(--ease) infinite alternate; }
+.errorText { color: var(--danger); }
+.clamp { display: -webkit-box !important; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; max-width: 40ch; }
+
+.activityTable tbody tr.detailRow > * { border-top: 0; background: var(--surface-1); padding: 0 var(--s-200) var(--s-300); cursor: auto; }
+.activityTable tbody tr.detailRow:hover > * { background: var(--surface-1); }
+.detail {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: var(--s-300);
+  align-items: start;
+  padding-top: var(--s-100);
+}
+.circuit pre { max-height: 288px; overflow: auto; font-size: 13px; line-height: 20px; }
+.circuitState { display: grid; gap: var(--s-75); padding: var(--s-200); }
+.skLine { height: 16px; }
+.facts2 { display: grid; gap: var(--s-300); align-content: start; min-width: 0; }
+.factList { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--s-200) var(--s-300); margin: 0; }
+.factList > div { display: grid; gap: var(--s-50); min-width: 0; }
+.factList > div:nth-child(-n + 3) { grid-column: 1 / -1; }
+.factList dd { margin: 0; color: var(--ink); text-wrap: pretty; }
+.winners,
+.inlineList { display: flex; flex-wrap: wrap; gap: var(--s-50) var(--s-200); margin: 0; padding: 0; list-style: none; }
+.stackList { display: grid; gap: var(--s-50); margin: 0; padding: 0; list-style: none; }
+.winnerLink { color: var(--ink); text-decoration: underline; text-decoration-color: var(--line-strong); text-underline-offset: 4px; transition: text-decoration-color 300ms var(--ease); }
+.winnerLink:hover { text-decoration-color: var(--ink-3); }
+.detailActions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--s-200);
+  padding-top: var(--s-200);
+  border-top: 1px solid var(--line);
+}
+.detailButtons { display: flex; flex-wrap: wrap; gap: var(--s-75); }
+
+/* ---------- states ---------- */
+.error { display: flex; align-items: flex-start; gap: var(--s-75); color: var(--danger); }
+.error svg { flex: none; margin-top: 2px; }
+.usageSk { display: grid; gap: var(--s-100); }
+.sk {
+  display: block;
+  height: 40px;
+  border-radius: 8px;
+  background: var(--surface-1);
+  animation: sk-pulse 1200ms var(--ease) infinite alternate;
+}
+.circuitState .sk { background: var(--surface-2); }
+.skTitle { width: 280px; max-width: 100%; height: 48px; }
+.skChart { height: 176px; }
+@keyframes sk-pulse { from { opacity: 1; } to { opacity: 0.5; } }
+
+/* ---------- responsive ---------- */
+@media (max-width: 900px) {
+  .activityTable thead { display: none; }
+  .activityTable tbody tr { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--s-75) var(--s-200); padding: var(--s-200) 0; border-top: 1px solid var(--line); }
+  .activityTable tbody tr:first-child { border-top: 0; }
+  .activityTable tbody tr > * { border-top: 0; padding: 0; background: none !important; }
+  .activityTable tbody [data-label]::before { content: attr(data-label); display: block; font-size: 12px; line-height: 16px; font-weight: 500; color: var(--ink-3); }
+  .num { text-align: left !important; }
+  .tableWrap { margin: 0; }
+  /* Bind rows: the binding and its caret on one line, then time and units; the rest is in the detail. */
+  .bindsTable tbody tr.bindRow { position: relative; padding-right: var(--s-500); }
+  .bindsTable tbody tr.bindRow[data-open] { background: var(--surface-1); margin: 0 calc(-1 * var(--s-100)); padding-left: var(--s-100); padding-right: calc(var(--s-500) + var(--s-100)); border-radius: 8px 8px 0 0; }
+  .bindsTable .bindRow > th { grid-column: 1 / -1; order: -1; }
+  .bindsTable .bindRow > th::before { display: none !important; }
+  .bindsTable .toggleCell { position: absolute; top: var(--s-200); right: 0; width: auto; }
+  .bindsTable .bindRow[data-open] .toggleCell { right: var(--s-100); }
+  .activityTable tbody tr.detailRow { display: block; padding: 0 var(--s-100) var(--s-200); margin: 0 calc(-1 * var(--s-100)); border-top: 0; background: var(--surface-1); border-radius: 0 0 8px 8px; }
+  .activityTable tbody tr.detailRow > td { display: block; padding: 0; }
+  .detail { grid-template-columns: minmax(0, 1fr); }
+  .clamp { max-width: none; }
+  .chart { gap: 2px; height: 144px; }
+  .chartHint { margin-left: 0; flex-basis: 100%; }
+}
+@media (max-width: 760px) {
+  .row { grid-template-columns: minmax(0, 1fr); padding: var(--s-500) 0; }
+  .rowLabel { max-width: none; }
+  .activity { padding-top: var(--s-500); }
+}
+@media (max-width: 640px) {
+  .head { padding-bottom: var(--s-500); }
+  .chartHint { display: none; }
+  .bindsTable td[data-label="Preferences"],
+  .bindsTable td[data-label="Data"] { display: none; }
+  .factList { grid-template-columns: minmax(0, 1fr); }
+  .limits th { width: auto; }
+  .limits tr { display: grid; }
+  .limits td { border-top: 0; padding-top: 0; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .sk,
+  .pendingText { animation: none; }
+  .caret,
+  .costsCaret { transition: none; }
+}
