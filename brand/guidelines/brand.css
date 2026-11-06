@@ -1,0 +1,12 @@
+/* QRB brand tokens */
+:root {
+  --qrb-ink: #0E1320;  --qrb-deep: #0A0E18;  --qrb-raised: #161C2C;  --qrb-line: #262E42;  --qrb-paper: #F6F7FB;
+  --qrb-text: #E8EAF0; --qrb-body: #B4BAC8; --qrb-muted: #8A93A6;
+  --qrb-violet: #A78BFA; --qrb-amber: #F2A93B;
+  --qrb-violet-on-light: #6D4AE0; --qrb-amber-on-light: #C9780A;
+  --qrb-font-display: "Inter Display", Inter, system-ui, sans-serif;
+  --qrb-font-text: Inter, system-ui, sans-serif;
+  --qrb-font-mono: "JetBrains Mono", ui-monospace, monospace;
+}
+/* Inline mark that follows text colour (mono): */
+.qrb-mark { width: 1.5em; height: 1.5em; color: currentColor; }
