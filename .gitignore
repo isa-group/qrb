@@ -55,3 +55,6 @@ apps/web/.impeccable/
 skills-lock.json
 DESIGN.md
 PRODUCT.md
+
+# TLS certificates for the local deploy test (never committed)
+/deploy/certs/

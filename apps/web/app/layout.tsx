@@ -16,7 +16,11 @@ const geistMono = Geist_Mono({
   display: "swap",
 });
 
+/** Public origin (NEXT_PUBLIC_SITE_URL, a build arg): link previews need absolute image URLs. */
+const siteUrl = process.env.NEXT_PUBLIC_SITE_URL?.trim();
+
 export const metadata: Metadata = {
+  ...(siteUrl ? { metadataBase: new URL(siteUrl) } : {}),
   title:
     "QRB · Quantum Resource Binder: optimal QPU selection for your preferences",
   description:

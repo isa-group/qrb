@@ -1,9 +1,11 @@
 "use client";
 
 import { ArrowRight, GithubLogo, WarningCircle } from "@phosphor-icons/react/dist/ssr";
+
 import Link from "next/link";
 import { useEffect, useState } from "react";
 
+import { OrcidMark } from "@/components/orcid-mark";
 import { getUsage, signIn, useAccount, type Provider } from "@/lib/auth";
 
 import styles from "./account.module.css";
@@ -13,18 +15,6 @@ function errorText(code: string): string {
   if (code === "access_denied") return "Sign-in was cancelled. Nothing was shared with QRB.";
   if (code === "account_not_linked") return "That account could not be linked. Sign in with the provider you used first.";
   return `Sign-in did not complete (${code.replace(/_/g, " ")}). Try again.`;
-}
-
-/** ORCID's iD mark: a green disc with "iD". */
-function OrcidMark() {
-  return (
-    <svg width="16" height="16" viewBox="0 0 16 16" aria-hidden>
-      <circle cx="8" cy="8" r="8" fill="#a6ce39" />
-      <text x="8" y="11.2" textAnchor="middle" fontSize="8.5" fontWeight="700" fill="#fff" fontFamily="system-ui, sans-serif">
-        iD
-      </text>
-    </svg>
-  );
 }
 
 const PROVIDERS: { id: Provider; label: string; icon: React.ReactNode; shares: string }[] = [

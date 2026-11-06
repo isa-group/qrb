@@ -1,0 +1,80 @@
+/* /team (Read): the account page's ledger. No cards: each person is a row ruled by a hairline,
+   who they are in the 4fr column, what they did and where to reach them in the 8fr column. */
+
+.page {
+  max-width: calc(var(--max) + 2 * var(--gutter));
+  margin: 0 auto;
+  padding: calc(var(--s-900) + var(--s-200)) var(--gutter) var(--s-900);
+}
+
+.head { padding-bottom: var(--s-700); }
+.head h1 { text-wrap: balance; }
+.lead { max-width: 680px; margin-top: var(--s-300); text-wrap: pretty; }
+
+.people { margin: 0; padding: 0; list-style: none; }
+
+.person {
+  display: grid;
+  grid-template-columns: minmax(0, 4fr) minmax(0, 8fr);
+  gap: var(--s-300) var(--s-400);
+  padding: var(--s-600) 0;
+  border-top: 1px solid var(--line);
+  scroll-margin-top: var(--s-900);
+}
+
+.who {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: center;
+  align-content: start;
+  gap: var(--s-200);
+}
+.name { display: grid; gap: var(--s-50); }
+.name h2,
+.name p { text-wrap: balance; }
+
+.portrait {
+  display: block;
+  width: 96px;
+  height: 96px;
+  border-radius: 16px;
+  object-fit: cover;
+  background: var(--surface-2);
+}
+.monogram {
+  display: grid;
+  place-items: center;
+  color: var(--ink-2);
+  user-select: none;
+}
+
+.body { display: grid; gap: var(--s-300); align-content: start; min-width: 0; }
+.body > p { max-width: 560px; text-wrap: pretty; }
+
+.email,
+.links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--s-75);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.email a { overflow-wrap: anywhere; }
+
+.foot {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--s-200);
+  padding-top: var(--s-600);
+  border-top: 1px solid var(--line);
+}
+
+/* One column: the portrait sits beside the name, the role and links follow. */
+@media (max-width: 760px) {
+  .person { grid-template-columns: minmax(0, 1fr); }
+  .portrait { width: 72px; height: 72px; border-radius: 16px; }
+  .monogram { font-size: 20px; line-height: 28px; }
+}

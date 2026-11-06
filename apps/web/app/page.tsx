@@ -577,6 +577,9 @@ export default function LandingPage() {
           </div>
           <ul className={styles.footerLinks}>
             <li>
+              <Link href="/team">Team</Link>
+            </li>
+            <li>
               <a href={REPO}>GitHub</a>
             </li>
             <li>

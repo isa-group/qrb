@@ -11,6 +11,7 @@ const LINKS = [
   { href: "/bind", label: "Bind" },
   { href: "/catalog", label: "Catalog" },
   { href: "/docs", label: "Explore the API" },
+  { href: "/team", label: "Team" },
 ];
 
 /**
