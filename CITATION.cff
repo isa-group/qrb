@@ -30,7 +30,11 @@ preferred-citation:
       given-names: José Antonio
     - family-names: Ruiz-Cortés
       given-names: Antonio
-  collection-title: "Service-Oriented Computing – ICSOC 2026"
+  collection-title: "Service-Oriented Computing – 24th International Conference, ICSOC 2026"
+  collection-type: proceedings
+  conference:
+    name: "ICSOC 2026"
   publisher:
     name: Springer
   year: 2026
+  notes: "Lecture Notes in Computer Science (LNCS). In press."

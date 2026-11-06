@@ -1,5 +1,8 @@
 <p align="center">
-  <img alt="header" src="https://shieldcn.dev/header/dots.svg?title=QRB&amp;subtitle=Quantum+Resource+Binder&amp;logo=ri%3ATbAtom2Filled&amp;logoColor=743bf6&amp;mode=dark" />
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="brand/media/readme-banner-dark-1280x320.png" />
+    <img alt="QRB, Quantum Resource Binder: declare what matters, get the right QPU for it." src="brand/media/readme-banner-light-1280x320.png" width="1280" />
+  </picture>
 </p>
 
 [![DOI](https://shieldcn.dev/badge/DOI-10.5281/zenodo.21442195-abcde3.svg?theme=gray&logo=false&color=3f5578)](https://doi.org/10.5281/zenodo.21442195)
@@ -144,17 +147,54 @@ task api:dev    # http://localhost:8000  (OpenAPI docs at /scalar)
 task web:dev    # http://localhost:3000
 ```
 
-The web app uses a bundled mock catalog by default
-(`NEXT_PUBLIC_USE_MOCK_CATALOG=true`), so `task web:dev` alone is enough to
-browse the Catalog, Playground, and API reference pages without any
-credentials or a running API. Point it at a live `apps/api` by setting that
-flag to `false` in `apps/web/.env.local`.
+The web app talks to `apps/api` from the browser at `NEXT_PUBLIC_QRB_API`
+(default `http://localhost:8000`; set it in `apps/web/.env.local`), so run
+`task api:dev` alongside it. `api:dev` sets `QRB_ALLOW_UNAUTHENTICATED=1`: without
+it the API refuses every request but `/health` that lacks the gateway secret.
+
+## Provider data
+
+The poller (`apps/poller`) keeps a copy of every IBM Quantum and Amazon Braket
+QPU in Postgres at the speed each part changes: queue length and status every 2
+minutes (one cheap call per QPU), IBM's calibration every 10 minutes, everything
+every 30 (a Braket device at once when it recalibrates). Each QPU is stored per
+calibration, so a change stores that QPU only. Binds
+and catalog reads use the newest of both, so they answer in about a second;
+`"force_refresh": true` asks the providers now and stores that too. Without
+`DATABASE_URL` the API fetches live itself, as before.
+
+```bash
+task store:migrate   # create the tables (DATABASE_URL)
+task poller:dev      # run the poller locally
+```
+
+## Gateway
+
+`apps/gateway` (Hono on Bun) is the only public entry in production. It serves the
+API at `/api/*` and the website at `/`, and it decides who may call what:
+
+- Keyless callers, the website included, share a daily budget per IP address
+  (50 units; a resolve costs 1, or 5 when it fetches fresh provider data).
+- Signing in with GitHub or ORCID lets a user create API keys (`POST /api/keys`);
+  requests with `x-api-key` draw on that account's budget (200 units).
+- Burst and per-IP rate limits, `X-Quota-*` headers, `GET /api/usage`, and a
+  log-only rollout mode (`QRB_LIMITS_MODE=log`).
+
+It forwards to the API with `X-QRB-Gateway-Secret`, which the API requires.
+
+```bash
+task gateway:dev     # http://localhost:3001/api (in-memory PGlite without DATABASE_URL)
+task gateway:test
+```
+
+Settings are in `.env.example` (gateway section).
 
 ## Docker
 
 ```bash
-task docker:build        # build the api and cli images
-task docker:api          # api + postgres via docker compose (http://localhost:8000)
+task docker:build        # gateway, api, web and cli images
+task docker:up           # postgres, api, web and the gateway on 127.0.0.1:3001 (production settings)
+task docker:dev          # the same on http://localhost:3001 without production auth settings
 task docker:cli -- select circuit.qasm --preset fastest
 task docker:down
 ```
