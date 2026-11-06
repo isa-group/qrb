@@ -13,3 +13,8 @@ apps/web/.next
 .env
 .env.*
 !.env.example
+
+apps/gateway/node_modules
+
+# Brand kit source files (the site ships its copies from apps/web/public)
+brand

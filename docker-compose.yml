@@ -1,20 +1,183 @@
+# The stack: the gateway (logins, API keys, quotas) is the only entry point and
+# is published on 127.0.0.1 only, for the host's reverse proxy (TLS). It serves
+# the website (proxied to the web service) at / and the API at /api. The API,
+# the website and Postgres are private to the compose network. The poller
+# keeps every QPU in Postgres (queues every 2 min, IBM calibration every 10); the
+# API binds on that.
+#
+#   task docker:up              # needs QRB_GATEWAY_SECRET and the auth secrets in .env
+# See .env.example.
+
+x-provider-env: &provider-env
+  QISKIT_IBM_TOKEN: ${QISKIT_IBM_TOKEN:-}
+  QISKIT_IBM_INSTANCE: ${QISKIT_IBM_INSTANCE:-}
+  QISKIT_IBM_INSTANCES: ${QISKIT_IBM_INSTANCES:-}
+  QISKIT_IBM_CHANNEL: ${QISKIT_IBM_CHANNEL:-}
+  AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID:-}
+  AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY:-}
+  AWS_REGION: ${AWS_REGION:-us-east-1}
+
+# The API and the poller share qrb-store's tables in the same Postgres as the
+# gateway (different table names).
+x-store-url: &store-url postgresql+psycopg://qrb:${POSTGRES_PASSWORD:-qrb}@postgres:5432/qrb
+
+x-gateway-env: &gateway-env
+  NODE_ENV: production
+  PORT: ${PORT:-3001}
+  # 0.0.0.0 is the container's own network namespace; the host-side publish
+  # below is loopback-only.
+  HOST: 0.0.0.0
+  DATABASE_URL: postgresql://qrb:${POSTGRES_PASSWORD:-qrb}@postgres:5432/qrb
+
 services:
-  api:
-    build:
+  postgres:
+    image: postgres:17-alpine
+    restart: unless-stopped
+    # Never published: reachable only on the compose network.
+    environment:
+      POSTGRES_USER: qrb
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-qrb}
+      POSTGRES_DB: qrb
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U qrb -d qrb"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
+
+  # One-shot: applies pending gateway migrations, then exits 0. The gateway
+  # waits for it, so `docker compose up -d` always migrates first.
+  gateway-migrate:
+    build: &gateway-build
+      context: .
+      dockerfile: docker/gateway.Dockerfile
+    command: ["bun", "src/db/migrate.ts", "up"]
+    environment:
+      NODE_ENV: production
+      DATABASE_URL: postgresql://qrb:${POSTGRES_PASSWORD:-qrb}@postgres:5432/qrb
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: "no"
+    healthcheck:
+      disable: true
+
+  gateway:
+    build: *gateway-build
+    restart: unless-stopped
+    # Loopback only: the host's reverse proxy (TLS) forwards to this port.
+    ports:
+      - "127.0.0.1:${PORT:-3001}:${PORT:-3001}"
+    environment:
+      <<: *gateway-env
+      QRB_API_URL: http://api:8000
+      WEB_UPSTREAM_URL: http://web:3000
+      # Same value as the api service's QRB_GATEWAY_SECRET.
+      QRB_GATEWAY_SECRET: ${QRB_GATEWAY_SECRET:-}
+      BETTER_AUTH_URL: ${BETTER_AUTH_URL:-}
+      BETTER_AUTH_SECRET: ${BETTER_AUTH_SECRET:-}
+      GITHUB_CLIENT_ID: ${GITHUB_CLIENT_ID:-}
+      GITHUB_CLIENT_SECRET: ${GITHUB_CLIENT_SECRET:-}
+      ORCID_CLIENT_ID: ${ORCID_CLIENT_ID:-}
+      ORCID_CLIENT_SECRET: ${ORCID_CLIENT_SECRET:-}
+      ORCID_ISSUER: ${ORCID_ISSUER:-}
+      # X-Forwarded-For is trusted only from these peers. Through a published
+      # port, the host reverse proxy reaches the container from the compose
+      # network's gateway address, NOT 127.0.0.1; the subnet is pinned below so
+      # that address is known (172.28.0.1). Change both together.
+      TRUSTED_PROXIES: ${TRUSTED_PROXIES:-127.0.0.1,::1,172.28.0.1}
+      # Quotas and rate limits. Empty values fall back to the gateway defaults.
+      QRB_LIMITS_MODE: ${QRB_LIMITS_MODE:-enforce}
+      QRB_LIMIT_ANON_DAILY: ${QRB_LIMIT_ANON_DAILY:-}
+      QRB_LIMIT_SIGNED_IN_DAILY: ${QRB_LIMIT_SIGNED_IN_DAILY:-}
+      QRB_LIMIT_LIVE_REFRESH_WEIGHT: ${QRB_LIMIT_LIVE_REFRESH_WEIGHT:-}
+      QRB_LIMIT_BURST_WINDOW_SECONDS: ${QRB_LIMIT_BURST_WINDOW_SECONDS:-}
+      QRB_LIMIT_BURST_ANON: ${QRB_LIMIT_BURST_ANON:-}
+      QRB_LIMIT_BURST_SIGNED_IN: ${QRB_LIMIT_BURST_SIGNED_IN:-}
+      QRB_LIMIT_BURST_API_KEY: ${QRB_LIMIT_BURST_API_KEY:-}
+      QRB_LIMIT_OPEN_WINDOW_SECONDS: ${QRB_LIMIT_OPEN_WINDOW_SECONDS:-}
+      QRB_LIMIT_OPEN_PER_IP: ${QRB_LIMIT_OPEN_PER_IP:-}
+    depends_on:
+      gateway-migrate:
+        condition: service_completed_successfully
+      postgres:
+        condition: service_healthy
+      api:
+        condition: service_started
+      web:
+        condition: service_started
+      poller:
+        condition: service_started
+
+  # One-shot: applies qrb-store's Alembic migrations (stored catalogs, telemetry,
+  # binding log), then exits 0. The API and the poller wait for it.
+  store-migrate:
+    build: &api-build
       context: .
       dockerfile: docker/api.Dockerfile
-    ports:
-      - "8000:8000"
+    working_dir: /app/packages/qrb-store
+    command: ["alembic", "upgrade", "head"]
     environment:
-      QISKIT_IBM_TOKEN: ${QISKIT_IBM_TOKEN:-}
-      QISKIT_IBM_INSTANCE: ${QISKIT_IBM_INSTANCE:-}
-      QISKIT_IBM_INSTANCES: ${QISKIT_IBM_INSTANCES:-}
-      QISKIT_IBM_CHANNEL: ${QISKIT_IBM_CHANNEL:-}
-      AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID:-}
-      AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY:-}
-      AWS_REGION: ${AWS_REGION:-us-east-1}
-      WEB_ORIGINS: ${WEB_ORIGINS:-http://localhost:3069}
+      DATABASE_URL: *store-url
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: "no"
+
+  api:
+    build: *api-build
+    restart: unless-stopped
+    # No published port: only the gateway can reach the API, and the API
+    # refuses every request but /health without QRB_GATEWAY_SECRET.
+    expose:
+      - "8000"
+    environment:
+      <<: *provider-env
       OPENBINDING_URL: ${OPENBINDING_URL:-}
+      QRB_GATEWAY_SECRET: ${QRB_GATEWAY_SECRET:-}
+      QRB_SNAPSHOT_PATH: ${QRB_SNAPSHOT_PATH:-/app/scripts/experiments/output/shared_catalog_snapshot.json}
+      DATABASE_URL: *store-url
+      # Stored queues older than this, or a calibration not confirmed within the
+      # second, are fetched live by the next request.
+      QRB_CATALOG_MAX_AGE_SECONDS: ${QRB_CATALOG_MAX_AGE_SECONDS:-900}
+      QRB_CALIBRATION_MAX_AGE_SECONDS: ${QRB_CALIBRATION_MAX_AGE_SECONDS:-7200}
+    depends_on:
+      store-migrate:
+        condition: service_completed_successfully
+
+  # Queue and status of every QPU every QRB_POLLER_STATUS_SECONDS, IBM's
+  # calibration every QRB_POLLER_IBM_SECONDS, everything every
+  # QRB_POLLER_CATALOG_SECONDS (a Braket device at once when it recalibrates).
+  # Each QPU is stored per calibration. Kept QRB_CATALOG_RETENTION_DAYS.
+  poller:
+    build:
+      context: .
+      dockerfile: docker/poller.Dockerfile
+    restart: unless-stopped
+    environment:
+      <<: *provider-env
+      DATABASE_URL: *store-url
+      QRB_POLLER_STATUS_SECONDS: ${QRB_POLLER_STATUS_SECONDS:-120}
+      QRB_POLLER_IBM_SECONDS: ${QRB_POLLER_IBM_SECONDS:-600}
+      QRB_POLLER_CATALOG_SECONDS: ${QRB_POLLER_CATALOG_SECONDS:-1800}
+      QRB_CATALOG_RETENTION_DAYS: ${QRB_CATALOG_RETENTION_DAYS:-7}
+    depends_on:
+      store-migrate:
+        condition: service_completed_successfully
+
+  web:
+    build:
+      context: .
+      dockerfile: docker/web.Dockerfile
+      args:
+        # Same origin as the gateway: the site calls /api on the host it was loaded from.
+        NEXT_PUBLIC_QRB_API: ${NEXT_PUBLIC_QRB_API:-/api}
+    restart: unless-stopped
+    # No published port: served through the gateway.
+    expose:
+      - "3000"
 
   cli:
     build:
@@ -34,20 +197,6 @@ services:
       - .:/workspace
     profiles:
       - cli
-
-  web:
-    build:
-      context: .
-      dockerfile: docker/web.Dockerfile
-      args:
-        NEXT_PUBLIC_API_BASE_URL: ${NEXT_PUBLIC_API_BASE_URL:-http://localhost:8000}
-        NEXT_PUBLIC_USE_MOCK_CATALOG: ${NEXT_PUBLIC_USE_MOCK_CATALOG:-true}
-        NEXT_PUBLIC_CATALOG_POLL_INTERVAL_MS: ${NEXT_PUBLIC_CATALOG_POLL_INTERVAL_MS:-600000}
-    ports:
-      - "3069:80"
-    depends_on:
-      api:
-        condition: service_started
 
   artifact:
     build:
@@ -130,3 +279,12 @@ services:
       timeout: 3s
       retries: 5
       start_period: 30s
+
+volumes:
+  pgdata:
+
+networks:
+  default:
+    ipam:
+      config:
+        - subnet: ${QRB_NETWORK_SUBNET:-172.28.0.0/24}

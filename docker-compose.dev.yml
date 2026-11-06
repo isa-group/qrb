@@ -1,0 +1,27 @@
+# Local override: run the stack on your machine without production auth settings.
+#
+#   task docker:dev   (docker compose -f docker-compose.yml -f docker-compose.dev.yml up -d --build gateway)
+#   -> http://localhost:3001
+#
+# The gateway runs with NODE_ENV=development, so missing BETTER_AUTH_* or OAuth
+# settings fall back to placeholders with a warning instead of stopping it, and
+# session cookies are not Secure (plain http). Sign-in works for a provider
+# only if .env holds a dev OAuth app for it whose callback is
+# http://localhost:3001/api/auth/callback/<github|orcid>.
+# The gateway still sends the shared secret to the API (a dev default when
+# QRB_GATEWAY_SECRET is unset). Never use this file in production.
+services:
+  api:
+    environment:
+      QRB_GATEWAY_SECRET: ${QRB_GATEWAY_SECRET:-dev-gateway-secret-not-for-production}
+
+  gateway-migrate:
+    environment:
+      NODE_ENV: development
+
+  gateway:
+    environment:
+      NODE_ENV: development
+      QRB_GATEWAY_SECRET: ${QRB_GATEWAY_SECRET:-dev-gateway-secret-not-for-production}
+      # The gateway's own address on this machine, not a production URL from .env.
+      BETTER_AUTH_URL: http://localhost:3001
