@@ -182,6 +182,11 @@ tasks:
     cmds:
       - docker compose up -d --build gateway
 
+  docker:prod:
+    desc: 'Start the production stack with the TLS proxy on ports 80 and 443 (see deploy/README.md)'
+    cmds:
+      - docker compose --profile proxy up -d --build
+
   docker:dev:
     desc: 'Start the stack locally on http://localhost:3001 without production auth settings (docker-compose.dev.yml)'
     cmds:

@@ -87,7 +87,8 @@ services:
       # port, the host reverse proxy reaches the container from the compose
       # network's gateway address, NOT 127.0.0.1; the subnet is pinned below so
       # that address is known (172.28.0.1). Change both together.
-      TRUSTED_PROXIES: ${TRUSTED_PROXIES:-127.0.0.1,::1,172.28.0.1}
+      # The `proxy` service (profile proxy) reaches it from its fixed address QRB_PROXY_IP.
+      TRUSTED_PROXIES: ${TRUSTED_PROXIES:-127.0.0.1,::1,172.28.0.1,172.28.0.10}
       # Quotas and rate limits. Empty values fall back to the gateway defaults.
       QRB_LIMITS_MODE: ${QRB_LIMITS_MODE:-enforce}
       QRB_LIMIT_ANON_DAILY: ${QRB_LIMIT_ANON_DAILY:-}
@@ -174,10 +175,42 @@ services:
       args:
         # Same origin as the gateway: the site calls /api on the host it was loaded from.
         NEXT_PUBLIC_QRB_API: ${NEXT_PUBLIC_QRB_API:-/api}
+        # Public origin, for absolute link-preview URLs (og:image). Empty: relative to the request.
+        NEXT_PUBLIC_SITE_URL: ${NEXT_PUBLIC_SITE_URL:-}
     restart: unless-stopped
     # No published port: served through the gateway.
     expose:
       - "3000"
+
+  # TLS front (profile proxy): Caddy on ports 80 and 443 with your own
+  # certificate, proxying to the gateway. On the VPS:
+  #   docker compose --profile proxy up -d --build      (task docker:prod)
+  # See deploy/README.md.
+  proxy:
+    image: caddy:2.10-alpine
+    profiles:
+      - proxy
+    restart: unless-stopped
+    ports:
+      - "${QRB_HTTP_PORT:-80}:80"
+      - "${QRB_HTTPS_PORT:-443}:443"
+    environment:
+      QRB_DOMAIN: ${QRB_DOMAIN:-}
+      QRB_CERT_FILE: ${QRB_CERT_FILE:-fullchain.pem}
+      QRB_KEY_FILE: ${QRB_KEY_FILE:-privkey.pem}
+      QRB_GATEWAY_PORT: ${PORT:-3001}
+    volumes:
+      - ./deploy/Caddyfile:/etc/caddy/Caddyfile:ro
+      - ${QRB_CERT_DIR:-./deploy/certs}:/certs:ro
+      - caddy-data:/data
+    networks:
+      default:
+        # Fixed so the gateway can trust its X-Forwarded-For (TRUSTED_PROXIES).
+        # Inside QRB_NETWORK_SUBNET; change both (and TRUSTED_PROXIES) together.
+        ipv4_address: ${QRB_PROXY_IP:-172.28.0.10}
+    depends_on:
+      gateway:
+        condition: service_healthy
 
   cli:
     build:
@@ -282,6 +315,7 @@ services:
 
 volumes:
   pgdata:
+  caddy-data:
 
 networks:
   default:

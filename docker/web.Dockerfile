@@ -2,6 +2,9 @@
 FROM oven/bun:1 AS build
 ARG NEXT_PUBLIC_QRB_API=http://localhost:8000
 ENV NEXT_PUBLIC_QRB_API=$NEXT_PUBLIC_QRB_API
+# Public origin (e.g. https://qbinder.score.es) for absolute og:image URLs; empty keeps them relative.
+ARG NEXT_PUBLIC_SITE_URL=
+ENV NEXT_PUBLIC_SITE_URL=$NEXT_PUBLIC_SITE_URL
 ENV NEXT_TELEMETRY_DISABLED=1
 WORKDIR /app
 
