@@ -1,0 +1,35 @@
+# TLS front for the QRB stack (docker compose --profile proxy). Terminates HTTPS
+# with the certificate you bring (no ACME), redirects HTTP to HTTPS, and proxies
+# everything to the gateway, which serves the website at / and the API at /api.
+#
+# Environment (set by docker-compose.yml from .env):
+#   QRB_DOMAIN     public host name, e.g. qbinder.score.es
+#   QRB_CERT_FILE  certificate (full chain) inside /certs
+#   QRB_KEY_FILE   private key inside /certs
+{
+	# Our own certificate: no ACME, but keep the automatic HTTP -> HTTPS redirect.
+	auto_https disable_certs
+	admin off
+}
+
+{$QRB_DOMAIN} {
+	tls /certs/{$QRB_CERT_FILE} /certs/{$QRB_KEY_FILE}
+
+	encode zstd gzip
+
+	header {
+		Strict-Transport-Security "max-age=31536000"
+		X-Content-Type-Options "nosniff"
+		Referrer-Policy "strict-origin-when-cross-origin"
+		-Server
+	}
+
+	# Caddy sets X-Forwarded-For to the real client address (it trusts no upstream
+	# proxy), and the gateway trusts it from this container's fixed address.
+	reverse_proxy gateway:{$QRB_GATEWAY_PORT:3001} {
+		# A bind on fresh provider data waits tens of seconds on IBM and Braket.
+		transport http {
+			read_timeout 300s
+		}
+	}
+}
