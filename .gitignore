@@ -42,6 +42,16 @@ yarn-error.log*
 .DS_Store
 *.pem
 scripts/experiments/rerun/
+.ruff_cache
+.pytest_cache
 
 # Local OpenBinding checkout (task openbinding:fetch)
 /vendor/
+
+# Design-tool working files (impeccable, taste skill); not project source
+.impeccable/
+apps/web/.impeccable/
+.taste-skill/
+skills-lock.json
+DESIGN.md
+PRODUCT.md
