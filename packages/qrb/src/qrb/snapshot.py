@@ -10,13 +10,15 @@ silently producing a Target with wrong physics.
 
 from __future__ import annotations
 
+import gzip
 import json
+import logging
 from datetime import datetime, timezone
 from pathlib import Path
 
 from braket.schema_common.schema_base import BraketSchemaBase
 from pydantic import BaseModel
-from qiskit.circuit import Delay, Measure, Parameter, Reset
+from qiskit.circuit import Delay, Gate, Measure, Parameter, Reset
 from qiskit.circuit.library import (
     CXGate,
     CZGate,
@@ -47,6 +49,8 @@ from qiskit_ionq.ionq_gates import GPI2Gate, GPIGate
 
 from qrb.calibration import _is_non_gate_operation
 from qrb.providers.base import BraketPricing, IBMPricing, Pricing, ResourceRecord
+
+logger = logging.getLogger(__name__)
 
 DEFAULT_SNAPSHOT_PATH = Path("catalog_snapshot.json")
 
@@ -82,6 +86,11 @@ GATE_FACTORY = {
     "gpi": lambda: GPIGate(_PHI),
     "gpi2": lambda: GPI2Gate(_PHI),
 }
+
+_OPAQUE_ONE_QUBIT = frozenset({"xslow"})
+"""IBM vendor gates that are opaque in the live Target too (no definition, so the transpiler never
+targets them): "xslow" is the slow X pulse offered for post-selection. Restored as an opaque
+one-qubit Gate, exactly as live."""
 
 
 class UnsupportedGateError(ValueError):
@@ -129,6 +138,12 @@ class ResourceSnapshot(BaseModel):
     RigettiProviderProperties. Only consulted by qrb.calibration as a
     last-resort fallback for values the standardized schema leaves
     unpopulated for a given vendor. None for IBM."""
+    ibm_properties_json: str | None = None
+    """IBM only: the backend's BackendProperties (`to_dict()` as JSON), for the
+    catalog's per-qubit view (anharmonicity, readout length, assignment
+    errors are not in the Target). None for Braket and for older snapshots."""
+    processor: str | None = None
+    """IBM only: processor family and revision, e.g. "Heron r2"."""
 
 
 def _pricing_to_dict(pricing: Pricing) -> dict:
@@ -183,7 +198,24 @@ def resource_to_snapshot(resource: ResourceRecord) -> ResourceSnapshot:
         native_calibration_json=resource.native_calibration.json()
         if resource.native_calibration is not None
         else None,
+        ibm_properties_json=_ibm_properties_to_json(resource.ibm_properties),
+        processor=resource.processor,
     )
+
+
+def _ibm_properties_to_json(properties) -> str | None:
+    if properties is None or not hasattr(properties, "to_dict"):
+        return None
+    return json.dumps(properties.to_dict(), default=lambda o: o.isoformat() if hasattr(o, "isoformat") else str(o))
+
+
+def _ibm_properties_from_json(data: str | None):
+    if data is None:
+        return None
+    # Imported here: qiskit_ibm_runtime is only needed when an IBM record carries properties.
+    from qiskit_ibm_runtime.models import BackendProperties
+
+    return BackendProperties.from_dict(json.loads(data))
 
 
 _FEED_FORWARD_OPERATIONS = frozenset({"CCPRx", "MeasureFF"})
@@ -194,7 +226,7 @@ _is_non_gate_operation's control-flow exclusions, just named separately
 since these aren't Qiskit control-flow ops."""
 
 
-def snapshot_to_resource(snapshot: ResourceSnapshot) -> ResourceRecord:
+def snapshot_to_resource(snapshot: ResourceSnapshot, *, strict_gates: bool = True) -> ResourceRecord:
     target = Target(num_qubits=snapshot.num_qubits, dt=snapshot.dt)
     by_name: dict[str, dict[tuple[int, ...], InstructionProperties]] = {}
     for instr in snapshot.instructions:
@@ -211,6 +243,8 @@ def snapshot_to_resource(snapshot: ResourceSnapshot) -> ResourceRecord:
             target.add_instruction(Delay(Parameter("t")), qarg_props)
         elif name in GATE_FACTORY:
             target.add_instruction(GATE_FACTORY[name](), qarg_props)
+        elif name in _OPAQUE_ONE_QUBIT:
+            target.add_instruction(Gate(name, 1, []), qarg_props)
         elif _is_non_gate_operation(name) or name in _FEED_FORWARD_OPERATIONS:
             # measure_2/reset_2 (duplicate-registered variants) and
             # Qiskit's own control-flow pseudo-ops, plus the feed-forward
@@ -218,6 +252,13 @@ def snapshot_to_resource(snapshot: ResourceSnapshot) -> ResourceRecord:
             # (routing/synthesis never target them), so the snapshot just
             # doesn't carry them instead of needing a real Gate class.
             continue
+        elif not strict_gates:
+            # A gate this snapshot format does not know (a new vendor gate): keep it as an opaque
+            # gate on its qubits, which the transpiler cannot target, rather than failing the
+            # whole catalog. Stored live catalogs take this path; the paper's snapshot is strict.
+            width = len(next(iter(qarg_props)))
+            logger.warning("Unknown gate %r on %s restored as an opaque %d-qubit gate", name, snapshot.resource_id, width)
+            target.add_instruction(Gate(name, width, []), qarg_props)
         else:
             raise UnsupportedGateError(
                 f"No gate factory registered for '{name}' — add it to "
@@ -248,6 +289,8 @@ def snapshot_to_resource(snapshot: ResourceSnapshot) -> ResourceRecord:
         last_calibrated_at=snapshot.last_calibrated_at,
         raw_calibration=raw_calibration,
         native_calibration=native_calibration,
+        ibm_properties=_ibm_properties_from_json(snapshot.ibm_properties_json),
+        processor=snapshot.processor,
     )
 
 
@@ -287,3 +330,26 @@ def load_snapshot(path: Path = DEFAULT_SNAPSHOT_PATH) -> list[ResourceRecord]:
     # still loadable, it just has no known captured_at (see above).
     resource_dicts = data if isinstance(data, list) else data["resources"]
     return [snapshot_to_resource(ResourceSnapshot.model_validate(s)) for s in resource_dicts]
+
+
+def dump_catalog_bytes(resources: list[ResourceRecord], captured_at: datetime) -> bytes:
+    """A whole catalog as gzipped CatalogSnapshot JSON: what the poller and the API store in
+    Postgres (about 170 KB for 13 QPUs, against 2.7 MB uncompressed)."""
+    snapshot = CatalogSnapshot(captured_at=captured_at, resources=[resource_to_snapshot(r) for r in resources])
+    return gzip.compress(snapshot.model_dump_json().encode(), compresslevel=6)
+
+
+def load_catalog_bytes(data: bytes) -> tuple[list[ResourceRecord], datetime]:
+    """Inverse of dump_catalog_bytes: the records and when they were fetched."""
+    snapshot = CatalogSnapshot.model_validate_json(gzip.decompress(data))
+    return [snapshot_to_resource(s, strict_gates=False) for s in snapshot.resources], snapshot.captured_at
+
+
+def dump_resource_bytes(resource: ResourceRecord) -> bytes:
+    """One QPU as gzipped ResourceSnapshot JSON: what qrb-store keeps per QPU and calibration."""
+    return gzip.compress(resource_to_snapshot(resource).model_dump_json().encode(), compresslevel=6)
+
+
+def load_resource_bytes(data: bytes) -> ResourceRecord:
+    """Inverse of dump_resource_bytes; unknown vendor gates become opaque gates (not an error)."""
+    return snapshot_to_resource(ResourceSnapshot.model_validate_json(gzip.decompress(data)), strict_gates=False)

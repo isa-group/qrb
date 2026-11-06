@@ -145,6 +145,15 @@ def _is_readout_fidelity(fidelity_like) -> bool:
     return _fidelity_type_name(fidelity_like) == _READOUT_FIDELITY_TYPE_NAME
 
 
+def _target_index(one_qubit_properties: dict, two_qubit_properties: dict) -> dict[int, int]:
+    """Vendor qubit label -> Qiskit Target index: the labels in sorted order, numbered from 0.
+    Labels that only appear in a pair key still get an index, in the same order."""
+    labels = {int(k) for k in one_qubit_properties}
+    for pair in two_qubit_properties:
+        labels.update(int(q) for q in pair.split("-"))
+    return {label: i for i, label in enumerate(sorted(labels))}
+
+
 def _from_braket(resource: ResourceRecord) -> dict[str, float | None]:
     """Each metric falls back independently from per-qubit/per-pair data to
     flat device-wide data — devices don't all agree on which schema shape
@@ -168,6 +177,10 @@ def _from_braket(resource: ResourceRecord) -> dict[str, float | None]:
     # vendor) schema — IonQ doesn't report one at all there. A real number
     # exists in the IonQ-native object instead: resource.native_calibration,
     # device.properties.provider.fidelity == {"1Q": {"mean": ...}, ...}.
+    # Vendors label qubits their own way (IQM counts from 1, Rigetti node ids have gaps); the Qiskit
+    # Target numbers the same qubits 0..n-1 in sorted order, and features.py looks these maps up
+    # with Target qargs. Key them by that index, never by the vendor's label.
+    index = _target_index(one_qubit_properties, two_qubit_properties)
     gate_error_1q_by_qubit: dict[int, float] = {}
     readout_error_by_qubit: dict[int, float] = {}
     for qubit_str, q in one_qubit_properties.items():
@@ -175,11 +188,11 @@ def _from_braket(resource: ResourceRecord) -> dict[str, float | None]:
         gate_errors = [_fidelity_to_error(f) for f in fidelities if _is_gate_fidelity(f)]
         median_gate_error = _median(gate_errors)
         if median_gate_error is not None:
-            gate_error_1q_by_qubit[int(qubit_str)] = median_gate_error
+            gate_error_1q_by_qubit[index[int(qubit_str)]] = median_gate_error
         readout_errors_here = [_fidelity_to_error(f) for f in fidelities if _is_readout_fidelity(f)]
         median_readout = _median(readout_errors_here)
         if median_readout is not None:
-            readout_error_by_qubit[int(qubit_str)] = median_readout
+            readout_error_by_qubit[index[int(qubit_str)]] = median_readout
 
     error_1q = list(gate_error_1q_by_qubit.values())
     if not error_1q and resource.vendor == "IonQ" and resource.native_calibration is not None:
@@ -195,7 +208,7 @@ def _from_braket(resource: ResourceRecord) -> dict[str, float | None]:
 
     gate_error_2q_by_pair: dict[frozenset[int], float] = {}
     for pair_str, pair_props in two_qubit_properties.items():
-        pair = frozenset(int(q) for q in pair_str.split("-"))
+        pair = frozenset(index[int(q)] for q in pair_str.split("-"))
         errors = [_fidelity_to_error(f) for f in getattr(pair_props, "twoQubitGateFidelity", None) or []]
         median_error = _median(errors)
         if median_error is not None:

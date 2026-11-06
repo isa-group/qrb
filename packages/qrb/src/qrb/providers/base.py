@@ -88,6 +88,13 @@ class ResourceRecord:
     def candidate_id(self) -> str:
         return f"{self.provider_id}.{sanitize_identifier(self.resource_id)}"
 
+    ibm_properties: Any | None = None
+    """IBM only: the backend's BackendProperties (live only; None from the snapshot). Kept for the
+    catalog's per-qubit calibration view: anharmonicity, readout length and the prob_meas0_prep1 /
+    prob_meas1_prep0 assignment errors are not in the Target."""
+    processor: str | None = None
+    """IBM only: processor family and revision, e.g. "Heron r2" (from the backend configuration)."""
+
 
 class Provider(Protocol):
     """A read-only adapter that fetches the live device catalog for one

@@ -6,6 +6,7 @@ CLI and the API call this; call graph is apps → qrb → openbinding.
 from __future__ import annotations
 
 import time
+from datetime import datetime
 from pathlib import Path
 
 from openbinding import Instance, OpenBindingClient, SolveResponse
@@ -15,6 +16,7 @@ from qiskit.circuit import QuantumCircuit
 from qrb.catalog import fetch_catalog_timed
 from qrb.instance import build_instance
 from qrb.preferences import Preferences
+from qrb.providers.base import ResourceRecord
 from qrb.timing import PhaseTimings
 from qrb.transpile import DEFAULT_OPTIMIZATION_LEVEL, DEFAULT_TRANSPILER_SEED
 
@@ -40,6 +42,7 @@ def build_selection_instance(
     optimization_level: int = DEFAULT_OPTIMIZATION_LEVEL,
     transpiler_seed: int = DEFAULT_TRANSPILER_SEED,
     force_refresh: bool = True,
+    catalog: tuple[list[ResourceRecord], bool | None, datetime | None] | None = None,
 ) -> tuple[Instance, PhaseTimings]:
     """Build the BIM instance without solving — backs `qrb instance` /
     `POST /instance` for inspection and paper artifacts.
@@ -52,9 +55,13 @@ def build_selection_instance(
     Playground re-resolving after only a preference tweak, not a catalog
     change) can pass force_refresh=False. No-op either way when live=False
     (snapshot mode never touches the cache regardless).
+
+    catalog, if given, is the catalog to use as (records, cache_hit,
+    fetched_at), e.g. one the API read from its stored catalogs; live,
+    snapshot_path, providers and force_refresh are then not consulted.
     """
     catalog_start = time.perf_counter()
-    resources, catalog_cache_hit, catalog_fetched_at = fetch_catalog_timed(
+    resources, catalog_cache_hit, catalog_fetched_at = catalog or fetch_catalog_timed(
         live=live, snapshot_path=snapshot_path, providers=providers, force_refresh=force_refresh
     )
     catalog_ms = (time.perf_counter() - catalog_start) * 1000

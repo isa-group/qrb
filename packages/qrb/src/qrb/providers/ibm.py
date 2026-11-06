@@ -161,9 +161,19 @@ class IBMProvider:
                 status_text = "unknown"
 
             try:
-                last_calibrated_at = properties_future.result().last_update_date
+                properties = properties_future.result()
+                last_calibrated_at = properties.last_update_date
             except Exception:
+                properties = None
                 last_calibrated_at = None
+
+        try:
+            pt = getattr(backend.configuration(), "processor_type", None) or {}
+            # As IBM writes it: "Heron r2", "Nighthawk r2".
+            family, revision = pt.get("family"), pt.get("revision")
+            processor = (f"{family} r{revision}" if revision not in (None, "") else str(family)) if family else None
+        except Exception:
+            processor = None
 
         return ResourceRecord(
             resource_id=backend.name,
@@ -177,6 +187,8 @@ class IBMProvider:
             status=status_text,
             operational=operational,
             last_calibrated_at=last_calibrated_at,
+            ibm_properties=properties,
+            processor=processor,
         )
 
 
