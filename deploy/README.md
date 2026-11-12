@@ -51,7 +51,8 @@ internal network ─ :3443 ─ proxy ─ grafana ─┬─ prometheus ─┬─ 
 1. **Firewall:** ask for port 3443 to be reachable from the university's internal network (and VPN) only, not the internet. Grafana has its own login, but it should not be exposed publicly.
 2. **Secrets** in `.env`: `GRAFANA_ADMIN_PASSWORD`, `GRAFANA_DB_PASSWORD`, `QRB_EXPORTER_PASSWORD` (each `openssl rand -hex 24`).
 3. **Start:** `docker compose --profile proxy --profile monitoring up -d --build`. The one-shot `monitoring-init` creates the read-only roles from `deploy/monitoring/roles.sql`; Grafana does not start if a password is missing.
-4. **Open** `https://<host>:3443` from the internal network and sign in as `admin` with `GRAFANA_ADMIN_PASSWORD`. Without the internal port: `ssh -L 3002:127.0.0.1:3002 <vps>` and open `http://localhost:3002`.
+4. **Open** `https://192.168.20.48:3443` (the VM's private IP; the public address forwards only 80/443) over the VPN and accept the certificate warning once (the certificate names the domain, not the IP). Set `GRAFANA_ROOT_URL` to that URL. If pages hang over the VPN, the tunnel is dropping full-size packets: ask IT for MSS clamping, or meanwhile lower your VPN interface MTU (`sudo ifconfig utunN mtu 1200` on macOS).
+   Sign in as `admin` with `GRAFANA_ADMIN_PASSWORD`. Without the VPN port: `ssh -L 3002:127.0.0.1:3002 <vps>` and open `http://localhost:3002`.
 
 The **QRB overview** dashboard shows request rate by status, p95 latency per route, 429s and 5xx per minute, how old the queue data and each QPU's calibration are, units used per day, and host CPU, memory and disk. Prometheus keeps 30 days (`PROMETHEUS_RETENTION`).
 

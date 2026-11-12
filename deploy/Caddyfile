@@ -11,6 +11,9 @@
 	# Our own certificate: no ACME, but keep the automatic HTTP -> HTTPS redirect.
 	auto_https disable_certs
 	admin off
+	# A browser opening Grafana by IP (https://192.168.20.48:3443, over the VPN) sends no
+	# server name; serve the site's certificate then instead of refusing the handshake.
+	default_sni {$QRB_DOMAIN}
 }
 
 # Plain HTTP: always to the main HTTPS site on the default port. Without this explicit site,
@@ -41,10 +44,13 @@ http://{$QRB_DOMAIN} {
 	}
 }
 
-# Grafana (docker compose --profile monitoring) on its own port, same host and certificate.
+# Grafana (docker compose --profile monitoring) on its own port, same certificate.
 # Open this port to the university's internal network only (firewall); Grafana has its own
 # login on top. A separate port keeps Grafana a separate origin from the site and its admin API.
-{$QRB_DOMAIN}:{$GRAFANA_INTERNAL_PORT:3443} {
+# Any host name or IP on this port: over the VPN it is reached by the VM's private IP, since the
+# public address forwards only 80/443. The browser warns once that the certificate is for
+# QRB_DOMAIN, not the IP.
+:{$GRAFANA_INTERNAL_PORT:3443} {
 	tls /certs/{$QRB_CERT_FILE} /certs/{$QRB_KEY_FILE}
 
 	encode zstd gzip
