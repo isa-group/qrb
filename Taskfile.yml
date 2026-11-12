@@ -188,7 +188,7 @@ tasks:
       - docker compose --profile proxy up -d --build
 
   docker:monitoring:
-    desc: 'Start Prometheus, Grafana (127.0.0.1:3002, reach it over Tailscale) and the exporters; needs the monitoring passwords in .env (see deploy/README.md)'
+    desc: 'Start Prometheus, Grafana (through the proxy on GRAFANA_INTERNAL_PORT, internal network only) and the exporters; needs the monitoring passwords in .env (see deploy/README.md)'
     cmds:
       - docker compose --profile monitoring up -d
 

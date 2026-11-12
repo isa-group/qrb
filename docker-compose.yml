@@ -200,11 +200,14 @@ services:
     ports:
       - "${QRB_HTTP_PORT:-80}:80"
       - "${QRB_HTTPS_PORT:-443}:443"
+      # Grafana (profile monitoring): open this port to the internal network only.
+      - "${GRAFANA_INTERNAL_PORT:-3443}:${GRAFANA_INTERNAL_PORT:-3443}"
     environment:
       QRB_DOMAIN: ${QRB_DOMAIN:-}
       QRB_CERT_FILE: ${QRB_CERT_FILE:-fullchain.pem}
       QRB_KEY_FILE: ${QRB_KEY_FILE:-privkey.pem}
       QRB_GATEWAY_PORT: ${PORT:-3001}
+      GRAFANA_INTERNAL_PORT: ${GRAFANA_INTERNAL_PORT:-3443}
     volumes:
       - ./deploy/Caddyfile:/etc/caddy/Caddyfile:ro
       - ${QRB_CERT_DIR:-./deploy/certs}:/certs:ro
@@ -219,8 +222,9 @@ services:
         condition: service_healthy
 
   # ---- Monitoring (profile monitoring): docker compose --profile monitoring up -d ----
-  # Nothing here is published except Grafana on 127.0.0.1:3002, which is reached over
-  # Tailscale (`tailscale serve`) or an SSH tunnel. See deploy/README.md.
+  # Nothing here is published. The proxy serves Grafana over HTTPS on GRAFANA_INTERNAL_PORT
+  # (opened to the internal network only); 127.0.0.1:3002 is left for an SSH tunnel.
+  # See deploy/README.md.
 
   # One-shot: creates or updates the read-only monitoring roles (deploy/monitoring/roles.sql).
   monitoring-init:
@@ -301,11 +305,11 @@ services:
     profiles:
       - monitoring
     restart: unless-stopped
-    # Loopback only: reach it with `tailscale serve` or an SSH tunnel, never the public proxy.
+    # Loopback only (SSH tunnel); otherwise reached through the proxy's internal port.
     ports:
       - "127.0.0.1:${GRAFANA_PORT:-3002}:3000"
     environment:
-      GF_SERVER_ROOT_URL: ${GRAFANA_ROOT_URL:-http://localhost:3002}
+      GF_SERVER_ROOT_URL: ${GRAFANA_ROOT_URL:-https://${QRB_DOMAIN:-localhost}:${GRAFANA_INTERNAL_PORT:-3443}}
       GF_SECURITY_ADMIN_USER: admin
       GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_ADMIN_PASSWORD:-}
       GF_SECURITY_COOKIE_SECURE: "true"

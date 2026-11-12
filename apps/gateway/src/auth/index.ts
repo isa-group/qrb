@@ -47,7 +47,7 @@ export const DISABLED_PATHS = [
 
 /**
  * The admin plugin's HTTP routes, all disabled: the gateway's own `/api/admin/*` routes
- * (`../admin.ts`) call the plugin in-process behind their own guard (tailnet, session only,
+ * (`../admin.ts`) call the plugin in-process behind their own guard (session only,
  * role, recent sign-in, audit). Impersonation, password and user creation are never offered.
  */
 export const ADMIN_DISABLED_PATHS = [

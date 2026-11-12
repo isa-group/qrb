@@ -6,6 +6,7 @@
 #   QRB_DOMAIN     public host name, e.g. qbinder.score.es
 #   QRB_CERT_FILE  certificate (full chain) inside /certs
 #   QRB_KEY_FILE   private key inside /certs
+#   GRAFANA_INTERNAL_PORT  port for Grafana (profile monitoring), opened to the internal network only
 {
 	# Our own certificate: no ACME, but keep the automatic HTTP -> HTTPS redirect.
 	auto_https disable_certs
@@ -32,4 +33,23 @@
 			read_timeout 300s
 		}
 	}
+}
+
+# Grafana (docker compose --profile monitoring) on its own port, same host and certificate.
+# Open this port to the university's internal network only (firewall); Grafana has its own
+# login on top. A separate port keeps Grafana a separate origin from the site and its admin API.
+{$QRB_DOMAIN}:{$GRAFANA_INTERNAL_PORT:3443} {
+	tls /certs/{$QRB_CERT_FILE} /certs/{$QRB_KEY_FILE}
+
+	encode zstd gzip
+
+	header {
+		Strict-Transport-Security "max-age=31536000"
+		X-Content-Type-Options "nosniff"
+		Referrer-Policy "same-origin"
+		X-Frame-Options "DENY"
+		-Server
+	}
+
+	reverse_proxy grafana:3000
 }
