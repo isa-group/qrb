@@ -10,8 +10,8 @@ internet ─ 80/443 ─ proxy (Caddy, your cert) ─ gateway:3001 ─┬─ /   
 
 ## Before
 
-1. **DNS:** an A record for your host name (e.g. `qbinder.score.es`) pointing at the VPS.
-2. **Docker** with the compose plugin on the VPS; ports 80 and 443 open.
+1. **DNS:** an A record for your host name (e.g. `qbinder.score.us.es`) pointing at the VPS.
+2. **Docker** with the compose plugin on the VPS. The proxy listens on `QRB_HTTP_PORT` and `QRB_HTTPS_PORT` (80 and 443 by default). At the university, the perimeter forwards public 80/443 to the VM's **8080/8443**, so `.env` sets those; publishing on 80/443 there takes the site down.
 3. **Certificate:** the full chain and its key in one directory (e.g. `/home/operador`), readable by Docker.
 4. **OAuth apps** with these callbacks:
    - GitHub: `https://<host>/api/auth/callback/github`
