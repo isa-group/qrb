@@ -67,6 +67,15 @@ export function deleteKeysOfUser(db: Database) {
   };
 }
 
+/** Whether the account is banned now (`banned` set and `banExpires` unset or in the future). */
+export async function isBanned(db: Database, userId: string, now: Date = new Date()): Promise<boolean> {
+  const { rows } = await sql<{ banned: boolean | null; banExpires: Date | string | null }>`
+    SELECT "banned", "banExpires" FROM "user" WHERE id = ${userId}`.execute(db);
+  const u = rows[0];
+  if (!u?.banned) return false;
+  return !u.banExpires || new Date(u.banExpires).getTime() > now.getTime();
+}
+
 const unauthorized = (c: Context<GatewayEnv>) => c.json({ detail: "Invalid, revoked or expired API key" }, 401);
 
 /**
@@ -84,8 +93,14 @@ export function withApiKey(getAuth: () => Promise<GatewayAuth>): MiddlewareHandl
     const result = await auth.api.verifyApiKey({ body: { key } });
     const ownerId = result.valid ? result.key?.referenceId : undefined;
     if (!ownerId) return unauthorized(c);
+    // `verifyApiKey` does not look at the owner: a banned account's key must stop working too
+    // (banning also deletes the keys; this covers a ban made any other way).
+    if (await isBanned(auth.options.database.db as Database, ownerId)) return unauthorized(c);
     c.set("userId", ownerId);
     c.set("isAnonymous", false);
+    // A key never carries the session's role or sign-in time (admin routes refuse keys anyway).
+    c.set("sessionRole", undefined);
+    c.set("sessionCreatedAt", undefined);
     c.set("apiKeyId", result.key!.id);
     if (result.key!.start) c.set("apiKeyStart", result.key!.start);
     return next();

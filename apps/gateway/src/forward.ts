@@ -19,6 +19,10 @@ export type GatewayEnv = {
     apiKeyId?: string;
     /** First characters of that key, for the account's request log (survives revoking it). */
     apiKeyStart?: string;
+    /** The session user's `role` (Better Auth admin plugin), set by `sessionUser`; never set for an API key. */
+    sessionRole?: string | null;
+    /** When the session was created (the last sign-in), set by `sessionUser`; for the admin step-up check. */
+    sessionCreatedAt?: Date;
     /** Set by `POST /api/binds` once the bind is accepted: its request log row is written when it finishes. */
     asyncBind?: boolean;
   };

@@ -16,7 +16,7 @@
  */
 import { apiKey } from "@better-auth/api-key";
 import type { BetterAuthOptions } from "better-auth";
-import { genericOAuth } from "better-auth/plugins";
+import { admin, genericOAuth } from "better-auth/plugins";
 
 export const authSchemaOptions = {
   emailAndPassword: { enabled: false },
@@ -36,6 +36,7 @@ export const authSchemaOptions = {
       ],
     }),
     apiKey(),
+    admin(),
   ],
 } satisfies BetterAuthOptions;
 

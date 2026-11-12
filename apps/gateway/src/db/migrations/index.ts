@@ -3,6 +3,7 @@ import * as m0001 from "./0001_better_auth";
 import * as m0002 from "./0002_quota_counters";
 import * as m0003 from "./0003_activity";
 import * as m0004 from "./0004_async_binds";
+import * as m0005 from "./0005_admin";
 
 /**
  * All gateway migrations, in order. Listed statically (not read from the
@@ -14,4 +15,5 @@ export const migrations: Record<string, Migration> = {
   "0002_quota_counters": m0002,
   "0003_activity": m0003,
   "0004_async_binds": m0004,
+  "0005_admin": m0005,
 };

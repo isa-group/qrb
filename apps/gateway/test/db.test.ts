@@ -14,7 +14,7 @@ import {
 import { MIGRATION_LOCK_TABLE, MIGRATION_TABLE, migrateDown, migrateUp } from "../src/db/migrator";
 
 const AUTH_TABLES = ["user", "session", "account", "verification", "apikey", "rateLimit"];
-const GATEWAY_TABLES = ["quota_user_daily", "quota_ip_daily", "burst_bucket", "request_log", "bind_history"];
+const GATEWAY_TABLES = ["quota_user_daily", "quota_ip_daily", "burst_bucket", "request_log", "bind_history", "admin_audit", "quota_override"];
 const BOOKKEEPING = [MIGRATION_TABLE, MIGRATION_LOCK_TABLE];
 
 async function publicTables(db: Database): Promise<string[]> {
@@ -48,6 +48,7 @@ describe("migrations", () => {
       ["0002_quota_counters", "Success"],
       ["0003_activity", "Success"],
       ["0004_async_binds", "Success"],
+      ["0005_admin", "Success"],
     ]);
 
     expect(await publicTables(db)).toEqual([...AUTH_TABLES, ...GATEWAY_TABLES, ...BOOKKEEPING].sort());
@@ -66,6 +67,8 @@ describe("migrations", () => {
         "request_log_at_idx",
         "bind_history_user_id_idx",
         "bind_history_at_idx",
+        "admin_audit_target_idx",
+        "quota_override_pkey",
       ]),
     );
 
@@ -100,6 +103,10 @@ describe("migrations", () => {
   test("roll back one step at a time, then fully, leaving no tables behind", async () => {
     await migrateUp(db);
 
+    const admin = await migrateDown(db);
+    expect(admin.results?.map((r) => [r.migrationName, r.direction, r.status])).toEqual([
+      ["0005_admin", "Down", "Success"],
+    ]);
     const step = await migrateDown(db);
     expect(step.results?.map((r) => [r.migrationName, r.direction, r.status])).toEqual([
       ["0004_async_binds", "Down", "Success"],
@@ -116,7 +123,7 @@ describe("migrations", () => {
 
     await migrateUp(db);
     const all = await migrateDown(db, { all: true });
-    expect(all.results?.map((r) => r.migrationName)).toEqual(["0004_async_binds", "0003_activity", "0002_quota_counters", "0001_better_auth"]);
+    expect(all.results?.map((r) => r.migrationName)).toEqual(["0005_admin", "0004_async_binds", "0003_activity", "0002_quota_counters", "0001_better_auth"]);
 
     // Only Kysely's own bookkeeping remains, and it records nothing applied.
     expect(await publicTables(db)).toEqual([...BOOKKEEPING].sort());

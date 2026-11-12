@@ -42,11 +42,33 @@ export interface BurstBucketTable {
   count: Generated<number>;
 }
 
+/** Append-only record of admin actions (`../admin.ts`). */
+export interface AdminAuditTable {
+  id: Generated<string>;
+  actor_id: string;
+  action: string;
+  target_user_id: string | null;
+  details: Generated<unknown>;
+  ip: string | null;
+  at: Generated<Date>;
+}
+
+/** A signed-in account's daily units, replacing the tier's quota. */
+export interface QuotaOverrideTable {
+  user_id: string;
+  daily_units: number;
+  reason: string;
+  set_by: string;
+  set_at: Generated<Date>;
+}
+
 /** Tables owned by the gateway. Better Auth's tables are typed by Better Auth. */
 export interface GatewayTables {
   quota_user_daily: QuotaUserDailyTable;
   quota_ip_daily: QuotaIpDailyTable;
   burst_bucket: BurstBucketTable;
+  admin_audit: AdminAuditTable;
+  quota_override: QuotaOverrideTable;
 }
 
 export type Database = Kysely<GatewayTables>;

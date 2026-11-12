@@ -45,12 +45,13 @@ import { addDailyUnits, refundDailyUnits, tryConsumeDailyUnits, utcDay } from ".
 import type { GatewayEnv } from "../forward";
 import type { LimitsConfig, Tier } from "./config";
 import { logWouldReject } from "./log";
+import { dailyQuota } from "./override";
 
 /** What a counted request reserved. Available as `c.get("quota")` (for 4.5 headers / usage). */
 export interface QuotaReservation {
   userId: string;
   tier: Tier;
-  /** Daily quota of the tier. */
+  /** Daily quota of the tier, or the account's override. */
   quota: number;
   /** Units charged for this request. */
   cost: number;
@@ -132,7 +133,8 @@ export async function consumeQuota(
   args: { userId: string; tier: Tier; cost: number; now: Date },
 ): Promise<QuotaCheck> {
   const { userId, tier, cost, now } = args;
-  const quota = config.dailyUnits[tier];
+  // A signed-in account may have its own daily units (admin override, `./override.ts`).
+  const quota = await dailyQuota(db, config, userId, tier);
   const day = utcDay(now);
   const resetAt = nextUtcMidnight(now);
   let used = await tryConsumeDailyUnits(db, { table: "quota_user_daily", key: userId, day, units: cost, quota });

@@ -13,6 +13,7 @@ import { credentialedCors, webOriginsFromEnv } from "./cors";
 import { usageHandler } from "./limits/usage";
 import { activityRoutes, recordActivity } from "./activity";
 import { recordMetrics } from "./metrics";
+import { adminUserIdsFromEnv, mountAdmin } from "./admin";
 
 export interface AppOptions extends ForwardOptions {
   /** Better Auth instance (or async factory). Defaults to one built from the environment. */
@@ -29,6 +30,8 @@ export interface AppOptions extends ForwardOptions {
   clientAddress?: ClientAddress;
   /** Origins allowed credentialed cross-origin access. Defaults to `WEB_ORIGINS` (dev only; none in production). */
   webOrigins?: readonly string[];
+  /** Admins by user id regardless of role. Defaults to `QRB_ADMIN_USER_IDS`; pass the same list to the auth config. */
+  adminUserIds?: readonly string[];
 }
 
 /**
@@ -101,6 +104,18 @@ export function createApp(opts: AppOptions = {}) {
   app.delete("/api/history/binds", openRoute, withUser, act.guard, act.removeAll);
   app.get("/api/history/binds/:id", openRoute, withUser, act.guard, act.bind);
   app.delete("/api/history/binds/:id", openRoute, withUser, act.guard, act.removeOne);
+
+  // Admin (signed-in session only, admins only; see `admin.ts`).
+  mountAdmin(app, [openRoute, withUser], {
+    getAuth,
+    getDb,
+    adminUserIds: opts.adminUserIds ?? adminUserIdsFromEnv(),
+    trustedOrigins: async () => {
+      const origins = (await getAuth()).options.trustedOrigins;
+      return Array.isArray(origins) ? origins : [];
+    },
+    now: opts.now,
+  });
 
   // Resolve: 413 for an oversized body, 401 for an invalid key, then burst and quota (429).
   const resolve = [body, ...identify, activity, burst, quota, forward] as const;

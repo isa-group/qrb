@@ -87,6 +87,8 @@ services:
       ORCID_CLIENT_ID: ${ORCID_CLIENT_ID:-}
       ORCID_CLIENT_SECRET: ${ORCID_CLIENT_SECRET:-}
       ORCID_ISSUER: ${ORCID_ISSUER:-}
+      # Admins by Better Auth user id (bootstrap; further admins are promoted on /admin).
+      QRB_ADMIN_USER_IDS: ${QRB_ADMIN_USER_IDS:-}
       # X-Forwarded-For is trusted only from these peers. Through a published
       # port, the host reverse proxy reaches the container from the compose
       # network's gateway address, NOT 127.0.0.1; the subnet is pinned below so

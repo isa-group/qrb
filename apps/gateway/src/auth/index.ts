@@ -7,13 +7,14 @@
  * without a session or key are identified by IP (`./anonymous.ts`).
  */
 import { betterAuth, type BetterAuthOptions } from "better-auth";
-import { genericOAuth } from "better-auth/plugins";
+import { admin as adminPlugin, genericOAuth } from "better-auth/plugins";
 import { github as githubProvider } from "better-auth/social-providers";
 import type { Context, MiddlewareHandler, Next } from "hono";
 import { betterAuthDatabase, type Database } from "../db";
 import type { GatewayEnv } from "../forward";
 import { API_KEY_DISABLED_PATHS, apiKeyPlugin, deleteKeysOfUser } from "./api-keys";
 import { deleteActivityOfUser } from "../activity";
+import { deleteQuotaOverrideOfUser } from "../limits/override";
 import { CLIENT_IP_HEADER } from "../client-ip";
 import type { AuthConfig } from "./config";
 import { applyEmailPolicy, assertOAuthEmailPolicy } from "./email-policy";
@@ -43,6 +44,31 @@ export const DISABLED_PATHS = [
   "/change-email",
   "/verify-password",
 ];
+
+/**
+ * The admin plugin's HTTP routes, all disabled: the gateway's own `/api/admin/*` routes
+ * (`../admin.ts`) call the plugin in-process behind their own guard (tailnet, session only,
+ * role, recent sign-in, audit). Impersonation, password and user creation are never offered.
+ */
+export const ADMIN_DISABLED_PATHS = [
+  "/admin/ban-user",
+  "/admin/create-user",
+  "/admin/get-user",
+  "/admin/has-permission",
+  "/admin/impersonate-user",
+  "/admin/list-user-sessions",
+  "/admin/list-users",
+  "/admin/remove-user",
+  "/admin/revoke-user-session",
+  "/admin/revoke-user-sessions",
+  "/admin/set-role",
+  "/admin/set-user-password",
+  "/admin/stop-impersonating",
+  "/admin/unban-user",
+  "/admin/update-user",
+];
+
+export const ADMIN_ROLE = "admin";
 
 /** ORCID iD: four groups of four, last character a digit or X (ISO 7064 checksum). */
 const ORCID_ID = /^\d{4}-\d{4}-\d{4}-\d{3}[\dX]$/;
@@ -142,7 +168,7 @@ export function createAuth(db: Database, config: AuthConfig, opts: CreateAuthOpt
     logger: opts.logLevel ? { level: opts.logLevel } : undefined,
 
     emailAndPassword: { enabled: false },
-    disabledPaths: [...DISABLED_PATHS, ...API_KEY_DISABLED_PATHS],
+    disabledPaths: [...DISABLED_PATHS, ...API_KEY_DISABLED_PATHS, ...ADMIN_DISABLED_PATHS],
     socialProviders: { github: githubConfig(config.github) },
 
     user: {
@@ -158,6 +184,7 @@ export function createAuth(db: Database, config: AuthConfig, opts: CreateAuthOpt
           after: async (user) => {
             await deleteKeysOfUser(db)(user);
             await deleteActivityOfUser(db)(user);
+            await deleteQuotaOverrideOfUser(db)(user);
           },
         },
       },
@@ -199,7 +226,18 @@ export function createAuth(db: Database, config: AuthConfig, opts: CreateAuthOpt
       ipAddress: { ipAddressHeaders: [CLIENT_IP_HEADER] },
     },
 
-    plugins: [genericOAuth({ config: [orcidConfig(config.orcid)] }), apiKeyPlugin()],
+    plugins: [
+      genericOAuth({ config: [orcidConfig(config.orcid)] }),
+      apiKeyPlugin(),
+      // Adds user.role / banned and blocks sign-in of banned users (revoking their sessions on
+      // ban). Its routes are disabled (ADMIN_DISABLED_PATHS); see ../admin.ts.
+      adminPlugin({
+        defaultRole: "user",
+        adminRoles: [ADMIN_ROLE],
+        adminUserIds: config.adminUserIds ?? [],
+        bannedUserMessage: "This account is suspended. Contact the QRB maintainers if you think this is a mistake.",
+      }),
+    ],
   } satisfies BetterAuthOptions;
   return betterAuth(options);
 }
@@ -241,6 +279,9 @@ export function sessionUser(getAuth: () => Promise<GatewayAuth>): MiddlewareHand
     if (session?.user?.id) {
       c.set("userId", session.user.id);
       c.set("isAnonymous", false);
+      // For the admin guard (`../admin.ts`): no second session lookup.
+      c.set("sessionRole", (session.user as { role?: string | null }).role ?? null);
+      c.set("sessionCreatedAt", new Date(session.session.createdAt));
     }
     await next();
   };

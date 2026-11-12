@@ -22,6 +22,11 @@ export interface AuthConfig {
     /** `https://orcid.org` (production) or `https://sandbox.orcid.org`. */
     issuer: string;
   };
+  /**
+   * Better Auth user ids that are admins regardless of `user.role` (`QRB_ADMIN_USER_IDS`), to
+   * bootstrap the first admin. Further admins are promoted from the admin page.
+   */
+  adminUserIds?: string[];
 }
 
 /** Minimum length Better Auth recommends for its secret. */
@@ -81,13 +86,19 @@ export function authConfigFromEnv(env: Record<string, string | undefined> = proc
     issuer: orcidIssuer,
   };
 
-  if (problems.length) throw new Error(`Invalid auth configuration:\n- ${problems.join("\n- ")}`);
-
   // WEB_ORIGINS is for local development (web on :3000, gateway elsewhere).
   // In production everything is same-origin, so only the base URL is trusted.
   const trustedOrigins = [...new Set([baseOrigin, ...(production ? [] : list(env.WEB_ORIGINS))])];
   // TRUSTED_PROXIES is not auth configuration: the gateway resolves the client
   // IP itself (`../client-ip.ts`) and hands it to Better Auth in a header.
+
+  if (problems.length) throw new Error(`Invalid auth configuration:\n- ${problems.join("\n- ")}`);
+
+  // Better Auth ids are opaque strings without `:` (keyless identities are `ip:<address>`).
+  const adminUserIds = list(env.QRB_ADMIN_USER_IDS);
+  for (const id of adminUserIds) {
+    if (id.includes(":")) throw new Error(`Invalid auth configuration:\n- QRB_ADMIN_USER_IDS: not a user id: ${id}`);
+  }
 
   return {
     baseURL,
@@ -96,5 +107,6 @@ export function authConfigFromEnv(env: Record<string, string | undefined> = proc
     trustedOrigins,
     github,
     orcid,
+    adminUserIds,
   };
 }

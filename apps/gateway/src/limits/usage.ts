@@ -14,6 +14,7 @@
 import type { MiddlewareHandler } from "hono";
 import { dailyUnitsUsed, utcDay } from "../db/counters";
 import type { GatewayEnv } from "../forward";
+import { dailyQuota } from "./override";
 import { nextUtcMidnight, secondsUntilReset, tierOf, type QuotaOptions } from "./quota";
 
 export function usageHandler(opts: QuotaOptions): MiddlewareHandler<GatewayEnv> {
@@ -25,7 +26,7 @@ export function usageHandler(opts: QuotaOptions): MiddlewareHandler<GatewayEnv> 
     const at = now();
     const day = utcDay(at);
     const tier = tierOf(c.get("isAnonymous"));
-    const quota = opts.config.dailyUnits[tier];
+    const quota = await dailyQuota(db, opts.config, userId, tier);
     const used = await dailyUnitsUsed(db, "quota_user_daily", userId, day);
     const remaining = Math.max(0, quota - used);
     c.header("Cache-Control", "no-store");
