@@ -305,12 +305,6 @@ export default function LandingPage() {
           <h1
             id="hero-title"
             className={`${styles.heroTitle} heading-1`}
-            style={{
-              backgroundImage: "linear-gradient(90deg, var(--hero-from), var(--hero-to))",
-              WebkitBackgroundClip: "text",
-              backgroundClip: "text",
-              color: "transparent",
-            }}
           >
             <span className={styles.heroLine}>Declare what matters.</span>{" "}
             <span className={styles.heroLine}>Get the right QPU for it.</span>

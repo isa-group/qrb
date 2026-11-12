@@ -64,7 +64,17 @@
   padding: var(--s-900) var(--gutter);
 }
 .heroTitle { max-width: 680px; }
-.heroLine { display: block; animation: rise 800ms var(--ease) both; }
+/* The gradient is clipped to text on each line, not on the h1: Safari draws an animated child on
+   its own layer, outside a parent's text clip, which left the transparent text invisible. Each line
+   is a block as wide as the title, so the gradient runs across the title as before. */
+.heroLine {
+  display: block;
+  background-image: linear-gradient(90deg, var(--hero-from), var(--hero-to));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  animation: rise 800ms var(--ease) both;
+}
 .heroLine + .heroLine { animation-delay: 110ms; }
 .heroSub { max-width: 520px; margin-top: var(--s-300); animation: rise 800ms 220ms var(--ease) both; }
 .heroAction { margin-top: var(--s-400); animation: rise 800ms 300ms var(--ease) both; }
