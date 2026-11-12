@@ -17,6 +17,14 @@ x-provider-env: &provider-env
   AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY:-}
   AWS_REGION: ${AWS_REGION:-us-east-1}
 
+# Internal names never go through an HTTP proxy. A host whose Docker config injects a proxy
+# (~/.docker/config.json "proxies", as on the university VM) would otherwise send Caddy's and
+# Grafana's requests for other containers to that proxy, which cannot reach them. Setting it
+# here overrides the injected list.
+x-no-proxy: &no-proxy
+  NO_PROXY: localhost,127.0.0.1,::1,.int.local,postgres,api,web,gateway,proxy,grafana,prometheus,postgres-exporter,node-exporter
+  no_proxy: localhost,127.0.0.1,::1,.int.local,postgres,api,web,gateway,proxy,grafana,prometheus,postgres-exporter,node-exporter
+
 # The API and the poller share qrb-store's tables in the same Postgres as the
 # gateway (different table names).
 x-store-url: &store-url postgresql+psycopg://qrb:${POSTGRES_PASSWORD:-qrb}@postgres:5432/qrb
@@ -203,6 +211,7 @@ services:
       # Grafana (profile monitoring): open this port to the internal network only.
       - "${GRAFANA_INTERNAL_PORT:-3443}:${GRAFANA_INTERNAL_PORT:-3443}"
     environment:
+      <<: *no-proxy
       QRB_DOMAIN: ${QRB_DOMAIN:-}
       QRB_CERT_FILE: ${QRB_CERT_FILE:-fullchain.pem}
       QRB_KEY_FILE: ${QRB_KEY_FILE:-privkey.pem}
@@ -261,6 +270,8 @@ services:
     profiles:
       - monitoring
     restart: unless-stopped
+    environment:
+      <<: *no-proxy
     command:
       - --config.file=/etc/prometheus/prometheus.yml
       - --storage.tsdb.path=/prometheus
@@ -309,6 +320,7 @@ services:
     ports:
       - "127.0.0.1:${GRAFANA_PORT:-3002}:3000"
     environment:
+      <<: *no-proxy
       GF_SERVER_ROOT_URL: ${GRAFANA_ROOT_URL:-https://${QRB_DOMAIN:-localhost}:${GRAFANA_INTERNAL_PORT:-3443}}
       GF_SECURITY_ADMIN_USER: admin
       GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_ADMIN_PASSWORD:-}
