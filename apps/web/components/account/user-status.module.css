@@ -30,3 +30,7 @@
   font-weight: 600;
 }
 .avatar img { width: 100%; height: 100%; object-fit: cover; }
+
+/* Admins get an Admin link beside their account entry. */
+.groupBar { display: flex; align-items: center; gap: var(--s-25); }
+.groupMenu { display: grid; gap: var(--s-200); }

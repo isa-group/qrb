@@ -19,6 +19,8 @@ export interface AccountUser {
   /** Null when the provider gave no verified address (ORCID usually). */
   email: string | null;
   image: string | null;
+  /** `admin` for admins (gateway admin plugin); the /admin link shows for them only. The gateway enforces it. */
+  role: string;
 }
 
 export type AccountState =
@@ -131,7 +133,7 @@ export class RequestError extends Error {
 /** Gateway placeholders for accounts without a verified email (see apps/gateway email-policy). */
 const PLACEHOLDER_DOMAIN = "@users.noreply.invalid";
 
-async function call<T>(path: string, init: RequestInit = {}): Promise<T> {
+export async function call<T>(path: string, init: RequestInit = {}): Promise<T> {
   let res: Response;
   try {
     res = await fetch(`${API_BASE_URL}${path}`, {
@@ -168,12 +170,12 @@ function load(): Promise<void> {
     try {
       const res = await fetch(`${API_BASE_URL}/auth/get-session`, { credentials: "include", cache: "no-store" });
       if (!res.ok) return set({ status: "unavailable" });
-      const body = (await res.json().catch(() => undefined)) as { user?: Partial<AccountUser> & { id: string } } | null | undefined;
+      const body = (await res.json().catch(() => undefined)) as { user?: Partial<AccountUser> & { id: string; role?: string | null } } | null | undefined;
       if (body === undefined) return set({ status: "unavailable" });
       if (!body?.user) return set({ status: "signed-out" });
       const u = body.user;
       const email = typeof u.email === "string" && !u.email.toLowerCase().endsWith(PLACEHOLDER_DOMAIN) ? u.email : null;
-      set({ status: "signed-in", user: { id: u.id, name: u.name || "Your account", email, image: u.image ?? null } });
+      set({ status: "signed-in", user: { id: u.id, name: u.name || "Your account", email, image: u.image ?? null, role: u.role || "user" } });
     } catch {
       set({ status: "unavailable" });
     }
@@ -205,12 +207,12 @@ export function useAccount(): AccountState {
 
 // ---------- actions ----------
 
-/** Starts OAuth with the provider; the browser leaves the site and comes back to `/account`. */
-export async function signIn(provider: Provider): Promise<void> {
+/** Starts OAuth with the provider; the browser leaves the site and comes back to `returnTo` (a path). */
+export async function signIn(provider: Provider, returnTo = "/account"): Promise<void> {
   const origin = window.location.origin;
   const { url } = await call<{ url: string }>("/auth/sign-in/social", {
     method: "POST",
-    body: JSON.stringify({ provider, callbackURL: `${origin}/account`, errorCallbackURL: `${origin}/signin`, disableRedirect: true }),
+    body: JSON.stringify({ provider, callbackURL: `${origin}${returnTo}`, errorCallbackURL: `${origin}/signin`, disableRedirect: true }),
   });
   window.location.assign(url);
 }

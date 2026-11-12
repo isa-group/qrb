@@ -46,22 +46,36 @@ export function UserStatus({ variant = "bar", onNavigate }: { variant?: "bar" | 
   }
 
   const first = account.user.name.split(/\s+/)[0] || "Account";
-  return (
+  // Shown to admins only; the gateway refuses everyone else whatever the page shows.
+  const admin = account.user.role === "admin" && (
     <Link
-      href="/account"
-      className={variant === "bar" ? `${styles.link} ${styles.user} title-4` : "heading-3"}
-      aria-current={pathname === "/account" ? "page" : undefined}
-      aria-label={`Account: ${account.user.name}`}
+      href="/admin"
+      className={variant === "bar" ? `${styles.link} title-4` : "heading-3"}
+      aria-current={pathname === "/admin" ? "page" : undefined}
       onClick={onNavigate}
     >
-      {variant === "bar" ? (
-        <>
-          <Avatar user={account.user} />
-          <span className={styles.name}>{first}</span>
-        </>
-      ) : (
-        "Account"
-      )}
+      Admin
     </Link>
+  );
+  return (
+    <span className={variant === "bar" ? styles.groupBar : styles.groupMenu}>
+      {admin}
+      <Link
+        href="/account"
+        className={variant === "bar" ? `${styles.link} ${styles.user} title-4` : "heading-3"}
+        aria-current={pathname === "/account" ? "page" : undefined}
+        aria-label={`Account: ${account.user.name}`}
+        onClick={onNavigate}
+      >
+        {variant === "bar" ? (
+          <>
+            <Avatar user={account.user} />
+            <span className={styles.name}>{first}</span>
+          </>
+        ) : (
+          "Account"
+        )}
+      </Link>
+    </span>
   );
 }

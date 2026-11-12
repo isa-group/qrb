@@ -1,0 +1,120 @@
+/* /admin: the account page's ledger (account.module.css) plus what an admin screen adds:
+   search, status badges, a user's detail sheet, small action forms and summary figures. */
+
+.panel { padding-top: var(--s-400); }
+
+/* ---------- step-up notice ---------- */
+.stepUp { display: flex; flex-wrap: wrap; align-items: center; justify-content: flex-end; gap: var(--s-100); }
+.stepUp[data-expired] {
+  padding: var(--s-100) var(--s-200);
+  border: 1px solid var(--line-strong);
+  border-radius: 8px;
+  background: var(--surface-1);
+}
+
+/* ---------- search and paging ---------- */
+.search {
+  display: flex;
+  align-items: center;
+  gap: var(--s-100);
+  max-width: 560px;
+  padding: var(--s-50) var(--s-50) var(--s-50) var(--s-200);
+  border: 1px solid var(--line-strong);
+  border-radius: 8px;
+  background: var(--bg);
+}
+.search:focus-within { border-color: var(--ink-3); }
+.searchInput { flex: 1; min-width: 0; padding: var(--s-50) 0; border: 0; background: none; outline: none; }
+.searchInput::placeholder { color: var(--ink-3); }
+.pager { display: flex; align-items: center; gap: var(--s-200); }
+.pager button:disabled { opacity: 0.5; cursor: not-allowed; }
+
+/* ---------- table cells ---------- */
+.rowButton {
+  display: grid;
+  gap: var(--s-25);
+  padding: 0;
+  border: 0;
+  background: none;
+  text-align: left;
+  cursor: pointer;
+}
+.rowButton:hover .cellMain,
+.rowButton:hover > span:first-child { text-decoration: underline; text-decoration-color: var(--ink-3); text-underline-offset: 4px; }
+.badges { display: flex; flex-wrap: wrap; gap: var(--s-50); }
+.badge {
+  display: inline-block;
+  padding: 0 var(--s-75);
+  border: 1px solid var(--line-strong);
+  border-radius: 999px;
+  font-size: 12px;
+  line-height: 20px;
+  color: var(--ink-2);
+}
+.badgeDanger { border-color: var(--danger); color: var(--danger); }
+.compact th,
+.compact td { padding-block: var(--s-75); }
+
+/* ---------- one account ---------- */
+.detail {
+  display: grid;
+  gap: var(--s-400);
+  margin-top: var(--s-200);
+  padding: var(--s-400);
+  border-radius: 16px;
+  background: var(--surface-1);
+}
+.detailHead { display: flex; flex-wrap: wrap; align-items: flex-start; justify-content: space-between; gap: var(--s-200); }
+.banNote { max-width: 48ch; color: var(--danger); }
+.facts { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: var(--s-300); }
+.facts dd { display: grid; gap: var(--s-25); margin-top: var(--s-50); }
+.detailGrid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: var(--s-400); }
+.detail section { display: grid; gap: var(--s-100); align-content: start; }
+.list { display: grid; gap: var(--s-100); }
+.list li { display: grid; gap: var(--s-25); padding-top: var(--s-100); border-top: 1px solid var(--line); }
+.ua { overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+.keyItem { display: flex !important; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--s-100); }
+
+.miniBars { display: flex; align-items: flex-end; gap: 2px; height: 32px; }
+.miniBars span { flex: 1; min-height: 1px; border-radius: 2px 2px 0 0; background: var(--ink-3); }
+
+/* ---------- actions ---------- */
+.actions { padding-top: var(--s-300); border-top: 1px solid var(--line); }
+.actionRow { display: flex; flex-wrap: wrap; align-items: flex-start; gap: var(--s-100); }
+.actionForm {
+  display: grid;
+  gap: var(--s-100);
+  width: min(100%, 360px);
+  padding: var(--s-200);
+  border: 1px solid var(--line-strong);
+  border-radius: 8px;
+  background: var(--bg);
+}
+.field { display: grid; gap: var(--s-50); }
+.input {
+  width: 100%;
+  padding: var(--s-75) var(--s-100);
+  border: 1px solid var(--line-strong);
+  border-radius: 8px;
+  background: var(--surface-1);
+}
+.input:focus-visible { outline: 2px solid var(--accent-soft); outline-offset: 1px; }
+
+/* ---------- overview and catalog ---------- */
+.figures { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: var(--s-300) var(--s-400); }
+.figures > div { padding-top: var(--s-100); border-top: 1px solid var(--line); }
+.figures dd { margin-top: var(--s-50); font-variant-numeric: tabular-nums; }
+.age { font-weight: 500; }
+.age[data-stale] { color: var(--danger); }
+
+/* ---------- audit ---------- */
+.audit { display: grid; }
+.audit li { display: grid; gap: var(--s-25); padding: var(--s-100) 0; border-top: 1px solid var(--line); }
+.audit li:first-child { border-top: 0; }
+
+@media (max-width: 900px) {
+  .facts,
+  .figures { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .detailGrid { grid-template-columns: minmax(0, 1fr); }
+  .detail { padding: var(--s-200); }
+}
