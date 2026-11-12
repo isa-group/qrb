@@ -1,0 +1,24 @@
+# Prometheus for the QRB stack (docker compose --profile monitoring). Everything it
+# scrapes is on the private compose network; nothing here is published.
+global:
+  scrape_interval: 30s
+  evaluation_interval: 30s
+
+scrape_configs:
+  # Gateway: /metrics on its internal metrics port (METRICS_PORT), never via the proxy.
+  - job_name: gateway
+    static_configs:
+      - targets: ["gateway:9091"]
+
+  - job_name: postgres
+    static_configs:
+      - targets: ["postgres-exporter:9187"]
+
+  # The VPS itself (CPU, memory, disk), from node-exporter reading the host's /proc and /sys.
+  - job_name: node
+    static_configs:
+      - targets: ["node-exporter:9100"]
+
+  - job_name: prometheus
+    static_configs:
+      - targets: ["localhost:9090"]

@@ -187,6 +187,11 @@ tasks:
     cmds:
       - docker compose --profile proxy up -d --build
 
+  docker:monitoring:
+    desc: 'Start Prometheus, Grafana (127.0.0.1:3002, reach it over Tailscale) and the exporters; needs the monitoring passwords in .env (see deploy/README.md)'
+    cmds:
+      - docker compose --profile monitoring up -d
+
   docker:dev:
     desc: 'Start the stack locally on http://localhost:3001 without production auth settings (docker-compose.dev.yml)'
     cmds:

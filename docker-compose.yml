@@ -70,12 +70,16 @@ services:
     # Loopback only: the host's reverse proxy (TLS) forwards to this port.
     ports:
       - "127.0.0.1:${PORT:-3001}:${PORT:-3001}"
+    expose:
+      - "${METRICS_PORT:-9091}"
     environment:
       <<: *gateway-env
       QRB_API_URL: http://api:8000
       WEB_UPSTREAM_URL: http://web:3000
       # Same value as the api service's QRB_GATEWAY_SECRET.
       QRB_GATEWAY_SECRET: ${QRB_GATEWAY_SECRET:-}
+      # Prometheus metrics (/metrics only) on the compose network; never published.
+      METRICS_PORT: ${METRICS_PORT:-9091}
       BETTER_AUTH_URL: ${BETTER_AUTH_URL:-}
       BETTER_AUTH_SECRET: ${BETTER_AUTH_SECRET:-}
       GITHUB_CLIENT_ID: ${GITHUB_CLIENT_ID:-}
@@ -212,6 +216,117 @@ services:
       gateway:
         condition: service_healthy
 
+  # ---- Monitoring (profile monitoring): docker compose --profile monitoring up -d ----
+  # Nothing here is published except Grafana on 127.0.0.1:3002, which is reached over
+  # Tailscale (`tailscale serve`) or an SSH tunnel. See deploy/README.md.
+
+  # One-shot: creates or updates the read-only monitoring roles (deploy/monitoring/roles.sql).
+  monitoring-init:
+    image: postgres:17-alpine
+    profiles:
+      - monitoring
+    restart: "no"
+    environment:
+      PGPASSWORD: ${POSTGRES_PASSWORD:-qrb}
+      GRAFANA_DB_PASSWORD: ${GRAFANA_DB_PASSWORD:-}
+      QRB_EXPORTER_PASSWORD: ${QRB_EXPORTER_PASSWORD:-}
+      GRAFANA_ADMIN_PASSWORD: ${GRAFANA_ADMIN_PASSWORD:-}
+    volumes:
+      - ./deploy/monitoring/roles.sql:/roles.sql:ro
+    command:
+      - sh
+      - -c
+      - >-
+        { [ -n "$$GRAFANA_DB_PASSWORD" ] && [ -n "$$QRB_EXPORTER_PASSWORD" ] && [ -n "$$GRAFANA_ADMIN_PASSWORD" ]; } ||
+        { echo "GRAFANA_DB_PASSWORD, QRB_EXPORTER_PASSWORD and GRAFANA_ADMIN_PASSWORD must be set in .env"; exit 1; } &&
+        psql -h postgres -U qrb -d qrb -v ON_ERROR_STOP=1
+        -v grafana_password="$$GRAFANA_DB_PASSWORD" -v exporter_password="$$QRB_EXPORTER_PASSWORD"
+        -f /roles.sql
+    depends_on:
+      postgres:
+        condition: service_healthy
+      gateway-migrate:
+        condition: service_completed_successfully
+      store-migrate:
+        condition: service_completed_successfully
+
+  prometheus:
+    image: prom/prometheus:v3.4.1
+    profiles:
+      - monitoring
+    restart: unless-stopped
+    command:
+      - --config.file=/etc/prometheus/prometheus.yml
+      - --storage.tsdb.path=/prometheus
+      - --storage.tsdb.retention.time=${PROMETHEUS_RETENTION:-30d}
+    volumes:
+      - ./deploy/monitoring/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus-data:/prometheus
+    expose:
+      - "9090"
+
+  postgres-exporter:
+    image: quay.io/prometheuscommunity/postgres-exporter:v0.17.1
+    profiles:
+      - monitoring
+    restart: unless-stopped
+    environment:
+      DATA_SOURCE_URI: postgres:5432/qrb?sslmode=disable
+      DATA_SOURCE_USER: qrb_exporter
+      DATA_SOURCE_PASS: ${QRB_EXPORTER_PASSWORD:-}
+    expose:
+      - "9187"
+    depends_on:
+      monitoring-init:
+        condition: service_completed_successfully
+
+  # Host CPU, memory and disk, read from the host's /proc, /sys and / (read-only).
+  node-exporter:
+    image: prom/node-exporter:v1.9.1
+    profiles:
+      - monitoring
+    restart: unless-stopped
+    pid: host
+    command:
+      - --path.rootfs=/host
+    volumes:
+      - /:/host:ro,rslave
+    expose:
+      - "9100"
+
+  grafana:
+    image: grafana/grafana:12.0.2
+    profiles:
+      - monitoring
+    restart: unless-stopped
+    # Loopback only: reach it with `tailscale serve` or an SSH tunnel, never the public proxy.
+    ports:
+      - "127.0.0.1:${GRAFANA_PORT:-3002}:3000"
+    environment:
+      GF_SERVER_ROOT_URL: ${GRAFANA_ROOT_URL:-http://localhost:3002}
+      GF_SECURITY_ADMIN_USER: admin
+      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_ADMIN_PASSWORD:-}
+      GF_SECURITY_COOKIE_SECURE: "true"
+      GF_SECURITY_COOKIE_SAMESITE: strict
+      GF_SECURITY_DISABLE_GRAVATAR: "true"
+      GF_USERS_ALLOW_SIGN_UP: "false"
+      GF_USERS_ALLOW_ORG_CREATE: "false"
+      GF_AUTH_ANONYMOUS_ENABLED: "false"
+      GF_SNAPSHOTS_EXTERNAL_ENABLED: "false"
+      GF_ANALYTICS_REPORTING_ENABLED: "false"
+      GF_ANALYTICS_CHECK_FOR_UPDATES: "false"
+      GF_NEWS_NEWS_FEED_ENABLED: "false"
+      GRAFANA_DB_PASSWORD: ${GRAFANA_DB_PASSWORD:-}
+    volumes:
+      - ./deploy/monitoring/grafana/provisioning:/etc/grafana/provisioning:ro
+      - ./deploy/monitoring/grafana/dashboards:/var/lib/grafana/dashboards:ro
+      - grafana-data:/var/lib/grafana
+    depends_on:
+      monitoring-init:
+        condition: service_completed_successfully
+      prometheus:
+        condition: service_started
+
   cli:
     build:
       context: .
@@ -316,6 +431,8 @@ services:
 volumes:
   pgdata:
   caddy-data:
+  prometheus-data:
+  grafana-data:
 
 networks:
   default:

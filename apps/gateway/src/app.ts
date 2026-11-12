@@ -12,6 +12,7 @@ import { clientIp, trustedProxiesFromEnv, type ClientAddress } from "./client-ip
 import { credentialedCors, webOriginsFromEnv } from "./cors";
 import { usageHandler } from "./limits/usage";
 import { activityRoutes, recordActivity } from "./activity";
+import { recordMetrics } from "./metrics";
 
 export interface AppOptions extends ForwardOptions {
   /** Better Auth instance (or async factory). Defaults to one built from the environment. */
@@ -47,6 +48,9 @@ export interface AppOptions extends ForwardOptions {
 export function createApp(opts: AppOptions = {}) {
   const app = new Hono<GatewayEnv>();
   const getAuth = authGetter(opts.auth ?? authFromEnv());
+
+  // Metrics first, so they see every final status (preflights, 401s, 429s, 5xx).
+  app.use("/api/*", recordMetrics());
 
   // CORS before everything else: a preflight is answered here and consumes nothing.
   app.use("/api/*", credentialedCors(opts.webOrigins ?? webOriginsFromEnv()));

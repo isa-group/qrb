@@ -4,6 +4,7 @@ import { recoverInterruptedBinds } from "./binds";
 import { authFromEnv } from "./auth/from-env";
 import type { Database } from "./db";
 import { withWeb } from "./web";
+import { metricsFetch } from "./metrics";
 
 const port = Number(process.env.PORT ?? 3001);
 const hostname = process.env.HOST ?? "127.0.0.1";
@@ -28,6 +29,14 @@ Bun.serve({
 });
 
 console.log(`gateway listening on http://${hostname}:${port}`);
+
+// Prometheus metrics on their own port: never routed by the public app, so the reverse proxy
+// cannot reach them. Compose does not publish this port; Prometheus scrapes it on the network.
+const metricsPort = Number(process.env.METRICS_PORT ?? 9091);
+if (metricsPort > 0) {
+  Bun.serve({ port: metricsPort, hostname, fetch: metricsFetch });
+  console.log(`metrics on http://${hostname}:${metricsPort}/metrics`);
+}
 
 // Account activity is kept 30 days: purge older rows at startup and then hourly, and recover
 // async binds interrupted by a restart.
